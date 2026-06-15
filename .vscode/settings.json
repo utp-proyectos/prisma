@@ -1,0 +1,11 @@
+{
+	"files.associations": {
+		"*.css": "tailwindcss"
+	},
+	"tailwindCSS.classFunctions": ["hlm", "cva", "classes"],
+	"editor.tabSize": 2,
+	"editor.insertSpaces": false,
+	"files.autoSave": "onFocusChange",
+	"editor.formatOnSave": true,
+	"editor.defaultFormatter": "esbenp.prettier-vscode"
+}

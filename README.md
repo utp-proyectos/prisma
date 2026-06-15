@@ -1,59 +1,79 @@
 # Prisma
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.1.
+## 1. Instalar `pnpm` usando `corepack`
 
-## Development server
+1. Habilita `corepack`:
 
-To start a local development server, run:
+```powershell
+corepack enable
+```
 
-```bash
+2. Instala y activa `pnpm`:
+
+```powershell
+corepack use pnpm@latest-11
+```
+
+3. Verifica la instalación:
+
+```powershell
+pnpm --version
+```
+
+## 2. Instalar Angular CLI
+
+```powershell
+pnpm install -g @angular/cli
+```
+
+Verificar version
+
+```powershell
+ng version
+```
+
+Si ya lo tenias instalado con npm
+
+```powershell
+npm uninstall -g @angular/cli
+```
+
+Borra la caché para evitar problemas:
+
+```powershell
+npm cache clean --force
+```
+
+## 3. Instalar dependencias del proyecto
+
+Desde la raíz del repositorio:
+
+```powershell
+pnpm install
+```
+
+Esto instalará todas las dependencias declaradas en `package.json`.
+
+## 4. Ejecutar el proyecto
+
+### Servir en modo de desarrollo
+
+```powershell
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+### Compilar la aplicación
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
+```powershell
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+### Ejecutar pruebas
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
+```powershell
 ng test
 ```
 
-## Running end-to-end tests
+## 5. Estructura de carpetas basada en Feature Driven
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+La arquitectura del proyecto está organizada para favorecer el desarrollo por características.
