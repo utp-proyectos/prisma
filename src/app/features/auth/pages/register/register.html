@@ -1,1 +1,48 @@
-<p>register works!</p>
+<auth-header title="Crear una cuenta" description="Ingresa tus datos para crear una cuenta" />
+
+<div hlmFieldGroup>
+	<div class="grid grid-cols-2 gap-4">
+		<div hlmField>
+			<label hlmFieldLabel for="name">Nombre</label>
+			<input hlmInput id="name" type="text" placeholder="John" />
+		</div>
+
+		<div hlmField>
+			<label hlmFieldLabel for="lastname">Apellido</label>
+			<input hlmInput id="lastname" type="text" placeholder="Doe" />
+		</div>
+
+		<div hlmField class="col-span-2">
+			<label hlmFieldLabel for="email">Email</label>
+			<input hlmInput id="email" type="email" placeholder="m@example.com" />
+		</div>
+
+		<div hlmField>
+			<label hlmFieldLabel for="username">Username</label>
+			<input hlmInput id="username" type="text" placeholder="johndoe" />
+		</div>
+
+		<div hlmField>
+			<label hlmFieldLabel for="password">Password</label>
+			<input hlmInput id="password" type="password" placeholder="Contraseña" />
+		</div>
+	</div>
+	<div hlmField>
+		<button hlmBtn type="submit">Registrate</button>
+	</div>
+	<hlm-field-separator>O continuar con</hlm-field-separator>
+	<div hlmField>
+		<button hlmBtn variant="outline" type="button">
+			<ng-icon class="text-xl" name="remixGoogleFill" />
+			Registrate con Google
+		</button>
+		<button hlmBtn variant="outline" type="button">
+			<ng-icon class="text-xl" name="remixGithubFill" />
+			Registrate con GitHub
+		</button>
+		<p hlmFieldDescription class="text-center">
+			¿Ya tienes una cuenta?
+			<a routerLink="/auth/login">Log in</a>
+		</p>
+	</div>
+</div>
