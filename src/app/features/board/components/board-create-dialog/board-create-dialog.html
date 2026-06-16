@@ -1,0 +1,33 @@
+<hlm-dialog [state]="modal()" (closed)="modal.set('closed')">
+	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:max-w-sm">
+		<hlm-dialog-header>
+			<h1 hlmDialogTitle>Crear pizarra</h1>
+			<p hlmDialogDescription>Crea una pizarra para empezar a diseñar.</p>
+		</hlm-dialog-header>
+
+		<form>
+			<div hlmFieldGroup>
+				<div hlmField>
+					<label hlmFieldLabel for="field-preview-fullname">Nombre</label>
+					<hlm-input-group>
+						<input hlmInputGroupInput placeholder="Nombre de la pizarra" />
+						<hlm-input-group-addon>
+							<ng-icon name="lucideSquareMousePointer" />
+						</hlm-input-group-addon>
+					</hlm-input-group>
+				</div>
+				<div hlmFieldGroup>
+					<div hlmField>
+						<label hlmFieldLabel for="field-preview-comments">Descripcion</label>
+						<textarea hlmTextarea class="resize-none" id="field-preview-comments"></textarea>
+					</div>
+				</div>
+			</div>
+		</form>
+
+		<hlm-dialog-footer>
+			<button hlmBtn variant="outline" hlmDialogClose>Cancel</button>
+			<button hlmBtn type="submit">Guardar pizarra</button>
+		</hlm-dialog-footer>
+	</hlm-dialog-content>
+</hlm-dialog>
