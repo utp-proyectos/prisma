@@ -30,7 +30,6 @@ import { HlmButtonImports } from '@spartan-ng/helm/button'
 	],
 
 	templateUrl: './board-page.html',
-	styleUrl: './board-page.css',
 })
 export class BoardPage {
 	public readonly items = [

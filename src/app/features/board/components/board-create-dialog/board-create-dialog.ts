@@ -28,7 +28,6 @@ import { HlmTextareaImports } from '@spartan-ng/helm/textarea'
 	],
 
 	templateUrl: './board-create-dialog.html',
-	styleUrl: './board-create-dialog.css',
 })
 export class BoardCreateDialog {
 	modal = signal<BrnDialogState>('closed')

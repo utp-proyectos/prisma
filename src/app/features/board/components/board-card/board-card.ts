@@ -16,6 +16,5 @@ import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu'
 		}),
 	],
 	templateUrl: './board-card.html',
-	styleUrl: './board-card.css',
 })
 export class BoardCard {}
