@@ -1,0 +1,13 @@
+<a
+	hlmItem
+	[routerLink]="to()"
+	size="sm"
+	[class]="disabled() ? 'pointer-events-none opacity-50' : ''"
+>
+	<hlm-item-media variant="icon">
+		<ng-icon [name]="icon()" class="text-[16px]" />
+	</hlm-item-media>
+	<hlm-item-content>
+		<hlm-item-title>{{ title() }}</hlm-item-title>
+	</hlm-item-content>
+</a>

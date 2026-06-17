@@ -1,0 +1,46 @@
+<div class="relative p-5 flex h-dvh gap-5">
+	<app-sidebar>
+		<sidebar-header sidebar-header title="Prisma" icon="lucideTriangle"></sidebar-header>
+
+		<sidebar-content sidebar-content [items]="items">
+			<button hlmBtn class="w-full mt-2">
+				<ng-icon name="lucidePlus"></ng-icon>
+				Crear equipo
+			</button>
+
+			<hlm-select [itemToString]="itemToString" class="my-2" [(value)]="teamId">
+				<hlm-select-trigger class="w-full">
+					<hlm-select-placeholder>
+						<ng-icon name="lucideUsers"></ng-icon>
+						Elige un equipo
+					</hlm-select-placeholder>
+					<hlm-select-value />
+				</hlm-select-trigger>
+
+				<hlm-select-content *hlmSelectPortal>
+					<hlm-select-group>
+						<hlm-select-label>Equipos</hlm-select-label>
+						@for (team of teams; track team.value) {
+							<hlm-select-item [value]="team.value">
+								{{ team.label }}
+							</hlm-select-item>
+						}
+					</hlm-select-group>
+				</hlm-select-content>
+			</hlm-select>
+
+			<sidebar-item
+				icon="lucideLayoutGrid"
+				title="Proyectos"
+				[to]="'team'"
+				[disabled]="!isTeamSelected()"
+			></sidebar-item>
+		</sidebar-content>
+
+		<sidebar-footer sidebar-footer></sidebar-footer>
+	</app-sidebar>
+
+	<div class="w-full">
+		<router-outlet></router-outlet>
+	</div>
+</div>
