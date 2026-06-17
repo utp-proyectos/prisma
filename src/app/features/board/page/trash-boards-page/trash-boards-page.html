@@ -1,1 +1,39 @@
-<p>trash-boards-page works!</p>
+<div>
+	<span hlmBadge variant="secondary"
+		>Las pizarras estaran disponibles por 30 dias. Despues de ese tiempo, se eliminaran de manera
+		permanente</span
+	>
+
+	<hlm-input-group>
+		<input hlmInputGroupInput placeholder="Buscar pizarras" />
+		<hlm-input-group-addon>
+			<ng-icon name="lucideSearch" />
+		</hlm-input-group-addon>
+	</hlm-input-group>
+
+	<hlm-select>
+		<hlm-select-trigger>
+			<hlm-select-value placeholder="Fecha en la que se elimino" />
+		</hlm-select-trigger>
+		<hlm-select-content *hlmSelectPortal>
+			<hlm-select-group>
+				@for (item of items; track item.value) {
+					<hlm-select-item [value]="item.value">{{ item.label }}</hlm-select-item>
+				}
+			</hlm-select-group>
+		</hlm-select-content>
+	</hlm-select>
+
+	<hlm-select>
+		<hlm-select-trigger>
+			<hlm-select-value placeholder="Creado por ti" />
+		</hlm-select-trigger>
+		<hlm-select-content *hlmSelectPortal>
+			<hlm-select-group>
+				@for (created of createds; track created.value) {
+					<hlm-select-item [value]="created.value">{{ created.label }}</hlm-select-item>
+				}
+			</hlm-select-group>
+		</hlm-select-content>
+	</hlm-select>
+</div>
