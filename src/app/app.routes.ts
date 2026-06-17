@@ -3,8 +3,7 @@ import { Routes } from '@angular/router'
 export const routes: Routes = [
 	{
 		path: '',
-		pathMatch: 'full',
-		redirectTo: 'auth/login',
+		loadChildren: () => import('./features/home/home.routes').then((m) => m.homeRoutes),
 	},
 	{
 		path: 'auth',
