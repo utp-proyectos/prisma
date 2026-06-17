@@ -1,2 +1,12 @@
-<p>my-boards-page works!</p>
-<h1>myyyy</h1>
+<main class="flex-1 overflow-auto p-6">
+	<h1 class="text-3xl">Mis Pizarras privadas</h1>
+
+	<hlm-separator />
+
+	<app-boards-action (modal)="modal.set('open')" />
+	<app-board-create-dialog [(state)]="modal" />
+
+	<div class="grid grid-cols-[repeat(auto-fill,minmax(330px,330px))] gap-4">
+		<app-board-card />
+	</div>
+</main>

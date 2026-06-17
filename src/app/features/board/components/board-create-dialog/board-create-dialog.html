@@ -1,4 +1,4 @@
-<hlm-dialog [state]="modal()" (closed)="modal.set('closed')">
+<hlm-dialog [state]="state()" (closed)="state.set('closed')">
 	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:max-w-sm">
 		<hlm-dialog-header>
 			<h1 hlmDialogTitle>Crear pizarra</h1>

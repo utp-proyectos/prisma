@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core'
+import { Component, model, signal } from '@angular/core'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideSquareMousePointer } from '@ng-icons/lucide'
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
@@ -30,8 +30,8 @@ import { HlmTextareaImports } from '@spartan-ng/helm/textarea'
 	templateUrl: './board-create-dialog.html',
 })
 export class BoardCreateDialog {
-	modal = signal<BrnDialogState>('closed')
+	state = model<BrnDialogState>('closed')
 	open() {
-		this.modal.set('open')
+		this.state.set('open')
 	}
 }

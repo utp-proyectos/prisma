@@ -1,0 +1,27 @@
+<div class="flex gap-3 mt-6 mb-6">
+	<div class="flex gap-4">
+		<hlm-input-group>
+			<input hlmInputGroupInput placeholder="Buscar pizarras" />
+			<hlm-input-group-addon>
+				<ng-icon name="lucideSearch" />
+			</hlm-input-group-addon>
+		</hlm-input-group>
+
+		<hlm-select>
+			<hlm-select-trigger>
+				<hlm-select-value placeholder="Ordenar por" />
+			</hlm-select-trigger>
+			<hlm-select-content *hlmSelectPortal>
+				<hlm-select-group>
+					<hlm-select-label>Ordenar por</hlm-select-label>
+					@for (item of items; track item.value) {
+						<hlm-select-item [value]="item.value">{{ item.label }}</hlm-select-item>
+					}
+				</hlm-select-group>
+			</hlm-select-content>
+		</hlm-select>
+	</div>
+	<div class="ml-auto">
+		<button hlmBtn (click)="modal.emit()">Crear carpeta</button>
+	</div>
+</div>
