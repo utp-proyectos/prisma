@@ -1,6 +1,8 @@
 <div class="relative p-5 flex h-dvh gap-5">
 	<app-sidebar>
-		<sidebar-header title="Prisma" icon="lucideTriangle"></sidebar-header>
+		<sidebar-header>
+			<nav-header icon="lucideTriangle" title="Prisma"></nav-header>
+		</sidebar-header>
 
 		<sidebar-content [items]="items">
 			<button hlmBtn class="w-full mt-2" variant="ghost">
@@ -39,7 +41,9 @@
 			></sidebar-item>
 		</sidebar-content>
 
-		<sidebar-footer></sidebar-footer>
+		<sidebar-footer>
+			<nav-user></nav-user>
+		</sidebar-footer>
 	</app-sidebar>
 
 	<div class="w-full">

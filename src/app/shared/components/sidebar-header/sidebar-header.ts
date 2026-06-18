@@ -1,13 +1,9 @@
-import { Component, input } from '@angular/core'
-import { NgIcon } from '@ng-icons/core'
+import { Component } from '@angular/core'
 
 @Component({
 	selector: 'sidebar-header',
-	imports: [NgIcon],
+	imports: [],
 	templateUrl: './sidebar-header.html',
 	styles: ``,
 })
-export class SidebarHeader {
-	readonly icon = input<string>('')
-	readonly title = input<string>('')
-}
+export class SidebarHeader {}

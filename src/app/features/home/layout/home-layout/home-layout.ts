@@ -1,3 +1,5 @@
+import { NavHeader } from '@/shared/components/nav-header/nav-header'
+import { NavUser } from '@/shared/components/nav-user/nav-user'
 import { SidebarContent } from '@/shared/components/sidebar-content/sidebar-content'
 import { SidebarFooter } from '@/shared/components/sidebar-footer/sidebar-footer'
 import { SidebarHeader } from '@/shared/components/sidebar-header/sidebar-header'
@@ -29,6 +31,8 @@ import { HlmSelectImports } from '@spartan-ng/helm/select'
 		NgIcon,
 		HlmSelectImports,
 		SidebarItem,
+		NavUser,
+		NavHeader,
 		RouterLink,
 	],
 	providers: [

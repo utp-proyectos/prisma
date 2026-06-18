@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, computed, input } from '@angular/core'
 
 @Component({
 	selector: 'app-sidebar',
@@ -6,4 +6,8 @@ import { Component } from '@angular/core'
 	templateUrl: './sidebar.html',
 	styles: ``,
 })
-export class Sidebar {}
+export class Sidebar {
+	isExpanded = input<boolean>(true)
+
+	expandedClass = computed(() => (this.isExpanded() ? 'w-60' : 'w-12'))
+}

@@ -1,15 +1,13 @@
 <a
-	hlmItem
 	[routerLink]="to()"
-	size="xs"
 	[class]="disabledClass()"
+	[class]="expandedClass()"
+	class="p-2 h-8 flex gap-2 items-center rounded-md hover:bg-muted cursor-pointer"
 	routerLinkActive="text-primary-foreground bg-primary hover:bg-primary!"
 	[routerLinkActiveOptions]="{ exact: true }"
 >
-	<hlm-item-media variant="icon">
-		<ng-icon [name]="icon()" class="text-[16px]" />
-	</hlm-item-media>
-	<hlm-item-content>
-		<hlm-item-title>{{ title() }}</hlm-item-title>
-	</hlm-item-content>
+	<ng-icon [name]="icon()" class="text-[16px]" />
+	@if (isExpanded()) {
+		<span class="text-sm">{{ title() }}</span>
+	}
 </a>

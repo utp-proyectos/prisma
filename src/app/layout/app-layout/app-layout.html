@@ -1,0 +1,22 @@
+<div class="relative p-5 flex h-dvh gap-5">
+	<app-sidebar [isExpanded]="isExpanded()">
+		<sidebar-header>
+			<nav-header
+				icon="lucideTriangle"
+				title="Prisma"
+				[expand]="true"
+				[(isExpanded)]="isExpanded"
+			></nav-header>
+		</sidebar-header>
+
+		<sidebar-content [items]="items" [isExpanded]="isExpanded()"> </sidebar-content>
+
+		<sidebar-footer>
+			<nav-user [isExpanded]="isExpanded()"></nav-user>
+		</sidebar-footer>
+	</app-sidebar>
+
+	<div class="w-full">
+		<router-outlet></router-outlet>
+	</div>
+</div>

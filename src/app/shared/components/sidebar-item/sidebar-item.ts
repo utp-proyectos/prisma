@@ -20,9 +20,12 @@ export class SidebarItem {
 	readonly title = input.required<string>()
 	readonly to = input<string>('')
 	readonly disabled = input<boolean>(false)
+	readonly isExpanded = input<boolean>(true)
 
 	protected disabledClass = computed(() => ({
 		'pointer-events-none': this.disabled(),
 		'opacity-50': this.disabled(),
 	}))
+
+	protected expandedClass = computed(() => (this.isExpanded() ? 'w-full' : 'w-8'))
 }

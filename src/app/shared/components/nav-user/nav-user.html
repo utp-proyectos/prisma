@@ -1,0 +1,36 @@
+<button
+	hlmBtn
+	size="lg"
+	[hlmDropdownMenuTrigger]="menu"
+	side="right"
+	class="gap-2 p-2 h-12 w-full hover:bg-muted!"
+	variant="ghost"
+>
+	<hlm-avatar>
+		<img src="/shadcn.jpg" alt="test" hlmAvatarImage class="rounded-md" />
+		<span class="rounded-lg bg-[#FD005B] text-white" hlmAvatarFallback>RG</span>
+	</hlm-avatar>
+	@if (isExpanded()) {
+		<div class="grid flex-1 text-left text-sm leading-tight">
+			<span class="truncate font-medium">Jhon Doe</span>
+			<span class="truncate text-xs">m.example.com</span>
+		</div>
+		<ng-icon name="lucideChevronsUpDown" class="ml-auto text-base" />
+	}
+</button>
+
+<ng-template #menu>
+	<hlm-dropdown-menu class="min-w-56 rounded-lg">
+		<hlm-dropdown-menu-group>
+			<button hlmDropdownMenuItem>
+				<ng-icon name="lucideUser" />
+				Perfil
+			</button>
+		</hlm-dropdown-menu-group>
+		<hlm-dropdown-menu-separator />
+		<button hlmDropdownMenuItem variant="destructive">
+			<ng-icon name="lucideLogOut" />
+			Log out
+		</button>
+	</hlm-dropdown-menu>
+</ng-template>

@@ -1,0 +1,22 @@
+<div class="flex p-2 gap-2 items-center" [class.flex-col-reverse]="!isExpanded()">
+	<div class="bg-white rounded-lg size-8 flex items-center justify-center">
+		<ng-icon class="text-black text-sm" [name]="icon()"></ng-icon>
+	</div>
+	@if (isExpanded()) {
+		<p class="font-medium text-sm flex-1">{{ title() }}</p>
+	}
+	@if (expand()) {
+		<button
+			hlmBtn
+			size="icon"
+			variant="ghost"
+			class="rounded-full"
+			(click)="isExpanded.set(!isExpanded())"
+		>
+			<ng-icon
+				class="text-[16px]"
+				[name]="isExpanded() ? 'lucideChevronLeft' : 'lucideChevronRight'"
+			></ng-icon>
+		</button>
+	}
+</div>
