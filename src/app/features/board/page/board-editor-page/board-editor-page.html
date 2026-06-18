@@ -1,1 +1,129 @@
-<h1>Board Editor komba</h1>
+<div class="flex flex-col h-screen w-full bg-zinc-950 text-white p-2 select-none">
+	<header class="flex items-center justify-between w-full h-10 px-2 mb-2">
+		<button hlmBtn size="icon">
+			<ng-icon name="lucideArrowLeft" />
+		</button>
+
+		<hlm-avatar-group
+			class="grayscale bg-zinc-900/50 px-3 py-1.5 rounded-full border border-zinc-800"
+		>
+			<hlm-avatar>
+				<img hlmAvatarImage src="/assets/avatar.png" alt="spartan logo" />
+				<span hlmAvatarFallback>RG</span>
+				<hlm-avatar-badge class="bg-primary" />
+			</hlm-avatar>
+			<hlm-avatar>
+				<img hlmAvatarImage src="/assets/avatar.png" alt="spartan logo" />
+				<span hlmAvatarFallback>RG</span>
+				<hlm-avatar-badge class="bg-primary" />
+			</hlm-avatar>
+			<hlm-avatar>
+				<img hlmAvatarImage src="/assets/avatar.png" alt="spartan logo" />
+				<span hlmAvatarFallback>RG</span>
+				<hlm-avatar-badge class="text-primary" />
+			</hlm-avatar>
+		</hlm-avatar-group>
+
+		<button hlmBtn size="icon" variant="outline" (click)="openSheet()">
+			<ng-icon name="lucidePanelRight " />
+		</button>
+	</header>
+
+	<main
+		class="relative flex-1 w-full min-h-0 bg-black rounded-2xl border border-zinc-900 overflow-hidden flex flex-col items-center"
+	>
+		<div
+			class="absolute top-3 z-10 flex items-center gap-2 bg-zinc-900/90 backdrop-blur px-3 py-1 rounded-full border border-zinc-800/80 shadow-2xl"
+		>
+			<button
+				hlmBtn
+				size="icon"
+				variant="ghost"
+				class="rounded-full w-9 h-9"
+				[class.bg-secondary]="activeTool() === 'HAND'"
+				(click)="setTool('HAND')"
+			>
+				<ng-icon name="lucideHand" />
+			</button>
+			<button
+				hlmBtn
+				size="icon"
+				variant="ghost"
+				class="rounded-full w-9 h-9"
+				[class.bg-secondary]="activeTool() === 'SELECT'"
+				(click)="setTool('SELECT')"
+			>
+				<ng-icon name="lucideMousePointer" />
+			</button>
+			<button
+				hlmBtn
+				size="icon"
+				variant="ghost"
+				class="rounded-full w-9 h-9"
+				[class.bg-secondary]="activeTool() === 'RECT'"
+				(click)="setTool('RECT')"
+			>
+				<ng-icon name="lucideSquare" />
+			</button>
+			<button
+				hlmBtn
+				size="icon"
+				variant="ghost"
+				class="rounded-full w-9 h-9"
+				(click)="setTool('CIRCLE')"
+			>
+				<ng-icon name="lucideCircle" />
+			</button>
+			<button
+				hlmBtn
+				size="icon"
+				variant="ghost"
+				class="rounded-full w-9 h-9"
+				[class.bg-secondary]="activeTool() === 'PENCIL'"
+				(click)="setTool('PENCIL')"
+			>
+				<ng-icon name="lucidePencil" />
+			</button>
+			<button
+				hlmBtn
+				size="icon"
+				variant="ghost"
+				class="rounded-full w-9 h-9"
+				[class.bg-secondary]="activeTool() === 'TEXT'"
+				(click)="setTool('TEXT')"
+			>
+				<ng-icon name="lucideType" />
+			</button>
+		</div>
+		<app-canvas-board [activeTool]="activeTool()" />
+	</main>
+
+	<footer class="flex items-center gap-2 w-full h-8 px-2 mt-2">
+		<div hlmButtonGroup>
+			<button hlmBtn>Button</button>
+			<hlm-button-group-separator />
+			<button hlmBtn size="icon" variant="secondary">
+				<ng-icon name="lucidePlus" />
+			</button>
+		</div>
+	</footer>
+
+	<hlm-sheet side="right">
+		<hlm-sheet-content *hlmSheetPortal="let ctx">
+			<hlm-sheet-header>
+				<h3 hlmSheetTitle>Edit Profile</h3>
+				<p hlmSheetDescription>Make changes to your profile here. Click save when you're done.</p>
+			</hlm-sheet-header>
+			<hlm-field-group class="px-4 mt-4">
+				<hlm-field>
+					<label hlmFieldLabel for="name">Name</label>
+					<input hlmInput id="name" value="Pedro Duarte" />
+				</hlm-field>
+				<hlm-field class="mt-3">
+					<label hlmFieldLabel for="username">Username</label>
+					<input hlmInput id="username" value="@peduarte" />
+				</hlm-field>
+			</hlm-field-group>
+		</hlm-sheet-content>
+	</hlm-sheet>
+</div>

@@ -1,0 +1,52 @@
+<ko-stage
+	[config]="configstage"
+	(click)="handleStageClick($event.event)"
+	(mousedown)="handleMouseDown($event.event)"
+>
+	<ko-layer>
+		@for (shape of shapes(); track shape.name) {
+			@switch (shape.type) {
+				@case ('CIRCLE') {
+					<ko-circle
+						[config]="shape"
+						(click)="handleShapeClick($event.event)"
+						(dragstart)="handleDragStart()"
+						(dragend)="handleDragEnd($event.event)"
+						(transformend)="handleTransformEnd($event.event)"
+					/>
+				}
+				@case ('RECT') {
+					<ko-rect
+						[config]="shape"
+						(click)="handleShapeClick($event.event)"
+						(dragstart)="handleDragStart()"
+						(dragend)="handleDragEnd($event.event)"
+						(transformend)="handleTransformEnd($event.event)"
+					/>
+				}
+				@case ('TEXT') {
+					<ko-text
+						[config]="shape"
+						(click)="handleShapeClick($event)"
+						(dblclick)="handleTextDblClick($event, shape.name)"
+						(dragend)="handleDragEnd($event)"
+						(transformend)="handleTransformEnd($event)"
+					/>
+				}
+			}
+		}
+
+		@if (previewShape(); as preview) {
+			@switch (preview.type) {
+				@case ('CIRCLE') {
+					<ko-circle [config]="preview" />
+				}
+				@case ('RECT') {
+					<ko-rect [config]="preview" />
+				}
+			}
+		}
+
+		<ko-transformer #transformer />
+	</ko-layer>
+</ko-stage>

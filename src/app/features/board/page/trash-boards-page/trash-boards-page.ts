@@ -5,10 +5,18 @@ import { HlmBadgeImports } from '@spartan-ng/helm/badge'
 import { HlmIconImports } from '@spartan-ng/helm/icon'
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
+import { HlmSeparatorImports } from '@spartan-ng/helm/separator'
 
 @Component({
 	selector: 'app-trash-boards-page',
-	imports: [HlmSelectImports, HlmInputGroupImports, NgIcon, HlmIconImports, HlmBadgeImports],
+	imports: [
+		HlmSelectImports,
+		HlmInputGroupImports,
+		NgIcon,
+		HlmIconImports,
+		HlmBadgeImports,
+		HlmSeparatorImports,
+	],
 	providers: [
 		provideIcons({
 			lucideSearch,
