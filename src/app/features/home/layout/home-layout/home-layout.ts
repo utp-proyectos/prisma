@@ -4,7 +4,7 @@ import { SidebarHeader } from '@/shared/components/sidebar-header/sidebar-header
 import { SidebarItem, SidebarItemProps } from '@/shared/components/sidebar-item/sidebar-item'
 import { Sidebar } from '@/shared/components/sidebar/sidebar'
 import { Component, computed, model, signal } from '@angular/core'
-import { RouterOutlet } from '@angular/router'
+import { RouterLink, RouterOutlet } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import {
 	lucideTriangle,
@@ -29,6 +29,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select'
 		NgIcon,
 		HlmSelectImports,
 		SidebarItem,
+		RouterLink,
 	],
 	providers: [
 		provideIcons({

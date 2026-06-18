@@ -1,9 +1,9 @@
 <div class="relative p-5 flex h-dvh gap-5">
 	<app-sidebar>
-		<sidebar-header sidebar-header title="Prisma" icon="lucideTriangle"></sidebar-header>
+		<sidebar-header title="Prisma" icon="lucideTriangle"></sidebar-header>
 
-		<sidebar-content sidebar-content [items]="items">
-			<button hlmBtn class="w-full mt-2">
+		<sidebar-content [items]="items">
+			<button hlmBtn class="w-full mt-2" variant="ghost">
 				<ng-icon name="lucidePlus"></ng-icon>
 				Crear equipo
 			</button>
@@ -21,9 +21,11 @@
 					<hlm-select-group>
 						<hlm-select-label>Equipos</hlm-select-label>
 						@for (team of teams; track team.value) {
-							<hlm-select-item [value]="team.value">
-								{{ team.label }}
-							</hlm-select-item>
+							<a routerLink="/team">
+								<hlm-select-item [value]="team.value">
+									{{ team.label }}
+								</hlm-select-item>
+							</a>
 						}
 					</hlm-select-group>
 				</hlm-select-content>
@@ -37,7 +39,7 @@
 			></sidebar-item>
 		</sidebar-content>
 
-		<sidebar-footer sidebar-footer></sidebar-footer>
+		<sidebar-footer></sidebar-footer>
 	</app-sidebar>
 
 	<div class="w-full">
