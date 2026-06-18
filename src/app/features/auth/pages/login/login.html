@@ -13,9 +13,9 @@
 		<input hlmInput id="password" type="password" placeholder="contraseña" />
 	</div>
 	<div hlmField>
-		<button hlmBtn type="submit">Iniciar Sesión</button>
+		<button hlmBtn type="submit" (click)="handleSubmit()">Iniciar Sesión</button>
 	</div>
-	<hlm-field-separator>O continuar con</hlm-field-separator>
+	<hlm-field-separator>o continuar con</hlm-field-separator>
 	<div hlmField>
 		<button hlmBtn variant="outline" type="button">
 			<ng-icon class="text-xl" name="remixGoogleFill" />

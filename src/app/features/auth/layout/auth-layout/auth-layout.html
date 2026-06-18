@@ -1,5 +1,8 @@
-<div class="grid place-items-center w-full min-h-dvh">
-	<div class="w-lg">
+<div class="grid place-items-center w-full min-h-dvh relative h-dvh overflow-hidden">
+	<div class="w-md">
 		<router-outlet></router-outlet>
 	</div>
+	<div
+		class="size-100 absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full pointer-events-none rounded-full bg-primary blur-[240px]"
+	></div>
 </div>
