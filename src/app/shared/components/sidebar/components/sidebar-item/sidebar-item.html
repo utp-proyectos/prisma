@@ -1,7 +1,6 @@
 <a
 	[routerLink]="to()"
-	[class]="disabledClass()"
-	[class]="expandedClass()"
+	[class]="sidebarItemClasses()"
 	class="p-2 h-8 flex gap-2 items-center rounded-md hover:bg-muted cursor-pointer"
 	routerLinkActive="text-primary-foreground bg-primary hover:bg-primary! font-medium"
 	[routerLinkActiveOptions]="{ exact: true }"

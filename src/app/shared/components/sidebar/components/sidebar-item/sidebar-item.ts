@@ -23,14 +23,13 @@ export class SidebarItem {
 	readonly title = input.required<string>()
 	readonly to = input<string>('')
 	readonly disabled = input<boolean>(false)
-	readonly isExpanded = input<boolean>(true)
 
-	protected disabledClass = computed(() => ({
+	protected sidebarItemClasses = computed(() => ({
 		'pointer-events-none': this.disabled(),
 		'opacity-50': this.disabled(),
+		'w-8': this.sidebarService.isCollapsed(),
+		'w-full': !this.sidebarService.isCollapsed(),
 	}))
-
-	protected expandedClass = computed(() => (this.sidebarService.isCollapsed() ? 'w-8' : 'w-full'))
 
 	isCollapsed = computed(() => this.sidebarService.isCollapsed())
 }
