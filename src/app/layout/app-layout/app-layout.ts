@@ -1,13 +1,16 @@
-import { NavHeader } from '@/shared/components/nav-header/nav-header'
-import { NavUser } from '@/shared/components/nav-user/nav-user'
-import { SidebarContent } from '@/shared/components/sidebar-content/sidebar-content'
-import { SidebarFooter } from '@/shared/components/sidebar-footer/sidebar-footer'
-import { SidebarHeader } from '@/shared/components/sidebar-header/sidebar-header'
-import { SidebarItemProps } from '@/shared/components/sidebar-item/sidebar-item'
-import { Sidebar } from '@/shared/components/sidebar/sidebar'
-import { Component, signal } from '@angular/core'
+import {
+	Sidebar,
+	SidebarHeader,
+	SidebarContent,
+	SidebarFooter,
+	NavUser,
+	NavHeader,
+	type SidebarItemProps,
+} from '@/shared/components/sidebar'
+
+import { Component } from '@angular/core'
 import { RouterOutlet } from '@angular/router'
-import { NgIcon, provideIcons } from '@ng-icons/core'
+import { provideIcons } from '@ng-icons/core'
 import {
 	lucideCalendar,
 	lucideMessageCircle,
@@ -62,6 +65,4 @@ export class AppLayout {
 			to: '/team/project/board',
 		},
 	]
-
-	isExpanded = signal<boolean>(true)
 }

@@ -1,13 +1,20 @@
-import { Component, computed, input } from '@angular/core'
+import { Component, computed, effect, inject, input, OnInit } from '@angular/core'
+import { SidebarService } from './sidebar.service'
 
 @Component({
 	selector: 'app-sidebar',
 	imports: [],
+	providers: [SidebarService],
 	templateUrl: './sidebar.html',
 	styles: ``,
 })
-export class Sidebar {
-	isExpanded = input<boolean>(true)
+export class Sidebar implements OnInit {
+	sidebarService = inject(SidebarService)
 
-	expandedClass = computed(() => (this.isExpanded() ? 'w-60' : 'w-12'))
+	canCollapse = input<boolean>(false)
+	expandedClass = computed(() => (this.sidebarService.isCollapsed() ? 'w-12' : 'w-60'))
+
+	ngOnInit() {
+		this.sidebarService.setCanCollpase(this.canCollapse())
+	}
 }

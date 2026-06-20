@@ -1,7 +1,8 @@
-import { Component, computed, input } from '@angular/core'
+import { Component, computed, inject, input } from '@angular/core'
 import { RouterLink, RouterLinkActive } from '@angular/router'
 import { NgIcon } from '@ng-icons/core'
 import { HlmItemImports } from '@spartan-ng/helm/item'
+import { SidebarService } from '../../sidebar.service'
 
 export interface SidebarItemProps {
 	icon: string
@@ -16,6 +17,8 @@ export interface SidebarItemProps {
 	styles: ``,
 })
 export class SidebarItem {
+	sidebarService = inject(SidebarService)
+
 	readonly icon = input<string>('')
 	readonly title = input.required<string>()
 	readonly to = input<string>('')
@@ -27,5 +30,7 @@ export class SidebarItem {
 		'opacity-50': this.disabled(),
 	}))
 
-	protected expandedClass = computed(() => (this.isExpanded() ? 'w-full' : 'w-8'))
+	protected expandedClass = computed(() => (this.sidebarService.isCollapsed() ? 'w-8' : 'w-full'))
+
+	isCollapsed = computed(() => this.sidebarService.isCollapsed())
 }

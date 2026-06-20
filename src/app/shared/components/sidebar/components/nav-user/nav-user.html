@@ -10,7 +10,7 @@
 		<img src="/shadcn.jpg" alt="test" hlmAvatarImage class="rounded-md" />
 		<span class="rounded-lg bg-[#FD005B] text-white" hlmAvatarFallback>RG</span>
 	</hlm-avatar>
-	@if (isExpanded()) {
+	@if (!isCollapsed()) {
 		<div class="grid flex-1 text-left text-sm leading-tight">
 			<span class="truncate font-medium">Jhon Doe</span>
 			<span class="truncate text-xs">m.example.com</span>

@@ -3,11 +3,11 @@
 	[class]="disabledClass()"
 	[class]="expandedClass()"
 	class="p-2 h-8 flex gap-2 items-center rounded-md hover:bg-muted cursor-pointer"
-	routerLinkActive="text-primary-foreground bg-primary hover:bg-primary!"
+	routerLinkActive="text-primary-foreground bg-primary hover:bg-primary! font-medium"
 	[routerLinkActiveOptions]="{ exact: true }"
 >
 	<ng-icon [name]="icon()" class="text-[16px]" />
-	@if (isExpanded()) {
+	@if (!isCollapsed()) {
 		<span class="text-sm">{{ title() }}</span>
 	}
 </a>

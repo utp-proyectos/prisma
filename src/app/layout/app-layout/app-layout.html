@@ -1,18 +1,13 @@
 <div class="relative p-5 flex h-dvh gap-5">
-	<app-sidebar [isExpanded]="isExpanded()">
+	<app-sidebar [canCollapse]="true">
 		<sidebar-header>
-			<nav-header
-				icon="lucideTriangle"
-				title="Prisma"
-				[expand]="true"
-				[(isExpanded)]="isExpanded"
-			></nav-header>
+			<nav-header icon="lucideTriangle" title="Prisma"></nav-header>
 		</sidebar-header>
 
-		<sidebar-content [items]="items" [isExpanded]="isExpanded()"> </sidebar-content>
+		<sidebar-content [items]="items"> </sidebar-content>
 
 		<sidebar-footer>
-			<nav-user [isExpanded]="isExpanded()"></nav-user>
+			<nav-user></nav-user>
 		</sidebar-footer>
 	</app-sidebar>
 

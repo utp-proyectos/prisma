@@ -5,5 +5,6 @@ import { Component } from '@angular/core'
 	imports: [],
 	templateUrl: './sidebar-header.html',
 	styles: ``,
+	host: { class: 'p-2' },
 })
 export class SidebarHeader {}

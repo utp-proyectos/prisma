@@ -10,6 +10,4 @@ import { SidebarItem, SidebarItemProps } from '../sidebar-item/sidebar-item'
 })
 export class SidebarContent {
 	readonly items = input<SidebarItemProps[]>([])
-
-	readonly isExpanded = input<boolean>(true)
 }
