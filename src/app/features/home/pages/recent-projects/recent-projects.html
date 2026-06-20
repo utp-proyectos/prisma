@@ -1,1 +1,66 @@
-<p>recent-projects works!</p>
+@if (projects().length > 0) {
+	<div class="flex flex-col gap-5 h-full">
+		<div>
+			<h3 class="flex items-center gap-2 text-xl font-medium">
+				<ng-icon name="lucideClock"></ng-icon>
+				<span>Recientes</span>
+			</h3>
+			<hlm-separator />
+			<div class="flex items-center justify-between mt-4">
+				<hlm-input-group class="w-70">
+					<input hlmInputGroupInput type="search" placeholder="Nombre del proyecto" />
+					<hlm-input-group-addon align="inline-end">
+						<ng-icon name="lucideSearch" />
+					</hlm-input-group-addon>
+				</hlm-input-group>
+				<hlm-select [itemToString]="optionToString">
+					<hlm-select-trigger class="w-56">
+						<hlm-select-value placeholder="Ordernar por" />
+					</hlm-select-trigger>
+					<hlm-select-content *hlmSelectPortal>
+						<hlm-select-group>
+							@for (option of sortByOptions; track option.value) {
+								<hlm-select-item [value]="option.value">
+									{{ option.label }}
+								</hlm-select-item>
+							}
+						</hlm-select-group>
+					</hlm-select-content>
+				</hlm-select>
+			</div>
+		</div>
+
+		<div class="flex-1 overflow-auto custom-scroll pe-2">
+			<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
+				@for (project of projects(); track project.id) {
+					<hlm-card class="relative pt-0">
+						<div
+							class="bg-primary absolute inset-0 z-30 aspect-video opacity-50 mix-blend-color"
+						></div>
+						<img
+							src="https://images.unsplash.com/photo-1604076850742-4c7221f3101b?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+							alt="Event cover"
+							class="relative z-20 aspect-video w-full object-cover brightness-60 grayscale dark:brightness-40"
+						/>
+						<hlm-card-header>
+							<h3 hlmCardTitle>{{ project.title }}</h3>
+							<p hlmCardDescription>Editado hace 2 horas</p>
+						</hlm-card-header>
+					</hlm-card>
+				}
+			</div>
+		</div>
+	</div>
+} @else {
+	<div class="flex flex-col items-center justify-center gap-4 h-full">
+		<ng-icon name="lucideSearch" class="text-xl"></ng-icon>
+		<div class="flex flex-col items-center gap-1">
+			<h3 class="text-xl font-medium">Aun no hay proyectos</h3>
+			<p class="text-muted-foreground">Crea un Equipo para empezar</p>
+		</div>
+		<button hlmBtn>
+			<ng-icon name="lucidePlus"></ng-icon>
+			Crear equipo
+		</button>
+	</div>
+}

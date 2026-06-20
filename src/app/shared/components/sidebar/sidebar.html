@@ -1,4 +1,7 @@
-<div [class]="expandedClass()" class="flex flex-col bg-white/8 h-full rounded-[12px]">
+<div
+	[class]="expandedClass()"
+	class="sticky left-0 top-0 z-10 flex flex-col bg-white/8 h-full rounded-[12px]"
+>
 	<ng-content select="sidebar-header"></ng-content>
 	<ng-content select="sidebar-content"></ng-content>
 	<ng-content select="sidebar-footer"></ng-content>
