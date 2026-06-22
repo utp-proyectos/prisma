@@ -1,10 +1,259 @@
+<!-- Toolbar flotante -->
+<div
+	class="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 bg-zinc-900/90 backdrop-blur px-3 py-1 rounded-full border border-zinc-800/80 shadow-2xl"
+>
+	<button
+		hlmBtn
+		size="icon"
+		variant="ghost"
+		class="rounded-full w-9 h-9"
+		[class.bg-secondary]="board.activeTool() === 'HAND'"
+		(click)="board.setTool('HAND')"
+	>
+		<ng-icon name="lucideHand" />
+	</button>
+	<button
+		hlmBtn
+		size="icon"
+		variant="ghost"
+		class="rounded-full w-9 h-9"
+		[class.bg-secondary]="board.activeTool() === 'SELECT'"
+		(click)="board.setTool('SELECT')"
+	>
+		<ng-icon name="lucideMousePointer" />
+	</button>
+	<button
+		hlmBtn
+		size="icon"
+		variant="ghost"
+		class="rounded-full w-9 h-9"
+		[class.bg-secondary]="board.activeTool() === 'RECT'"
+		(click)="board.setTool('RECT')"
+	>
+		<ng-icon name="lucideSquare" />
+	</button>
+	<button
+		hlmBtn
+		size="icon"
+		variant="ghost"
+		class="rounded-full w-9 h-9"
+		[class.bg-secondary]="board.activeTool() === 'CIRCLE'"
+		(click)="board.setTool('CIRCLE')"
+	>
+		<ng-icon name="lucideCircle" />
+	</button>
+	<button
+		hlmBtn
+		size="icon"
+		variant="ghost"
+		class="rounded-full w-9 h-9"
+		[class.bg-secondary]="board.activeTool() === 'ARROW'"
+		(click)="board.setTool('ARROW')"
+	>
+		<ng-icon name="lucideArrowRight" />
+	</button>
+
+	<button
+		hlmBtn
+		size="icon"
+		variant="ghost"
+		class="rounded-full w-9 h-9"
+		[class.bg-secondary]="board.activeTool() === 'PENCIL'"
+		(click)="board.setTool('PENCIL')"
+	>
+		<ng-icon name="lucidePencil" />
+	</button>
+	<button
+		hlmBtn
+		size="icon"
+		variant="ghost"
+		class="rounded-full w-9 h-9"
+		[class.bg-secondary]="board.activeTool() === 'TEXT'"
+		(click)="board.setTool('TEXT')"
+	>
+		<ng-icon name="lucideType" />
+	</button>
+
+	<div class="w-px h-5 bg-zinc-700 mx-1"></div>
+
+	<div (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
+		<label
+			class="rounded-full w-9 h-9 flex items-center justify-center hover:bg-zinc-800 cursor-pointer relative"
+		>
+			<ng-icon name="lucidePalette" />
+			<input
+				type="color"
+				[value]="board.activeColor()"
+				(input)="onColorInput($event)"
+				(blur)="onColorChange($event)"
+				class="absolute opacity-0 w-0 h-0"
+			/>
+		</label>
+	</div>
+</div>
+<hlm-sheet side="right">
+	<hlm-sheet-content
+		*hlmSheetPortal="let ctx"
+		class="bg-[#121212] text-slate-200 border-l p-6 overflow-y-auto"
+	>
+		<hlm-sheet-header class="border-b border-slate-800 pb-4 mb-6">
+			<h3 hlmSheetTitle class="text-xl font-semibold text-white">Configuración del Mapa</h3>
+			<p hlmSheetDescription class="text-sm text-slate-400">
+				Personaliza el diseño, fuentes y exporta tu espacio de trabajo.
+			</p>
+		</hlm-sheet-header>
+
+		<div class="space-y-6">
+			<section>
+				<h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+					Figuras adicionales
+				</h4>
+				<div class="grid grid-cols-3 gap-3">
+					<button
+						hlmBtn
+						size="icon"
+						class="w-full h-16 flex flex-col items-center justify-center bg-[#1e1e1e] border border-slate-800 rounded-lg hover:bg-slate-800 transition-all text-slate-400"
+						(click)="board.setTool('START')"
+					>
+						<ng-icon name="lucideStar" class="text-xl" />
+						<span class="text-[10px] mt-2">Estrella</span>
+					</button>
+
+					<button
+						hlmBtn
+						size="icon"
+						class="w-full h-16 flex flex-col items-center justify-center bg-[#1e1e1e] border border-slate-800 rounded-lg hover:bg-slate-800 text-slate-400"
+						(click)="board.setTool('POLYGON')"
+					>
+						<ng-icon name="lucideHexagon" class="text-xl" />
+						<span class="text-[10px] mt-2">Polígono</span>
+					</button>
+
+					<button
+						hlmBtn
+						size="icon"
+						class="w-full h-16 flex flex-col items-center justify-center bg-[#1e1e1e] border border-slate-800 rounded-lg hover:bg-slate-800 text-slate-400"
+					>
+						<ng-icon name="lucideDonut" class="text-xl" />
+						<span class="text-[10px] mt-2">Aro</span>
+					</button>
+
+					<button
+						hlmBtn
+						size="icon"
+						(click)="board.activateBunnyMode()"
+						class="w-full h-16 flex flex-col items-center justify-center bg-[#1e1e1e] border border-slate-800 rounded-lg hover:bg-slate-800 text-slate-400"
+					>
+						<ng-icon name="lucideRabbit" class="text-xl" />
+						<span class="text-[10px] mt-2">Rabbit</span>
+					</button>
+				</div>
+			</section>
+
+			<hr class="border-slate-850" />
+
+			<section class="w-full">
+				<hlm-field class="block">
+					<!-- Label refinado: texto un poco más pequeño y sutil -->
+					<label
+						hlmFieldLabel
+						class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2"
+					>
+						Color de Fondo
+					</label>
+
+					<!-- Contenedor principal con mejor padding y alineación -->
+					<div
+						class="flex items-center gap-3 p-2 bg-[#121212] border border-slate-800/80 rounded-xl"
+					>
+						<div
+							(mousedown)="$event.stopPropagation()"
+							(click)="$event.stopPropagation()"
+							class="flex items-center gap-3 w-full"
+						>
+							<label
+								class="group relative w-9 h-9 flex items-center justify-center rounded-lg border border-slate-700/50 cursor-pointer overflow-hidden shadow-inner transition-all hover:scale-105 active:scale-95"
+								[style.backgroundColor]="board.backgroundColor()"
+							>
+								<ng-icon
+									name="lucidePaintBucket"
+									class="text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)] opacity-80 group-hover:opacity-100 transition-opacity"
+								/>
+
+								<input
+									type="color"
+									[value]="board.backgroundColor()"
+									(change)="onBackgroundColorChange($event)"
+									class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+								/>
+							</label>
+
+							<div
+								class="flex-1 flex items-center justify-between bg-zinc-900/60 border border-slate-800 rounded-md px-2.5 py-1"
+							>
+								<span class="text-xs font-mono text-slate-300 uppercase select-all">
+									{{ board.backgroundColor() }}
+								</span>
+								<span class="text-[10px] text-slate-500 font-medium">HEX</span>
+							</div>
+						</div>
+					</div>
+				</hlm-field>
+			</section>
+			<hr class="border-slate-850" />
+
+			<section>
+				<hlm-field>
+					<label
+						hlmFieldLabel
+						class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2"
+						>Fuente General</label
+					>
+					<hlm-select>
+						<hlm-select-trigger class="w-full">
+							<hlm-select-value placeholder="arial" />
+						</hlm-select-trigger>
+						<hlm-select-content *hlmSelectPortal>
+							<hlm-select-group>
+								<hlm-select-item value="arial">Arial</hlm-select-item>
+								<hlm-select-item value="roboto">Roboto</hlm-select-item>
+							</hlm-select-group>
+						</hlm-select-content>
+					</hlm-select>
+				</hlm-field>
+			</section>
+
+			<hr class="border-slate-850" />
+
+			<section class="pt-2">
+				<h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+					Exportar Lienzo
+				</h4>
+				<div class="space-y-2">
+					<button
+						hlmBtn
+						size="icon"
+						class="w-full bg-primary hover:bg-[#b8e600] text-black font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md"
+					>
+						<ng-icon name="lucideDownload" class="text-xl" />
+						Exportar como PDF (.PDF)
+					</button>
+
+					<p class="text-[11px] text-slate-500 text-center">
+						La imagen se descargará en alta resolución con el fondo seleccionado.
+					</p>
+				</div>
+			</section>
+		</div>
+	</hlm-sheet-content>
+</hlm-sheet>
 <ko-stage
 	[config]="configstage"
 	(click)="handleStageClick($event.event)"
 	(mousedown)="handleMouseDown($event.event)"
 >
 	<ko-layer>
-		@for (shape of shapes(); track shape.name) {
+		@for (shape of board.shapes(); track shape.name) {
 			@switch (shape.type) {
 				@case ('CIRCLE') {
 					<ko-circle
@@ -33,6 +282,33 @@
 						(transformend)="handleTransformEnd($event)"
 					/>
 				}
+				@case ('ARROW') {
+					<ko-arrow
+						[config]="shape"
+						(click)="handleShapeClick($event)"
+						(dragstart)="handleDragStart()"
+						(dragend)="handleDragEnd($event)"
+						(transformend)="handleTransformEnd($event)"
+					/>
+				}
+				@case ('START') {
+					<ko-star
+						[config]="shape"
+						(click)="handleShapeClick($event)"
+						(dragstart)="handleDragStart()"
+						(dragend)="handleDragEnd($event)"
+						(transformend)="handleTransformEnd($event)"
+					/>
+				}
+				@case ('POLYGON') {
+					<ko-regular-polygon
+						[config]="shape"
+						(click)="handleShapeClick($event)"
+						(dragstart)="handleDragStart()"
+						(dragend)="handleDragEnd($event)"
+						(transformend)="handleTransformEnd($event)"
+					/>
+				}
 			}
 		}
 
@@ -43,6 +319,15 @@
 				}
 				@case ('RECT') {
 					<ko-rect [config]="preview" />
+				}
+				@case ('ARROW') {
+					<ko-arrow [config]="preview" />
+				}
+				@case ('START') {
+					<ko-star [config]="preview" />
+				}
+				@case ('POLYGON') {
+					<ko-regular-polygon [config]="preview" />
 				}
 			}
 		}
