@@ -1,9 +1,14 @@
-import { SidebarContent } from '@/shared/components/sidebar-content/sidebar-content'
-import { SidebarFooter } from '@/shared/components/sidebar-footer/sidebar-footer'
-import { SidebarHeader } from '@/shared/components/sidebar-header/sidebar-header'
-import { SidebarItem, SidebarItemProps } from '@/shared/components/sidebar-item/sidebar-item'
-import { Sidebar } from '@/shared/components/sidebar/sidebar'
-import { Component, computed, model, signal } from '@angular/core'
+import {
+	Sidebar,
+	SidebarHeader,
+	SidebarContent,
+	SidebarFooter,
+	SidebarItem,
+	NavUser,
+	NavHeader,
+	type SidebarItemProps,
+} from '@/shared/components/sidebar'
+import { Component, computed, inject, signal } from '@angular/core'
 import { RouterLink, RouterOutlet } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import {
@@ -14,8 +19,14 @@ import {
 	lucideChevronDown,
 	lucideLayoutGrid,
 } from '@ng-icons/lucide'
+import { BrnDialogState } from '@spartan-ng/brain/dialog'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
+import { HlmDialogImports } from '@spartan-ng/helm/dialog'
+import { HlmFieldImports } from '@spartan-ng/helm/field'
+import { HlmInputImports } from '@spartan-ng/helm/input'
+import { HlmInputGroupImports } from '@spartan-ng/helm/input-group'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
+import { CreateTeamModalState } from '../../service/create-team-modal-state'
 
 @Component({
 	selector: 'app-home-layout',
@@ -29,9 +40,16 @@ import { HlmSelectImports } from '@spartan-ng/helm/select'
 		NgIcon,
 		HlmSelectImports,
 		SidebarItem,
+		NavUser,
+		NavHeader,
 		RouterLink,
+		HlmFieldImports,
+		HlmInputImports,
+		HlmInputGroupImports,
+		HlmDialogImports,
 	],
 	providers: [
+		CreateTeamModalState,
 		provideIcons({
 			lucideTriangle,
 			lucideClock,
@@ -46,6 +64,8 @@ import { HlmSelectImports } from '@spartan-ng/helm/select'
 })
 export class HomeLayout {
 	protected teamId = signal<string | null>(null)
+	createTeamModalState = inject(CreateTeamModalState)
+	createTeamModal = computed(() => this.createTeamModalState.createTeamModal())
 
 	protected readonly items: SidebarItemProps[] = [
 		{

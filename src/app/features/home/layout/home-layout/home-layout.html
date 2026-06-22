@@ -1,9 +1,11 @@
-<div class="relative p-5 flex h-dvh gap-5">
+<div class="relative p-5 flex h-dvh gap-5 overflow-x-hidden">
 	<app-sidebar>
-		<sidebar-header title="Prisma" icon="lucideTriangle"></sidebar-header>
+		<sidebar-header>
+			<nav-header icon="lucideTriangle" title="Prisma"></nav-header>
+		</sidebar-header>
 
 		<sidebar-content [items]="items">
-			<button hlmBtn class="w-full mt-2" variant="ghost">
+			<button hlmBtn class="w-full mt-2" variant="ghost" (click)="createTeamModalState.open()">
 				<ng-icon name="lucidePlus"></ng-icon>
 				Crear equipo
 			</button>
@@ -28,6 +30,19 @@
 							</a>
 						}
 					</hlm-select-group>
+					<hlm-select-separator />
+					<hlm-select-group>
+						<button
+							hlmBtn
+							(click)="createTeamModalState.open()"
+							variant="ghost"
+							size="sm"
+							class="w-full hover:bg-muted!"
+						>
+							<ng-icon name="lucidePlus"></ng-icon>
+							Nuevo Equipo
+						</button>
+					</hlm-select-group>
 				</hlm-select-content>
 			</hlm-select>
 
@@ -39,10 +54,31 @@
 			></sidebar-item>
 		</sidebar-content>
 
-		<sidebar-footer></sidebar-footer>
+		<sidebar-footer>
+			<nav-user></nav-user>
+		</sidebar-footer>
 	</app-sidebar>
 
 	<div class="w-full">
 		<router-outlet></router-outlet>
 	</div>
 </div>
+
+<hlm-dialog [state]="createTeamModal()" (closed)="createTeamModalState.close()">
+	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
+		<hlm-dialog-header>
+			<h3 hlmDialogTitle>Crear equipo</h3>
+			<p hlmDialogDescription>Elije un nombre para tu equipo</p>
+		</hlm-dialog-header>
+		<hlm-field-group>
+			<hlm-field>
+				<label hlmFieldLabel for="name">Nombre</label>
+				<input hlmInput id="name" placeholder="Software Team" />
+			</hlm-field>
+		</hlm-field-group>
+		<hlm-dialog-footer>
+			<button hlmBtn variant="outline" hlmDialogClose>Cancel</button>
+			<button hlmBtn type="submit">Crear</button>
+		</hlm-dialog-footer>
+	</hlm-dialog-content>
+</hlm-dialog>

@@ -1,0 +1,17 @@
+<div class="relative p-5 flex h-dvh gap-5 overflow-hidden">
+	<app-sidebar [canCollapse]="true">
+		<sidebar-header>
+			<nav-header icon="lucideTriangle" title="Prisma"></nav-header>
+		</sidebar-header>
+
+		<sidebar-content [items]="items"> </sidebar-content>
+
+		<sidebar-footer>
+			<nav-user></nav-user>
+		</sidebar-footer>
+	</app-sidebar>
+
+	<div class="w-full">
+		<router-outlet></router-outlet>
+	</div>
+</div>

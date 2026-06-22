@@ -33,12 +33,18 @@
 			"@spartan-ng/helm/sheet": ["./libs/ui/sheet/src/index.ts"],
 			"@spartan-ng/helm/avatar": ["./libs/ui/avatar/src/index.ts"],
 			"@spartan-ng/helm/button-group": ["./libs/ui/button-group/src/index.ts"],
-			"@spartan-ng/helm/item": ["./libs/ui/item/src/index.ts"]
+			"@spartan-ng/helm/item": ["./libs/ui/item/src/index.ts"],
+			"@spartan-ng/helm/typography": ["./libs/ui/typography/src/index.ts"],
+			"@spartan-ng/helm/empty": ["./libs/ui/empty/src/index.ts"],
+			"@spartan-ng/helm/tabs": ["./libs/ui/tabs/src/index.ts"],
+			"@spartan-ng/helm/table": ["./libs/ui/table/src/index.ts"],
+			"@spartan-ng/helm/switch": ["./libs/ui/switch/src/index.ts"]
 		}
 	},
 	"angularCompilerOptions": {
 		"enableI18nLegacyMessageIdFormat": false,
 		"strictInjectionParameters": true,
+		"strictTemplates": false,
 		"strictInputAccessModifiers": true
 	},
 	"files": [],
