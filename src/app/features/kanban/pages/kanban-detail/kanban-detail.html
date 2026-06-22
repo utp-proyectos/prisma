@@ -1,0 +1,38 @@
+<div class="flex flex-col gap-5 h-full">
+	<div>
+		<h3 class="flex items-center gap-2 text-xl font-medium">
+			<ng-icon name="lucidePanelLeft"></ng-icon>
+			<span>Tablero 1</span>
+		</h3>
+
+		<hlm-separator />
+
+		<div class="flex w-full max-w-95 gap-1 mt-3 bg-zinc-900/60 p-1 rounded-lg border border-zinc-800/80">
+			<button hlmBtn variant="ghost" size="sm" (click)="changeTab('hitos')" [class.bg-primary]="activeTab() === 'hitos'"
+				[class.text-black]="activeTab() === 'hitos'"
+				class="flex-1 text-xs font-semibold rounded-md transition-all duration-300">
+				Hitos
+			</button>
+
+			<button hlmBtn variant="ghost" size="sm" (click)="changeTab('kanban')"
+				[class.bg-primary]="activeTab() === 'kanban'" [class.text-black]="activeTab() === 'kanban'"
+				class="flex-1 text-xs font-semibold rounded-md transition-all duration-300">
+				Kanban
+			</button>
+
+			<button hlmBtn variant="ghost" size="sm" (click)="changeTab('tablas')"
+				[class.bg-primary]="activeTab() === 'tablas'" [class.text-black]="activeTab() === 'tablas'"
+				class="flex-1 text-xs font-semibold rounded-md transition-all duration-300">
+				Tablas
+			</button>
+
+			<button hlmBtn variant="ghost" size="sm" (click)="changeTab('gantt')" [class.bg-primary]="activeTab() === 'gantt'"
+				[class.text-black]="activeTab() === 'gantt'"
+				class="flex-1 text-xs font-semibold rounded-md transition-all duration-300">
+				Gantt
+			</button>
+		</div>
+
+		<hlm-separator />
+
+	</div>
