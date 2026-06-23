@@ -1,5 +1,47 @@
-<div class="grid place-items-center w-full min-h-dvh">
-	<div class="w-lg">
+<div class="relative flex h-dvh gap-5 overflow-x-hidden">
+	<app-sidebar>
+		<sidebar-header>
+			<nav-header icon="lucideTriangle" title="Proyecto 1"></nav-header>
+		</sidebar-header>
+
+		<sidebar-content>
+			@if (!isTrash()) {
+				<button
+					hlmBtn
+					class="w-full mt-2 mb-4"
+					variant="default"
+					(click)="createBoardModalState.open()"
+				>
+					<ng-icon name="lucidePlus"></ng-icon>
+					Crear pizarra
+				</button>
+			}
+			<hlm-separator />
+
+			<div class="font-medium text-primary px-2 mt-4 mb-2 text-center">Espacios</div>
+
+			@for (sidebarBoardOption of SidebarBoardOptions(); track sidebarBoardOption.to) {
+				<div class="group relative flex items-center justify-between invisible-btn-container">
+					<sidebar-item
+						class="w-full"
+						[icon]="sidebarBoardOption.icon"
+						[title]="sidebarBoardOption.title"
+						[to]="sidebarBoardOption.to"
+					></sidebar-item>
+
+					<button
+						class="absolute right-2 opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-zinc-300 transition-opacity z-10"
+					>
+						<ng-icon name="lucideMoreHorizontal"></ng-icon>
+					</button>
+				</div>
+			}
+		</sidebar-content>
+	</app-sidebar>
+
+	<div class="w-full">
 		<router-outlet></router-outlet>
 	</div>
 </div>
+<!-- modal crear pizarra-->
+<app-board-create-dialog />
