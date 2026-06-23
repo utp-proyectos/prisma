@@ -1,9 +1,13 @@
-import { Component, signal } from '@angular/core'
+import { Component, computed, inject, signal } from '@angular/core'
 import { RouterOutlet } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideTriangle, lucidePlus, lucideMoreHorizontal, lucidePanelLeft } from '@ng-icons/lucide'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmFieldImports } from '@spartan-ng/helm/field'
+import { CreateKanbanModalState } from '../service/create-kanban-modal-state'
+import { HlmDialogImports } from '@spartan-ng/helm/dialog'
+import { HlmInputImports } from '@spartan-ng/helm/input'
+import { HlmSwitch } from '@spartan-ng/helm/switch'
 
 import {
 	Sidebar,
@@ -25,8 +29,12 @@ import {
 		HlmButtonImports,
 		HlmFieldImports,
 		NgIcon,
+		HlmDialogImports,
+		HlmInputImports,
+		HlmSwitch,
 	],
 	providers: [
+		CreateKanbanModalState,
 		provideIcons({
 			lucideTriangle,
 			lucidePanelLeft,
@@ -37,6 +45,11 @@ import {
 	templateUrl: './kanban-layout.html',
 })
 export class KanbanLayout {
+	createKanbanModalState = inject(CreateKanbanModalState)
+	createKanbanModal = computed(() => this.createKanbanModalState.createKanbanModal())
+
+	protected readonly privateKanban = signal(false)
+
 	protected readonly kanbanItems = signal<SidebarItemProps[]>([
 		{
 			icon: 'lucidePanelLeft',

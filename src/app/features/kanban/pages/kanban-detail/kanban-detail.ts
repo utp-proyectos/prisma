@@ -28,6 +28,7 @@ import { HlmSwitch } from '@spartan-ng/helm/switch'
 import { HlmLabel } from '@spartan-ng/helm/label'
 import { HlmScrollAreaImports } from '@spartan-ng/helm/scroll-area'
 import { NgScrollbarModule } from 'ngx-scrollbar'
+import { HlmFieldImports } from '@spartan-ng/helm/field'
 
 import {
 	CdkDrag,
@@ -86,6 +87,7 @@ export interface KanbanColumn {
 		HlmScrollAreaImports,
 		NgScrollbarModule,
 		TaskCardComponent,
+		HlmFieldImports,
 	],
 	providers: [
 		provideIcons({
@@ -105,7 +107,25 @@ export interface KanbanColumn {
 		}),
 	],
 	templateUrl: './kanban-detail.html',
-	styles: ``,
+	styles: `
+		.cdk-drop-list-dragging .cdk-drag {
+			transition: transform 250ms ease;
+		}
+
+		.cdk-drag-animating {
+			transition: transform 250ms ease;
+		}
+		.cdk-drag-preview {
+			border-radius: 12px;
+			box-shadow:
+				0 10px 15px -3px rgb(0 0 0 / 0.3),
+				0 4px 6px -4px rgb(0 0 0 / 0.3);
+		}
+
+		.cdk-drag-placeholder {
+			opacity: 0.25;
+		}
+	`,
 })
 export class KanbanDetail {
 	protected readonly activeTab = signal<string>('hitos')

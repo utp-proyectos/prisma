@@ -171,20 +171,16 @@
 
 			<div hlmTabsContent="kanban" class="animate-in fade-in duration-200 flex flex-col gap-4 w-full min-w-0">
 
-				<div class="flex justify-center items-center w-full mt-3 mb-2">
-					<label hlmLabel
-						class="flex items-center gap-3 bg-primary-foreground border border-zinc-800/80 px-4 py-2 rounded-lg">
-						<div class="flex flex-col text-left">
-							<span class="font-medium text-zinc-200">
-								Ver mis tareas
-							</span>
-							<span class="mt-1 text-zinc-500">
+				<div class="flex justify-center w-full mt-2 mb-2">
+					<hlm-field orientation="horizontal" class="flex items-center gap-3 border px-3 py-1.5 rounded-lg w-fit">
+						<hlm-field-content>
+							<label hlmFieldLabel for="two-factor">Ver mis tareas</label>
+							<hlm-field-description>
 								Solo podrás ver tus tareas
-							</span>
-						</div>
-
+							</hlm-field-description>
+						</hlm-field-content>
 						<hlm-switch class="ml-2" [checked]="onlyMyTasks()" (checkedChange)="onlyMyTasks.set($event)" />
-					</label>
+					</hlm-field>
 				</div>
 
 				<ng-scrollbar hlm appearance="compact" class="w-full min-w-0">
