@@ -19,16 +19,15 @@ export const routes: Routes = [
 				path: 'board',
 				loadChildren: () => import('./features/board/board.routes').then((m) => m.boardRoutes),
 			},
+			{
+				path: 'kanban',
+				loadChildren: () => import('./features/kanban/kanban.routes').then((m) => m.kanbanRoutes),
+			},
 		],
 	},
 	{
 		path: 'auth',
 		loadChildren: () => import('./features/auth/auth.routes').then((m) => m.authRoutes),
-	},
-
-	{
-		path: 'kanban',
-		loadChildren: () => import('./features/kanban/kanban.routes').then((m) => m.kanbanRoutes),
 	},
 	{
 		path: 'board/:boardId',

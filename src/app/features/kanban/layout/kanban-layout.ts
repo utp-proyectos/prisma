@@ -9,7 +9,6 @@ import {
 	Sidebar,
 	SidebarHeader,
 	SidebarContent,
-	SidebarItem,
 	NavHeader,
 	type SidebarItemProps,
 } from '@/shared/components/sidebar'
@@ -22,7 +21,6 @@ import {
 		Sidebar,
 		SidebarHeader,
 		SidebarContent,
-		SidebarItem,
 		NavHeader,
 		HlmButtonImports,
 		HlmFieldImports,
@@ -39,16 +37,16 @@ import {
 	templateUrl: './kanban-layout.html',
 })
 export class KanbanLayout {
-	protected readonly tusTableros = signal<SidebarItemProps[]>([
+	protected readonly kanbanItems = signal<SidebarItemProps[]>([
 		{
 			icon: 'lucidePanelLeft',
 			title: 'Tablero general',
-			to: '/kanban/general',
+			to: '/team/project/kanban/general',
 		},
 		{
 			icon: 'lucidePanelLeft',
 			title: 'Tablero 1',
-			to: '/kanban/tablero-1',
+			to: '/team/project/kanban/tablero-1',
 		},
 	])
 

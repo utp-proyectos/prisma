@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-5 h-full">
+<div class="flex flex-col gap-5 h-full min-w-0">
 	<div>
 		<h3 class="flex items-center gap-2 text-xl font-medium">
 			<ng-icon name="lucidePanelLeft"></ng-icon>
@@ -7,7 +7,7 @@
 
 		<hlm-separator />
 
-		<hlm-tabs [tab]="activeTab()" (tabActivated)="activeTab.set($event)" class="w-full mt-4 mb-1">
+		<hlm-tabs [tab]="activeTab()" (tabActivated)="activeTab.set($event)" class="w-full mt-3">
 			<hlm-tabs-list class="w-full max-w-md mb-4 mx-auto">
 				<button hlmTabsTrigger="hitos">Hitos</button>
 				<button hlmTabsTrigger="kanban">Kanban</button>
@@ -169,9 +169,9 @@
 
 			</div>
 
-			<div hlmTabsContent="kanban" class="animate-in fade-in duration-200 flex flex-col gap-4 w-full">
+			<div hlmTabsContent="kanban" class="animate-in fade-in duration-200 flex flex-col gap-4 w-full min-w-0">
 
-				<div class="flex justify-center items-center w-full mb-2">
+				<div class="flex justify-center items-center w-full mt-3 mb-2">
 					<label hlmLabel
 						class="flex items-center gap-3 bg-primary-foreground border border-zinc-800/80 px-4 py-2 rounded-lg">
 						<div class="flex flex-col text-left">
@@ -187,147 +187,93 @@
 					</label>
 				</div>
 
-				<div cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="dropColumn($event)"
-					class="flex items-start gap-4 w-full overflow-x-auto pb-4">
+				<ng-scrollbar hlm appearance="compact" class="w-full min-w-0">
+					<div scrollViewport cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="dropColumn($event)"
+						class="flex items-start gap-4 pb-4 min-w-max">
 
-					@for(column of movableColumns(); track column.id) {
+						@for(column of movableColumns(); track column.id) {
 
-					<div cdkDrag
-						class="flex flex-col gap-3 bg-primary-foreground border border-border rounded-xl p-3 w-72 shrink-0">
+						<div cdkDrag
+							class="flex flex-col gap-3 bg-primary-foreground border border-border rounded-xl p-3 w-72 shrink-0 max-h-[70vh]">
 
-						<span class="font-semibold text-muted-foreground px-1">
-							{{ column.name }}
-						</span>
+							<span class="font-semibold text-muted-foreground px-1">
+								{{ column.name }}
+							</span>
 
-						<div cdkDropList [id]="column.id" [cdkDropListData]="column.tasks"
-							[cdkDropListConnectedTo]="connectedLists()" (cdkDropListDropped)="dropTask($event)"
-							class="flex flex-col gap-3 min-h-32">
+							<ng-scrollbar hlm appearance="compact" class="flex-1">
+								<div scrollViewport cdkDropList [id]="column.id" [cdkDropListData]="column.tasks"
+									[cdkDropListConnectedTo]="connectedLists()" (cdkDropListDropped)="dropTask($event)"
+									class="flex flex-col gap-3">
 
-							@for(task of column.tasks; track task.id) {
+									@if(column.tasks.length === 0) {
+									<div
+										class="border border-dashed border-border rounded-lg p-4 text-center text-muted-foreground text-sm">
+										Arrastra una tarea aquí
+									</div>
+									}
 
-							<div cdkDrag hlmCard class="bg-secondary border-zinc-800 p-3 rounded-lg">
+									@for(task of column.tasks; track task.id) {
 
-								<div class="flex items-center justify-between">
-									<span class="font-medium text-primary">
-										{{ task.name }}
-									</span>
+									<div cdkDrag>
+										<app-task-card [task]="task" />
+									</div>
+									}
 
-									<button hlmBtn variant="ghost" size="icon-sm" class="h-6 w-6 text-zinc-500">
-										<ng-icon name="lucideMoreHorizontal" />
-									</button>
 								</div>
+							</ng-scrollbar>
 
-								<div class="flex flex-col gap-2 text-muted-foreground">
-									<div class="flex items-center gap-3">
-										<ng-icon name="lucideUsers" />
-										<span>
-											{{ task.assignedTo }}
-										</span>
-									</div>
 
-									<div class="flex items-center gap-3">
-										<ng-icon name="lucideCalendar" />
-										<span>
-											{{ task.dueDate || '-' }}
-										</span>
-									</div>
-
-									<div class="flex items-center gap-3">
-										<ng-icon name="lucideFlag" />
-										<span [class.text-red-500]="task.priority === 'Alta'"
-											[class.text-yellow-500]="task.priority === 'Media'"
-											[class.text-green-500]="task.priority === 'Baja'">
-											{{ task.priority }}
-										</span>
-									</div>
-								</div>
-
-							</div>
-							}
+							<button hlmBtn class="w-full mt-auto">
+								<ng-icon name="lucidePlus" />
+								Crear tarea
+							</button>
 
 						</div>
 
-						<button hlmBtn class="w-full">
-							<ng-icon name="lucidePlus" />
-							Crear tarea
-						</button>
+						}
 
-					</div>
+						<div class="w-72 shrink-0">
 
-					}
-
-					<div class="w-56 shrink-0">
-
-						<button hlmBtn class="w-full">
-							<ng-icon name="lucidePlus" />
-							Nueva columna
-						</button>
-
-					</div>
-
-					@if(completedColumn(); as completed) {
-
-					<div
-						class="flex flex-col gap-3 bg-primary-foreground border border-green-500/30 rounded-xl p-3 w-72 shrink-0">
-
-						<span class="font-semibold text-green-500 px-1">
-							{{ completed.name }}
-						</span>
-
-						<div cdkDropList [id]="completed.id" [cdkDropListData]="completed.tasks"
-							[cdkDropListConnectedTo]="connectedLists()" (cdkDropListDropped)="dropTask($event)"
-							class="flex flex-col gap-3 min-h-32">
-
-							@for(task of completed.tasks; track task.id) {
-
-							<div cdkDrag hlmCard class="bg-secondary border-zinc-800 p-3 rounded-lg">
-
-								<div class="flex items-center justify-between">
-									<span class="font-medium text-primary">
-										{{ task.name }}
-									</span>
-
-									<button hlmBtn variant="ghost" size="icon-sm" class="h-6 w-6 text-zinc-500">
-										<ng-icon name="lucideMoreHorizontal" />
-									</button>
-								</div>
-
-								<div class="flex flex-col gap-2 text-muted-foreground">
-									<div class="flex items-center gap-3">
-										<ng-icon name="lucideUsers" />
-										<span>
-											{{ task.assignedTo }}
-										</span>
-									</div>
-
-									<div class="flex items-center gap-3">
-										<ng-icon name="lucideCalendar" />
-										<span>
-											{{ task.dueDate || '-' }}
-										</span>
-									</div>
-
-									<div class="flex items-center gap-3">
-										<ng-icon name="lucideFlag" />
-										<span [class.text-red-500]="task.priority === 'Alta'"
-											[class.text-yellow-500]="task.priority === 'Media'"
-											[class.text-green-500]="task.priority === 'Baja'">
-											{{ task.priority }}
-										</span>
-									</div>
-								</div>
-
-							</div>
-
-							}
+							<button hlmBtn class="w-full">
+								<ng-icon name="lucidePlus" />
+								Nueva columna
+							</button>
 
 						</div>
 
+						@if(completedColumn(); as completed) {
+
+						<div
+							class="flex flex-col gap-3 bg-primary-foreground border border-green-500/30 rounded-xl p-3 w-72 shrink-0 max-h-[70vh]">
+
+							<span class="font-semibold text-green-500 px-1">
+								{{ completed.name }}
+							</span>
+
+							<ng-scrollbar hlm appearance="compact" class="flex-1">
+								<div scrollViewport cdkDropList [id]="completed.id" [cdkDropListData]="completed.tasks"
+									[cdkDropListConnectedTo]="connectedLists()" (cdkDropListDropped)="dropTask($event)"
+									class="flex flex-col gap-3">
+
+									@if(completed.tasks.length === 0) {
+									<div
+										class="border border-dashed border-border rounded-lg p-4 text-center text-muted-foreground text-sm">
+										Arrastra una tarea aquí
+									</div>
+									}
+
+									@for(task of completed.tasks; track task.id) {
+
+									<div cdkDrag>
+										<app-task-card [task]="task" />
+									</div>
+									}
+								</div>
+							</ng-scrollbar>
+						</div>
+						}
 					</div>
-					}
-
-				</div>
-
+				</ng-scrollbar>
 			</div>
 
 			<div hlmTabsContent="tablas">

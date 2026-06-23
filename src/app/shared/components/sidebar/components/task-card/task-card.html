@@ -1,0 +1,39 @@
+<div hlmCard class="bg-secondary border-zinc-800 p-3 rounded-lg cursor-grab active:cursor-grabbing">
+
+	<div class="flex items-center justify-between">
+
+		<span class="font-medium text-primary">
+			{{ task().name }}
+		</span>
+
+		<button hlmBtn variant="ghost" size="icon-sm" class="h-6 w-6 text-zinc-500">
+			<ng-icon name="lucideMoreHorizontal" />
+		</button>
+
+	</div>
+
+	<div class="flex flex-col gap-2 text-muted-foreground">
+
+		<div class="flex items-center gap-3">
+			<ng-icon name="lucideUsers" />
+			<span>{{ task().assignedTo }}</span>
+		</div>
+
+		<div class="flex items-center gap-3">
+			<ng-icon name="lucideCalendar" />
+			<span>{{ task().dueDate || '-' }}</span>
+		</div>
+
+		<div class="flex items-center gap-3">
+			<ng-icon name="lucideFlag" />
+
+			<span [class.text-red-500]="task().priority === 'Alta'" [class.text-yellow-500]="task().priority === 'Media'"
+				[class.text-green-500]="task().priority === 'Baja'">
+				{{ task().priority }}
+			</span>
+
+		</div>
+
+	</div>
+
+</div>
