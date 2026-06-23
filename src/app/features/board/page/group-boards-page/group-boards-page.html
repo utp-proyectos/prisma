@@ -1,12 +1,35 @@
-<main class="flex-1 overflow-auto p-6">
-	<h1 class="text-3xl">Pizarras grupales</h1>
-
-	<hlm-separator />
-
-	<app-boards-action (modal)="modal.set('open')" />
-	<app-board-create-dialog [(state)]="modal" />
-
-	<div class="grid grid-cols-[repeat(auto-fill,minmax(330px,330px))] gap-4">
-		<app-board-card />
+@if (boards().length > 0) {
+	<div class="flex flex-col gap-5 h-full">
+		<div>
+			<h3 class="flex items-center gap-2 text-xl font-medium">
+				<ng-icon name="lucideUsers"></ng-icon>
+				<span>Pizarras grupales</span>
+			</h3>
+			<hlm-separator />
+			<app-boards-action (createFolderModal)="createFolderModal.set('open')" />
+		</div>
+		<div class="flex-1 overflow-auto custom-scroll pe-2">
+			<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
+				@for (board of boards(); track board.id) {
+					<app-board-card [board]="board" />
+				}
+			</div>
+		</div>
 	</div>
-</main>
+} @else {
+	<div class="flex flex-col items-center justify-center gap-4 h-full">
+		<ng-icon name="lucideSearch" class="text-xl"></ng-icon>
+		<div class="flex flex-col items-center gap-1">
+			<h3 class="text-xl font-medium">Aun no hay pizarras</h3>
+			<p class="text-muted-foreground text-sm">Crea Tu primer Pizarra</p>
+		</div>
+		<button hlmBtn (click)="createBoardModalState.open()">
+			<ng-icon name="lucidePlus"></ng-icon>
+			Crear pizarra
+		</button>
+	</div>
+}
+<app-folder-create-dialog
+	[state]="createFolderModal()"
+	(closed)="createFolderModal.set('closed')"
+/>

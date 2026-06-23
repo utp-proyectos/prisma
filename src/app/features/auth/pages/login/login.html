@@ -3,31 +3,75 @@
 	description="Ingresa tus credenciales para Iniciar Sesión"
 />
 
-<div hlmFieldGroup>
-	<div hlmField>
-		<label hlmFieldLabel for="email">Email</label>
-		<input hlmInput id="email" type="email" placeholder="m@example.com" />
+<form [formRoot]="loginForm">
+	<div hlmFieldGroup>
+		<div hlmField>
+			<label hlmFieldLabel for="email">Email</label>
+			<input
+				hlmInput
+				id="email"
+				type="email"
+				placeholder="m@example.com"
+				[formField]="loginForm.email"
+			/>
+			@for (error of loginForm.email().errors(); track error.kind) {
+				<hlm-field-error [validator]="error.kind">
+					{{ error.message }}
+				</hlm-field-error>
+			}
+		</div>
+		<div hlmField>
+			<label hlmFieldLabel for="password">Password</label>
+			<input
+				hlmInput
+				id="password"
+				type="password"
+				placeholder="contraseña"
+				[formField]="loginForm.password"
+			/>
+			@for (error of loginForm.password().errors(); track error.kind) {
+				<hlm-field-error [validator]="error.kind">
+					{{ error.message }}
+				</hlm-field-error>
+			}
+		</div>
+		<div hlmField>
+			<button
+				hlmBtn
+				type="submit"
+				[disabled]="loginForm().submitting() || (loginForm().touched() && loginForm().invalid())"
+			>
+				Iniciar Sesión
+			</button>
+		</div>
+		<hlm-field-separator>o continuar con</hlm-field-separator>
+		<div hlmField>
+			<a
+				hlmBtn
+				href="http://localhost:8080/oauth2/authorization/google"
+				variant="outline"
+				type="button"
+				[disabled]="loginForm().submitting()"
+			>
+				<ng-icon class="text-xl" name="remixGoogleFill" />
+				Log in con Google
+			</a>
+			<a
+				hlmBtn
+				href="http://localhost:8080/oauth2/authorization/github"
+				variant="outline"
+				type="button"
+				[disabled]="loginForm().submitting()"
+			>
+				<ng-icon class="text-xl" name="remixGithubFill" />
+				Log in con GitHub
+			</a>
+			<p hlmFieldDescription class="text-center">
+				¿No tienes una cuenta?
+				<a routerLink="/auth/register" [class.pointer-events-none]="loginForm().submitting()"
+					>Registrate</a
+				>
+			</p>
+		</div>
 	</div>
-	<div hlmField>
-		<label hlmFieldLabel for="password">Password</label>
-		<input hlmInput id="password" type="password" placeholder="contraseña" />
-	</div>
-	<div hlmField>
-		<button hlmBtn type="submit" (click)="handleSubmit()">Iniciar Sesión</button>
-	</div>
-	<hlm-field-separator>o continuar con</hlm-field-separator>
-	<div hlmField>
-		<button hlmBtn variant="outline" type="button">
-			<ng-icon class="text-xl" name="remixGoogleFill" />
-			Log in con Google
-		</button>
-		<button hlmBtn variant="outline" type="button">
-			<ng-icon class="text-xl" name="remixGithubFill" />
-			Log in con GitHub
-		</button>
-		<p hlmFieldDescription class="text-center">
-			¿No tienes una cuenta?
-			<a routerLink="/auth/register">Registrate</a>
-		</p>
-	</div>
-</div>
+</form>

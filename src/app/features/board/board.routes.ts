@@ -18,11 +18,23 @@ export const boardRoutes: Routes = [
 			},
 			{
 				path: 'my',
-				component: MyBoardsPage,
+				children: [
+					{ path: '', component: MyBoardsPage },
+					{ path: 'folders/:folderId', component: FolderPage },
+				],
 			},
 			{
 				path: 'group',
-				component: GroupBoardsPage,
+				children: [
+					{
+						path: '',
+						component: GroupBoardsPage,
+					},
+					{
+						path: 'folderes/:folderId',
+						component: FolderPage,
+					},
+				],
 			},
 			{
 				path: 'trash',
@@ -33,9 +45,5 @@ export const boardRoutes: Routes = [
 				component: FolderPage,
 			},
 		],
-	},
-	{
-		path: ':boardId',
-		component: BoardEditorPage,
 	},
 ]

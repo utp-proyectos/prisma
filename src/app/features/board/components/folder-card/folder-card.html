@@ -1,0 +1,65 @@
+<hlm-card
+	(click)="folderClick.emit(folder.id)"
+	class="relative mx-auto w-full max-w-sm pt-0 overflow-hidden border-zinc-800 bg-[#18181b] hover:border-zinc-700 transition-all duration-200 cursor-pointer"
+>
+	<!-- Grid 2x2 estilo Figma con el mismo tratamiento visual que la board card -->
+	<div
+		class="relative z-20 aspect-video w-full grid grid-cols-2 grid-rows-2 gap-1.5 bg-[#202024] p-3 overflow-hidden"
+	>
+		@for (slot of gridSlots; track slot) {
+			<div
+				class="relative flex items-center justify-center rounded bg-[#121214] border border-zinc-800 overflow-hidden w-full h-full"
+			>
+				@if (folder.boards[slot]?.thumbnailUrl) {
+					<img
+						[src]="folder.boards[slot].thumbnailUrl"
+						[alt]="folder.boards[slot].title"
+						class="w-full h-full rounded object-cover brightness-90 grayscale dark:brightness-75"
+					/>
+				} @else {
+					<div
+						class="w-full h-full border border-dashed border-zinc-800 rounded bg-[#161619]"
+					></div>
+				}
+			</div>
+		}
+	</div>
+
+	<hlm-card-header>
+		<div hlmCardAction>
+			<button
+				hlmBtn
+				size="icon"
+				variant="ghost"
+				[hlmDropdownMenuTrigger]="folderMenu"
+				align="start"
+				(click)="$event.stopPropagation()"
+			>
+				<ng-icon name="lucideMoreHorizontal" />
+			</button>
+		</div>
+
+		<h3 hlmCardTitle>{{ folder.name }}</h3>
+		<p hlmCardDescription>
+			{{ folder.boards.length }} {{ folder.boards.length === 1 ? 'pizarra' : 'pizarras' }}
+		</p>
+	</hlm-card-header>
+</hlm-card>
+
+<ng-template #folderMenu>
+	<hlm-dropdown-menu>
+		<hlm-dropdown-menu-group>
+			<button hlmDropdownMenuItem>
+				<ng-icon name="lucidePencil" />
+				Renombrar
+			</button>
+		</hlm-dropdown-menu-group>
+		<hlm-dropdown-menu-separator />
+		<hlm-dropdown-menu-group>
+			<button hlmDropdownMenuItem variant="destructive">
+				<ng-icon name="lucideTrash2" />
+				Eliminar
+			</button>
+		</hlm-dropdown-menu-group>
+	</hlm-dropdown-menu>
+</ng-template>

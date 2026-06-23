@@ -1,0 +1,25 @@
+<hlm-dialog [state]="state()" (closed)="closed.emit()">
+	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
+		<hlm-dialog-header>
+			<h3 hlmDialogTitle>Crear folder</h3>
+			<p hlmDialogDescription>Crea un folder para ordenar tus pizarras.</p>
+		</hlm-dialog-header>
+
+		<hlm-field-group>
+			<hlm-field>
+				<label hlmFieldLabel for="field-preview-fullname">Nombre</label>
+				<hlm-input-group>
+					<input hlmInputGroupInput placeholder="Nombre del folder" />
+					<hlm-input-group-addon>
+						<ng-icon name="lucideFolder" />
+					</hlm-input-group-addon>
+				</hlm-input-group>
+			</hlm-field>
+		</hlm-field-group>
+
+		<hlm-dialog-footer>
+			<button hlmBtn variant="outline" hlmDialogClose>Cancel</button>
+			<button hlmBtn type="submit">Guardar folder</button>
+		</hlm-dialog-footer>
+	</hlm-dialog-content>
+</hlm-dialog>

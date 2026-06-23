@@ -5,6 +5,8 @@ import { HlmAvatarImports } from '@spartan-ng/helm/avatar'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu'
 import { SidebarService } from '../../sidebar.service'
+import { AuthService } from '@/core/servies/auth.serive'
+import { Router } from '@angular/router'
 
 @Component({
 	selector: 'nav-user',
@@ -15,5 +17,15 @@ import { SidebarService } from '../../sidebar.service'
 })
 export class NavUser {
 	sidebarService = inject(SidebarService)
+	authService = inject(AuthService)
+	router = inject(Router)
+
+	user = computed(() => this.authService.currentUser())
+
 	isCollapsed = computed(() => this.sidebarService.isCollapsed())
+
+	logout() {
+		this.authService.clearSession()
+		this.router.navigate(['/auth/login'])
+	}
 }
