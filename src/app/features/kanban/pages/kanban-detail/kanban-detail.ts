@@ -16,7 +16,6 @@ import {
 	lucideCalendar,
 } from '@ng-icons/lucide'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
-import { HlmCardImports } from '@spartan-ng/helm/card'
 import { HlmInputImports } from '@spartan-ng/helm/input'
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
@@ -27,6 +26,8 @@ import { HlmEmptyImports } from '@spartan-ng/helm/empty'
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu'
 import { HlmSwitch } from '@spartan-ng/helm/switch'
 import { HlmLabel } from '@spartan-ng/helm/label'
+import { HlmScrollAreaImports } from '@spartan-ng/helm/scroll-area'
+import { NgScrollbarModule } from 'ngx-scrollbar'
 
 import {
 	CdkDrag,
@@ -35,15 +36,14 @@ import {
 	moveItemInArray,
 	transferArrayItem,
 } from '@angular/cdk/drag-drop'
+import { TaskCardComponent } from '@/shared/components/sidebar/components/task-card/task-card'
 
 export interface Task {
 	id: number
 	name: string
 	assignedTo: string
 	dueDate: string
-
 	priority: 'Alta' | 'Media' | 'Baja'
-
 	status: 'Completado' | 'En curso' | 'Pendiente'
 }
 
@@ -75,7 +75,6 @@ export interface KanbanColumn {
 		HlmInputImports,
 		HlmInputGroupImports,
 		HlmSeparatorImports,
-		HlmCardImports,
 		HlmTabsImports,
 		HlmTableImports,
 		HlmDropdownMenuImports,
@@ -84,6 +83,9 @@ export interface KanbanColumn {
 		HlmLabel,
 		CdkDrag,
 		CdkDropList,
+		HlmScrollAreaImports,
+		NgScrollbarModule,
+		TaskCardComponent,
 	],
 	providers: [
 		provideIcons({
@@ -229,20 +231,6 @@ export class KanbanDetail {
 	]
 
 	protected readonly columns = signal<KanbanColumn[]>([
-		{
-			id: 'prueba',
-			name: 'Prueba',
-			tasks: [
-				{
-					id: 1,
-					name: 'Diseñar login',
-					assignedTo: 'Alex',
-					dueDate: '22 Jun 2026',
-					priority: 'Alta',
-					status: 'Pendiente',
-				},
-			],
-		},
 		{
 			id: 'pending',
 			name: 'Pendiente',

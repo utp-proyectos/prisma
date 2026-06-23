@@ -1,12 +1,8 @@
-<a
-	[routerLink]="to()"
-	[class]="sidebarItemClasses()"
+<a [routerLink]="to()" [class]="sidebarItemClasses()"
 	class="p-2 h-8 flex gap-2 items-center rounded-md hover:bg-muted cursor-pointer"
-	routerLinkActive="text-primary-foreground bg-primary hover:bg-primary! font-medium"
-	[routerLinkActiveOptions]="{ exact: true }"
->
+	routerLinkActive="text-primary-foreground bg-primary hover:bg-primary! font-medium">
 	<ng-icon [name]="icon()" class="text-[16px]" />
 	@if (!isCollapsed()) {
-		<span class="text-sm">{{ title() }}</span>
+	<span class="text-sm">{{ title() }}</span>
 	}
 </a>
