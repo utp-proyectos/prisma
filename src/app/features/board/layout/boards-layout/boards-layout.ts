@@ -3,7 +3,6 @@ import {
 	Sidebar,
 	SidebarContent,
 	SidebarHeader,
-	SidebarItem,
 	SidebarItemProps,
 } from '@/shared/components/sidebar'
 import { Component, computed, inject, signal } from '@angular/core'
@@ -25,7 +24,7 @@ import { toSignal } from '@angular/core/rxjs-interop'
 		SidebarContent,
 		SidebarHeader,
 		NavHeader,
-		SidebarItem,
+
 		HlmButtonImports,
 		HlmSeparatorImports,
 		BoardCreateDialog,

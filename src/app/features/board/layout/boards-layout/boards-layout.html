@@ -1,10 +1,10 @@
-<div class="relative flex h-dvh gap-5 overflow-x-hidden">
+<div class="flex h-full w-full gap-5">
 	<app-sidebar>
 		<sidebar-header>
 			<nav-header icon="lucideTriangle" title="Proyecto 1"></nav-header>
 		</sidebar-header>
 
-		<sidebar-content>
+		<sidebar-content [items]="SidebarBoardOptions()">
 			@if (!isTrash()) {
 				<button
 					hlmBtn
@@ -19,23 +19,6 @@
 			<hlm-separator />
 
 			<div class="font-medium text-primary px-2 mt-4 mb-2 text-center">Espacios</div>
-
-			@for (sidebarBoardOption of SidebarBoardOptions(); track sidebarBoardOption.to) {
-				<div class="group relative flex items-center justify-between invisible-btn-container">
-					<sidebar-item
-						class="w-full"
-						[icon]="sidebarBoardOption.icon"
-						[title]="sidebarBoardOption.title"
-						[to]="sidebarBoardOption.to"
-					></sidebar-item>
-
-					<button
-						class="absolute right-2 opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-zinc-300 transition-opacity z-10"
-					>
-						<ng-icon name="lucideMoreHorizontal"></ng-icon>
-					</button>
-				</div>
-			}
 		</sidebar-content>
 	</app-sidebar>
 
