@@ -34,7 +34,9 @@
 			"@spartan-ng/helm/avatar": ["./libs/ui/avatar/src/index.ts"],
 			"@spartan-ng/helm/button-group": ["./libs/ui/button-group/src/index.ts"],
 			"@spartan-ng/helm/item": ["./libs/ui/item/src/index.ts"],
-			"@spartan-ng/helm/typography": ["./libs/ui/typography/src/index.ts"]
+			"@spartan-ng/helm/typography": ["./libs/ui/typography/src/index.ts"],
+			"@spartan-ng/helm/sonner": ["./libs/ui/sonner/src/index.ts"],
+			"@spartan-ng/helm/spinner": ["./libs/ui/spinner/src/index.ts"]
 		}
 	},
 	"angularCompilerOptions": {

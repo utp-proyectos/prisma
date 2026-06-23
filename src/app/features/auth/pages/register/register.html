@@ -1,48 +1,147 @@
 <auth-header title="Crear una cuenta" description="Ingresa tus datos para crear una cuenta" />
 
-<div hlmFieldGroup>
-	<div class="grid grid-cols-2 gap-4">
+<form [formRoot]="registerForm">
+	<div hlmFieldGroup>
+		<div class="grid grid-cols-2 gap-4">
+			<div hlmField>
+				<label hlmFieldLabel for="name">Nombre</label>
+				<input hlmInput id="name" type="text" placeholder="John" [formField]="registerForm.name" />
+				@for (error of registerForm.name().errors(); track error.kind) {
+					<hlm-field-error [validator]="error.kind">
+						{{ error.message }}
+					</hlm-field-error>
+				}
+			</div>
+
+			<div hlmField>
+				<label hlmFieldLabel for="lastname">Apellido</label>
+				<input
+					hlmInput
+					id="lastname"
+					type="text"
+					placeholder="Doe"
+					[formField]="registerForm.lastName"
+				/>
+				@for (error of registerForm.lastName().errors(); track error.kind) {
+					<hlm-field-error [validator]="error.kind">
+						{{ error.message }}
+					</hlm-field-error>
+				}
+			</div>
+
+			<div hlmField class="col-span-2">
+				<label hlmFieldLabel for="email">Email</label>
+				<input
+					hlmInput
+					id="email"
+					type="email"
+					placeholder="m@example.com"
+					[formField]="registerForm.email"
+				/>
+				@for (error of registerForm.email().errors(); track error.kind) {
+					<hlm-field-error [validator]="error.kind">
+						{{ error.message }}
+					</hlm-field-error>
+				}
+			</div>
+
+			<div hlmField>
+				<label hlmFieldLabel for="username">Username</label>
+				<input
+					hlmInput
+					id="username"
+					type="text"
+					placeholder="johndoe"
+					[formField]="registerForm.username"
+				/>
+				@for (error of registerForm.username().errors(); track error.kind) {
+					<hlm-field-error [validator]="error.kind">
+						{{ error.message }}
+					</hlm-field-error>
+				}
+			</div>
+
+			<div hlmField>
+				<label hlmFieldLabel for="password">Password</label>
+				<input
+					hlmInput
+					id="password"
+					type="password"
+					placeholder="Contraseña"
+					[formField]="registerForm.password"
+				/>
+				@for (error of registerForm.password().errors(); track error.kind) {
+					<hlm-field-error [validator]="error.kind">
+						{{ error.message }}
+					</hlm-field-error>
+				}
+			</div>
+		</div>
 		<div hlmField>
-			<label hlmFieldLabel for="name">Nombre</label>
-			<input hlmInput id="name" type="text" placeholder="John" />
+			<button
+				hlmBtn
+				type="submit"
+				[disabled]="
+					registerForm().submitting() || (registerForm().touched() && registerForm().invalid())
+				"
+			>
+				@if (registerForm().submitting()) {
+					<hlm-spinner data-icon="inline-start" />
+					Registrando
+				} @else {
+					Registrate
+				}
+			</button>
 		</div>
 
-		<div hlmField>
-			<label hlmFieldLabel for="lastname">Apellido</label>
-			<input hlmInput id="lastname" type="text" placeholder="Doe" />
-		</div>
-
-		<div hlmField class="col-span-2">
-			<label hlmFieldLabel for="email">Email</label>
-			<input hlmInput id="email" type="email" placeholder="m@example.com" />
-		</div>
+		<hlm-field-separator>o continuar con</hlm-field-separator>
 
 		<div hlmField>
-			<label hlmFieldLabel for="username">Username</label>
-			<input hlmInput id="username" type="text" placeholder="johndoe" />
-		</div>
-
-		<div hlmField>
-			<label hlmFieldLabel for="password">Password</label>
-			<input hlmInput id="password" type="password" placeholder="Contraseña" />
+			<a
+				hlmBtn
+				href="http://localhost:8080/oauth2/authorization/google"
+				variant="outline"
+				type="button"
+				[disabled]="registerForm().submitting()"
+			>
+				<ng-icon class="text-xl" name="remixGoogleFill" />
+				Registrate con Google
+			</a>
+			<a
+				hlmBtn
+				href="http://localhost:8080/oauth2/authorization/github"
+				variant="outline"
+				type="button"
+				[disabled]="registerForm().submitting()"
+			>
+				<ng-icon class="text-xl" name="remixGithubFill" />
+				Registrate con GitHub
+			</a>
+			<p hlmFieldDescription class="text-center">
+				¿Ya tienes una cuenta?
+				<a routerLink="/auth/login" [class.pointer-events-none]="registerForm().submitting()"
+					>Log in</a
+				>
+			</p>
 		</div>
 	</div>
-	<div hlmField>
-		<button hlmBtn type="submit">Registrate</button>
-	</div>
-	<hlm-field-separator>o continuar con</hlm-field-separator>
-	<div hlmField>
-		<button hlmBtn variant="outline" type="button">
-			<ng-icon class="text-xl" name="remixGoogleFill" />
-			Registrate con Google
-		</button>
-		<button hlmBtn variant="outline" type="button">
-			<ng-icon class="text-xl" name="remixGithubFill" />
-			Registrate con GitHub
-		</button>
-		<p hlmFieldDescription class="text-center">
-			¿Ya tienes una cuenta?
-			<a routerLink="/auth/login">Log in</a>
-		</p>
-	</div>
-</div>
+</form>
+
+<hlm-dialog [state]="registerSuccessModalState()" [closeOnBackdropClick]="false">
+	<hlm-dialog-content [showCloseButton]="false" *hlmDialogPortal="let ctx" class="sm:w-sm">
+		<hlm-dialog-header class="flex flex-col items-center">
+			<div class="bg-muted rounded-md flex items-center justify-center p-2">
+				<ng-icon name="lucideCheck" class="text-xl text-primary"></ng-icon>
+			</div>
+			<h3 hlmDialogTitle>Su cuenta ha sido creada con exito</h3>
+			<p hlmDialogDescription>Se le ha enviado un correo de verificacion a:</p>
+			<p class="font-medium text-primary">{{ registerForm.email().value() }}</p>
+			<p hlmDialogDescription>
+				Solo podra iniciar sesion cuando <strong>verifique</strong> su cuenta
+			</p>
+		</hlm-dialog-header>
+		<hlm-dialog-footer>
+			<a routerLink="/auth/login" hlmBtn type="submit" class="w-full">Iniciar Sesión</a>
+		</hlm-dialog-footer>
+	</hlm-dialog-content>
+</hlm-dialog>

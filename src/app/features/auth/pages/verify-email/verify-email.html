@@ -1,0 +1,31 @@
+@if (hasToken()) {
+	@if (isLoading()) {
+	} @else if (error()) {
+		<div class="flex flex-col items-center justify-center gap-4 h-full">
+			<ng-icon name="lucideCircleX" class="text-[40px]"></ng-icon>
+			<div class="flex flex-col items-center gap-1">
+				<h3 class="text-xl font-medium">Error al Verificar Email</h3>
+				<p class="text-muted-foreground text-sm">{{ errorMessage() }}</p>
+			</div>
+			<a routerLink="/auth/login" hlmBtn variant="outline">Volver</a>
+		</div>
+	} @else if (hasValue()) {
+		<div class="flex flex-col items-center justify-center gap-4 h-full">
+			<ng-icon name="lucideCheck" class="text-[40px] text-primary"></ng-icon>
+			<div class="flex flex-col items-center gap-1">
+				<h3 class="text-xl font-medium">Email Verificado con Exito</h3>
+				<p class="text-muted-foreground text-sm">Ya puedes iniciar sesión</p>
+			</div>
+			<a routerLink="/auth/login" hlmBtn>Iniciar sesión</a>
+		</div>
+	}
+} @else {
+	<div class="flex flex-col items-center justify-center gap-4 h-full">
+		<ng-icon name="lucideCircleX" class="text-[40px]"></ng-icon>
+		<div class="flex flex-col items-center gap-1">
+			<h3 class="text-xl font-medium">Error al Verificar Email</h3>
+			<p class="text-muted-foreground text-sm">El link de verificación no es valido</p>
+		</div>
+		<a routerLink="/auth/login" hlmBtn variant="outline">Volver</a>
+	</div>
+}
