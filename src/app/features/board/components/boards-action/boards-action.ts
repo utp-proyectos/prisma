@@ -1,10 +1,11 @@
 import { Component, output } from '@angular/core'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideSearch } from '@ng-icons/lucide'
+import { lucidePlus, lucideSearch } from '@ng-icons/lucide'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmIconImports } from '@spartan-ng/helm/icon'
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
+import { FolderCreateDialog } from '../folder-create-dialog/folder-create-dialog'
 
 @Component({
 	selector: 'app-boards-action',
@@ -12,6 +13,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select'
 	providers: [
 		provideIcons({
 			lucideSearch,
+			lucidePlus,
 		}),
 	],
 	templateUrl: './boards-action.html',
@@ -23,5 +25,5 @@ export class BoardsAction {
 		{ label: 'Nombre', value: 'Nombre' },
 		{ label: 'Abierto recientemente', value: 'Abierto recientemente' },
 	]
-	modal = output<void>()
+	createFolderModal = output<void>()
 }

@@ -1,0 +1,25 @@
+<div class="flex h-full w-full gap-5">
+
+	<app-sidebar>
+		<sidebar-header>
+			<nav-header icon="lucideTriangle" title="Proyecto 1"></nav-header>
+		</sidebar-header>
+
+		<sidebar-content [items]="kanbanItems()">
+			<button hlmBtn class="w-full mt-2 mb-4">
+				<ng-icon name="lucidePlus"></ng-icon>
+				Crear tablero
+			</button>
+
+			<hlm-field-separator />
+
+			<div class="font-medium text-primary px-2 mt-4 mb-2 text-center">
+				Tus Tableros
+			</div>
+		</sidebar-content>
+	</app-sidebar>
+
+	<div class="flex-1 min-w-0">
+		<router-outlet></router-outlet>
+	</div>
+</div>

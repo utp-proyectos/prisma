@@ -1,5 +1,30 @@
-<div class="grid place-items-center w-full min-h-dvh">
-	<div class="w-lg">
+<div class="flex h-full w-full gap-5">
+	<app-sidebar>
+		<sidebar-header>
+			<nav-header icon="lucideTriangle" title="Proyecto 1"></nav-header>
+		</sidebar-header>
+
+		<sidebar-content [items]="SidebarBoardOptions()">
+			@if (!isTrash()) {
+				<button
+					hlmBtn
+					class="w-full mt-2 mb-4"
+					variant="default"
+					(click)="createBoardModalState.open()"
+				>
+					<ng-icon name="lucidePlus"></ng-icon>
+					Crear pizarra
+				</button>
+			}
+			<hlm-separator />
+
+			<div class="font-medium text-primary px-2 mt-4 mb-2 text-center">Espacios</div>
+		</sidebar-content>
+	</app-sidebar>
+
+	<div class="w-full">
 		<router-outlet></router-outlet>
 	</div>
 </div>
+<!-- modal crear pizarra-->
+<app-board-create-dialog />

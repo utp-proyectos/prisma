@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, Input } from '@angular/core'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideMoreHorizontal, lucidePencil, lucideStar, lucideTrash2 } from '@ng-icons/lucide'
 import { HlmCardImports } from '@spartan-ng/helm/card'
@@ -17,4 +17,6 @@ import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu'
 	],
 	templateUrl: './board-card.html',
 })
-export class BoardCard {}
+export class BoardCard {
+	@Input() board!: { id: number; name: string; description: string }
+}
