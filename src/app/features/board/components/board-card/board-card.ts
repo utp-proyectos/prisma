@@ -1,6 +1,12 @@
 import { Component, Input } from '@angular/core'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideMoreHorizontal, lucidePencil, lucideStar, lucideTrash2 } from '@ng-icons/lucide'
+import {
+	lucideMonitor,
+	lucideMoreHorizontal,
+	lucidePencil,
+	lucideStar,
+	lucideTrash2,
+} from '@ng-icons/lucide'
 import { HlmCardImports } from '@spartan-ng/helm/card'
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu'
 
@@ -13,6 +19,7 @@ import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu'
 			lucideStar,
 			lucideTrash2,
 			lucideMoreHorizontal,
+			lucideMonitor,
 		}),
 	],
 	templateUrl: './board-card.html',

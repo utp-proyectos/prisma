@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core'
+import { Component, computed, inject, signal } from '@angular/core'
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator'
 import { BoardsAction } from '../../components/boards-action/boards-action'
 import { BoardCard } from '../../components/board-card/board-card'
@@ -8,10 +8,14 @@ import { lucideSearch, lucideUsers } from '@ng-icons/lucide'
 import { CreateBoardModalState } from '../../service/create-board-modal-state'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { FolderCreateDialog } from '../../components/folder-create-dialog/folder-create-dialog'
+import { ActivatedRoute, Router } from '@angular/router'
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop'
+import { FolderCardComponent, MockFolder } from '../../components/folder-card/folder-card'
 interface BoardsProps {
 	id: number
 	name: string
 	description: string
+	thumbnailUrl: string
 }
 @Component({
 	selector: 'app-group-boards-page',
@@ -22,6 +26,9 @@ interface BoardsProps {
 		BoardCard,
 		HlmButtonImports,
 		FolderCreateDialog,
+		FolderCardComponent,
+		CdkDrag,
+		CdkDropList,
 	],
 	providers: [
 		provideIcons({
@@ -30,12 +37,87 @@ interface BoardsProps {
 		}),
 	],
 	templateUrl: './group-boards-page.html',
-	styles: ``,
+	styles: `
+		.cdk-drag-placeholder {
+			opacity: 0;
+		}
+	`,
 })
 export class GroupBoardsPage {
-	modal = signal<BrnDialogState>('closed')
-	createBoardModalState = inject(CreateBoardModalState)
 	createFolderModal = signal<BrnDialogState>('closed')
+	boards = signal<BoardsProps[]>([
+		{
+			id: 12,
+			name: 'Ideas uix ',
+			description: 'Ideas del modulo board',
+			thumbnailUrl: 'https://images.unsplash.com/photo-1604076850742-4c7221f3101b?q=80&w=1887',
+		},
+		{
+			id: 13,
+			name: 'Idedddas uix ',
+			description: 'Ideas del modulo board',
+			thumbnailUrl: 'https://images.unsplash.com/photo-1604076850742-4c7221f3101b?q=80&w=1887',
+		},
+		{
+			id: 13,
+			name: 'Idedddas uix ',
+			description: 'Ideas del modulo board',
+			thumbnailUrl: 'https://images.unsplash.com/photo-1604076850742-4c7221f3101b?q=80&w=1887',
+		},
+		{
+			id: 13,
+			name: 'Idedddas uix ',
+			description: 'Ideas del modulo board',
+			thumbnailUrl: 'https://images.unsplash.com/photo-1604076850742-4c7221f3101b?q=80&w=1887',
+		},
+	])
+	folders = signal<MockFolder[]>([
+		{
+			id: 'folder-1',
+			name: 'Team Project',
+			boards: [
+				{ id: 'b1', title: 'Board Login', thumbnailUrl: null },
+				{ id: 'b2', title: 'Board Ui', thumbnailUrl: null },
+			],
+		},
+		{
+			id: 'folder-2',
+			name: 'Design System',
+			boards: [],
+		},
+	])
+	private router = inject(Router)
+	private route = inject(ActivatedRoute)
+	createBoardModalState = inject(CreateBoardModalState)
+	draggingOverFolder = signal<string | null>(null)
 
-	boards = signal<BoardsProps[]>([])
+	openFolder(folderId: string) {
+		this.router.navigate(['folders', folderId], { relativeTo: this.route })
+	}
+	folderDropLists = computed(() => this.folders().map((f) => f.id))
+	dropIntoFolder(event: CdkDragDrop<any[]>, folderId: string) {
+		this.draggingOverFolder.set(null)
+
+		const board = event.item.data
+
+		this.boards.update((boards) => boards.filter((b) => b.id !== board.id))
+
+		this.folders.update((folders) =>
+			folders.map((folder) =>
+				folder.id === folderId
+					? {
+							...folder,
+							boards: [
+								...folder.boards,
+								{
+									id: String(board.id),
+									title: board.name,
+									thumbnailUrl: board.thumbnailUrl ?? null,
+								},
+							],
+						}
+					: folder,
+			),
+		)
+	}
 }

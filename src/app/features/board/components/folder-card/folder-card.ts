@@ -2,7 +2,13 @@ import { Component, Input, Output, EventEmitter } from '@angular/core'
 import { CommonModule } from '@angular/common'
 
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideMoreHorizontal, lucidePencil, lucideTrash2 } from '@ng-icons/lucide'
+import {
+	lucideFolder,
+	lucideFolderOpen,
+	lucideMoreHorizontal,
+	lucidePencil,
+	lucideTrash2,
+} from '@ng-icons/lucide'
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu'
 import { HlmCardImports } from '@spartan-ng/helm/card'
 
@@ -21,7 +27,15 @@ export interface MockFolder {
 @Component({
 	selector: 'app-folder-card',
 	imports: [NgIcon, HlmDropdownMenuImports, HlmCardImports],
-	providers: [provideIcons({ lucideMoreHorizontal, lucidePencil, lucideTrash2 })],
+	providers: [
+		provideIcons({
+			lucideMoreHorizontal,
+			lucidePencil,
+			lucideTrash2,
+			lucideFolder,
+			lucideFolderOpen,
+		}),
+	],
 	templateUrl: './folder-card.html',
 })
 export class FolderCardComponent {
@@ -41,8 +55,8 @@ export class FolderCardComponent {
 			},
 		],
 	}
-
-	@Output() folderClick = new EventEmitter<string>() // string porque tu id es string
+	@Input() isReceiving = false
+	@Output() folderClick = new EventEmitter<string>()
 
 	readonly gridSlots = [0, 1, 2, 3]
 }
