@@ -1,9 +1,5 @@
 import { Routes } from '@angular/router'
-import { Login } from './pages/login/login'
-import { Register } from './pages/register/register'
 import { AuthLayout } from './layout/auth-layout/auth-layout'
-import { VerifyEmail } from './pages/verify-email/verify-email'
-import { AuthCallback } from './pages/auth-callback/auth-callback'
 
 export const authRoutes: Routes = [
 	{
@@ -12,19 +8,20 @@ export const authRoutes: Routes = [
 		children: [
 			{
 				path: 'login',
-				component: Login,
+				loadComponent: () => import('./pages/login/login').then((m) => m.Login),
 			},
 			{
 				path: 'register',
-				component: Register,
+				loadComponent: () => import('./pages/register/register').then((m) => m.Register),
 			},
 			{
 				path: 'verify-email',
-				component: VerifyEmail,
+				loadComponent: () => import('./pages/verify-email/verify-email').then((m) => m.VerifyEmail),
 			},
 			{
 				path: 'callback',
-				component: AuthCallback,
+				loadComponent: () =>
+					import('./pages/auth-callback/auth-callback').then((m) => m.AuthCallback),
 			},
 		],
 	},

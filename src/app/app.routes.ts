@@ -1,14 +1,17 @@
 import { Routes } from '@angular/router'
 import { AppLayout } from './layout/app-layout/app-layout'
 import { BoardEditorPage } from './features/board/page/board-editor-page/board-editor-page'
+import { authGuard, publicGuard } from './core/guards/auth.guard'
 
 export const routes: Routes = [
 	{
 		path: '',
+		canActivate: [authGuard],
 		loadChildren: () => import('./features/home/home.routes').then((m) => m.homeRoutes),
 	},
 	{
 		path: 'team/project',
+		canActivate: [authGuard],
 		component: AppLayout,
 		children: [
 			{
@@ -27,6 +30,7 @@ export const routes: Routes = [
 	},
 	{
 		path: 'auth',
+		canActivate: [publicGuard],
 		loadChildren: () => import('./features/auth/auth.routes').then((m) => m.authRoutes),
 	},
 	{

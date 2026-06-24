@@ -5,10 +5,11 @@ import { NgIcon, provideIcons } from '@ng-icons/core'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { lucideCheck, lucideCircleX } from '@ng-icons/lucide'
 import { RouterLink } from '@angular/router'
+import { HlmSpinnerImports } from '@spartan-ng/helm/spinner'
 
 @Component({
 	selector: 'app-verify-email',
-	imports: [RouterLink, NgIcon, HlmButtonImports],
+	imports: [RouterLink, NgIcon, HlmButtonImports, HlmSpinnerImports],
 	providers: [provideIcons({ lucideCheck, lucideCircleX })],
 	templateUrl: './verify-email.html',
 	styles: ``,
@@ -18,7 +19,7 @@ export class VerifyEmail {
 
 	readonly token = input<string | undefined>()
 
-	readonly verificationResource = this.authService.getVerificationEmailResource(this.token)
+	readonly verificationResource = this.authService.getVerificationEmailResource(this.token())
 
 	readonly hasToken = computed(() => !!this.token())
 

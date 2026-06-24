@@ -17,18 +17,23 @@ export class AuthCallback implements OnInit {
 	private authApiService = inject(AuthApiService)
 
 	token = input<string | undefined>()
+	error = input<string | undefined>()
 
 	ngOnInit() {
 		const token = this.token()
+		const error = this.error()
+
 		if (token) {
 			this.authApiService.getCurrentUser(token).subscribe({
 				next: (user) => {
 					this.authService.saveSession({ ...user, token })
 					this.router.navigate(['/'])
 				},
-				error: (err) => {
-					this.router.navigate(['/auth/login'])
-				},
+				error: (err) => this.router.navigate(['/auth/login']),
+			})
+		} else if (error) {
+			this.router.navigate(['/auth/login'], {
+				queryParams: { error },
 			})
 		} else {
 			this.router.navigate(['/auth/login'])

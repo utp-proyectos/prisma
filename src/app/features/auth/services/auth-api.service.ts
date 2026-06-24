@@ -25,10 +25,8 @@ export class AuthApiService {
 	getCurrentUser = (token: string) =>
 		this.http.get<ApiReponse<CurrentUser>>(`/auth/me?token=${token}`).pipe(map((res) => res.data))
 
-	getVerificationEmailResource(tokenSignal: Signal<string | undefined>) {
+	getVerificationEmailResource(token: string | undefined) {
 		return httpResource<ApiReponse<null>>(() => {
-			const token = tokenSignal()
-
 			if (!token) return undefined
 
 			return `/auth/verify-email?token=${token}`

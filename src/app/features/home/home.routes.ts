@@ -1,6 +1,4 @@
 import { Routes } from '@angular/router'
-import { RecentProjects } from './pages/recent-projects/recent-projects'
-import { Team } from './pages/team/team'
 import { HomeLayout } from './layout/home-layout/home-layout'
 
 export const homeRoutes: Routes = [
@@ -10,11 +8,12 @@ export const homeRoutes: Routes = [
 		children: [
 			{
 				path: '',
-				component: RecentProjects,
+				loadComponent: () =>
+					import('./pages/recent-projects/recent-projects').then((m) => m.RecentProjects),
 			},
 			{
 				path: 'team',
-				component: Team,
+				loadComponent: () => import('./pages/team/team').then((m) => m.Team),
 			},
 		],
 	},
