@@ -1,4 +1,4 @@
-@if (boards().length > 0) {
+@if (boards().length > 0 || folders().length > 0) {
 	<div class="flex flex-col gap-5 h-full">
 		<div>
 			<h3 class="flex items-center gap-2 text-xl font-medium">
@@ -8,10 +8,38 @@
 			<hlm-separator />
 			<app-boards-action (createFolderModal)="createFolderModal.set('open')" />
 		</div>
-		<div class="flex-1 overflow-auto custom-scroll pe-2">
-			<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
+		<div class="flex flex-col overflow-auto custom-scroll pe-2 gap-5">
+			<!-- grid solo de boards -->
+			<div
+				class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5"
+				cdkDropList
+				cdkDropListSortingDisabled
+				[cdkDropListConnectedTo]="folderDropLists()"
+			>
 				@for (board of boards(); track board.id) {
-					<app-board-card [board]="board" />
+					<div cdkDrag [cdkDragData]="board">
+						<app-board-card [board]="board" />
+					</div>
+				}
+			</div>
+
+			<!-- grid solo de folders -->
+			<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
+				@for (folder of folders(); track folder.id) {
+					<div
+						cdkDropList
+						[id]="folder.id"
+						[cdkDropListData]="folder.boards"
+						(cdkDropListDropped)="dropIntoFolder($event, folder.id)"
+						(cdkDropListEntered)="draggingOverFolder.set(folder.id)"
+						(cdkDropListExited)="draggingOverFolder.set(null)"
+					>
+						<app-folder-card
+							[folder]="folder"
+							[isReceiving]="draggingOverFolder() === folder.id"
+							(folderClick)="openFolder($event)"
+						/>
+					</div>
 				}
 			</div>
 		</div>
