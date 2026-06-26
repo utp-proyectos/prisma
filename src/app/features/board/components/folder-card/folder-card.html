@@ -23,7 +23,7 @@
 					@if (folder.boards[slot]?.thumbnailUrl) {
 						<img
 							[src]="folder.boards[slot].thumbnailUrl"
-							[alt]="folder.boards[slot].title"
+							[alt]="folder.boards[slot].name"
 							class="w-full h-full object-cover brightness-60 grayscale dark:brightness-40 rounded"
 						/>
 					} @else {
@@ -71,7 +71,7 @@
 		</hlm-dropdown-menu-group>
 		<hlm-dropdown-menu-separator />
 		<hlm-dropdown-menu-group>
-			<button hlmDropdownMenuItem variant="destructive">
+			<button hlmDropdownMenuItem variant="destructive" (click)="deleteFolder.emit(folder.id)">
 				<ng-icon name="lucideTrash2" class="mr-2" />
 				Eliminar
 			</button>

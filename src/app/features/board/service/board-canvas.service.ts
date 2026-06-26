@@ -81,17 +81,20 @@ export class BoardStateService {
 		const names = this.selectedShapeNames()
 		return this.shapes().filter((s) => names.includes(s.name))
 	})
+	//api - save y load
+	// metodo para guardar las figuars
 	saveBoard(): object {
 		return {
 			shapes: this.shapes(),
 			backgroundColor: this.backgroundColor(),
 		}
 	}
-
+	// cargar lienzo
 	loadBoard(data: any): void {
 		this.shapes.set(data.shapes)
 		this.backgroundColor.set(data.backgroundColor)
 	}
+	//socket
 	addShape(shape: Shape): void {
 		this.shapes.update((current) => [...current, shape])
 		console.log('Listo para enviar creación por socket:', shape)
