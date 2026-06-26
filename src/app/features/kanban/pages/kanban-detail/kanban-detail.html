@@ -21,15 +21,15 @@
 
 				@if (!selectedMilestone()) {
 				<div class="flex flex-col gap-4">
-					<div class="flex items-center justify-between gap-4 w-full">
-						<hlm-input-group>
+					<div class="flex items-center justify-between mt-4">
+						<hlm-input-group class="w-70">
 							<input hlmInputGroupInput placeholder="Buscar..." />
 							<hlm-input-group-addon>
 								<ng-icon name="lucideSearch" />
 							</hlm-input-group-addon>
 						</hlm-input-group>
 
-						<button hlmBtn>
+						<button hlmBtn (click)="createMilestoneModal.set('open')">
 							<ng-icon name="lucidePlus"></ng-icon>
 							Crear hito
 						</button>
@@ -113,7 +113,7 @@
 							</span>
 						</div>
 
-						<button hlmBtn>
+						<button hlmBtn (click)="createTaskModalState.open()">
 							<ng-icon name="lucidePlus" class="mr-2" />
 							Crear tarea
 						</button>
@@ -282,3 +282,9 @@
 		</hlm-tabs>
 
 	</div>
+
+	<app-milestone-modal [state]="createMilestoneModal()"
+		(closed)="createMilestoneModal.set('closed')"></app-milestone-modal>
+
+	<app-task-modal [state]="createTaskModal()" (closed)="createTaskModalState.close()">
+	</app-task-modal>
