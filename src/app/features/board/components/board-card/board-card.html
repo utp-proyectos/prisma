@@ -1,11 +1,15 @@
-<hlm-card class="relative mx-auto w-full max-w-sm pt-0">
+<hlm-card (click)="openBoard()" class="relative mx-auto w-full max-w-sm pt-0 cursor-pointer">
 	<div class="relative aspect-video w-full">
 		<div class="bg-primary absolute inset-0 z-30 opacity-50 mix-blend-color"></div>
-		<img
-			src="https://images.unsplash.com/photo-1604076850742-4c7221f3101b?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-			alt="Event cover"
-			class="relative z-20 aspect-video w-full object-cover brightness-60 grayscale dark:brightness-40"
-		/>
+		@if (board.thumbnailUrl) {
+			<img
+				[src]="board.thumbnailUrl"
+				alt="Board cover"
+				class="relative z-20 aspect-video w-full object-cover brightness-60 grayscale dark:brightness-40"
+			/>
+		} @else {
+			<div class="relative z-20 aspect-video w-full bg-[#202024]"></div>
+		}
 
 		<div
 			class="absolute bottom-2 left-2 z-40 flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-neutral-800/80 border border-neutral-700/50"
@@ -17,7 +21,14 @@
 
 	<hlm-card-header>
 		<div hlmCardAction>
-			<button hlmBtn size="icon" variant="ghost" [hlmDropdownMenuTrigger]="menu" align="start">
+			<button
+				hlmBtn
+				size="icon"
+				variant="ghost"
+				[hlmDropdownMenuTrigger]="menu"
+				align="start"
+				(click)="$event.stopPropagation()"
+			>
 				<ng-icon name="lucideMoreHorizontal" />
 			</button>
 		</div>
@@ -32,16 +43,23 @@
 		<hlm-dropdown-menu-group>
 			<button hlmDropdownMenuItem>
 				<ng-icon name="lucidePencil" />
-				Renombrar
+				Editar
 			</button>
-			<button hlmDropdownMenuItem>
-				<ng-icon name="lucideStar" />
-				Favorito
-			</button>
+			@if (insideFolder) {
+				<button hlmDropdownMenuItem (click)="removeFromFolder.emit(board.id)">
+					<ng-icon name="lucideFolderMinus" />
+					Sacar del folder
+				</button>
+			} @else {
+				<button hlmDropdownMenuItem>
+					<ng-icon name="lucideStar" />
+					Favorito
+				</button>
+			}
 		</hlm-dropdown-menu-group>
 		<hlm-dropdown-menu-separator />
 		<hlm-dropdown-menu-group>
-			<button hlmDropdownMenuItem variant="destructive">
+			<button hlmDropdownMenuItem variant="destructive" (click)="deleteBoard.emit(board.id)">
 				<ng-icon name="lucideTrash2" />
 				Eliminar
 			</button>

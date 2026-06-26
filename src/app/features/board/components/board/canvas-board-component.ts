@@ -12,7 +12,7 @@ import { CoreShapeComponent, StageComponent } from 'ng2-konva'
 import { StageConfig } from 'konva/lib/Stage'
 import Konva from 'konva'
 import { TextConfig } from 'konva/lib/shapes/Text'
-import { BoardStateService, Shape } from '../../service/board.service'
+import { BoardStateService, Shape } from '../../service/board-canvas.service'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import {
 	lucideArrowRight,

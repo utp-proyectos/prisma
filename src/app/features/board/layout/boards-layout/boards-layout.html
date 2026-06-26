@@ -6,12 +6,7 @@
 
 		<sidebar-content [items]="SidebarBoardOptions()">
 			@if (!isTrash()) {
-				<button
-					hlmBtn
-					class="w-full mt-2 mb-4"
-					variant="default"
-					(click)="createBoardModalState.open()"
-				>
+				<button hlmBtn class="w-full mt-2 mb-4" variant="default" (click)="openCreateBoard()">
 					<ng-icon name="lucidePlus"></ng-icon>
 					Crear pizarra
 				</button>

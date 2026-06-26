@@ -7,6 +7,7 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator'
 import { BoardCard } from '../../components/board-card/board-card'
+import { Board } from '../../models/board-response'
 interface BoardsProps {
 	id: number
 	name: string
@@ -40,14 +41,8 @@ export class TrashBoardsPage {
 	]
 	public readonly createds = [
 		{ label: 'Creado por ti', value: 'creado por ti' },
-		{
-			label: 'Creado por el grupo',
-			value: 'Creado por el grupo',
-		},
+		{ label: 'Creado por el grupo', value: 'Creado por el grupo' },
 	]
-	boards = signal<BoardsProps[]>([
-		{ id: 1, name: 'Board Login', description: 'Funcionalidades del logica' },
-		{ id: 2, name: 'Board Ui', description: 'Estilos' },
-		{ id: 3, name: 'Board Api', description: 'Diseño de la api' },
-	])
+
+	boards = signal<Board[]>([])
 }

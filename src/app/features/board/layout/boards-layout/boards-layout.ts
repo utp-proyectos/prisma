@@ -34,11 +34,11 @@ import { toSignal } from '@angular/core/rxjs-interop'
 	styles: ``,
 })
 export class BoardsLayout {
+	//inyeccion de dependecias
 	createBoardModalState = inject(CreateBoardModalState)
-	createBoardModal = computed(() => this.createBoardModalState.createBoardModal())
-
 	private router = inject(Router)
 
+	//estados derivados de la ruta
 	isTrash = toSignal(
 		this.router.events.pipe(
 			filter((event) => event instanceof NavigationEnd),
@@ -46,6 +46,19 @@ export class BoardsLayout {
 		),
 		{ initialValue: false },
 	)
+
+	// para que el modal tenga contexto si es my o group donde se quiere crear
+	isPrivate = toSignal(
+		this.router.events.pipe(
+			filter((event) => event instanceof NavigationEnd),
+			map(() => this.router.url.includes('/my')),
+		),
+		{ initialValue: this.router.url.includes('/my') },
+	)
+
+	//estaods de la vista y modales
+	createBoardModal = computed(() => this.createBoardModalState.createBoardModal())
+
 	protected readonly SidebarBoardOptions = signal<SidebarItemProps[]>([
 		{
 			icon: 'lucideUser',
@@ -63,4 +76,9 @@ export class BoardsLayout {
 			to: '/team/project/board/trash',
 		},
 	])
+
+	//acciones
+	openCreateBoard() {
+		this.createBoardModalState.open(this.isPrivate())
+	}
 }
