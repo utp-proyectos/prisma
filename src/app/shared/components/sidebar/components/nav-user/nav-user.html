@@ -7,7 +7,7 @@
 	variant="ghost"
 >
 	<hlm-avatar>
-		<img src="/shadcn.jpg" alt="test" hlmAvatarImage class="rounded-md" />
+		<img [src]="user()?.avatar" alt="test" hlmAvatarImage class="rounded-md" />
 		<span class="rounded-lg bg-[#FD005B] text-white" hlmAvatarFallback>RG</span>
 	</hlm-avatar>
 	@if (!isCollapsed()) {

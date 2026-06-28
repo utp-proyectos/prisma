@@ -3,7 +3,7 @@
 	[class]="sidebarItemClasses()"
 	class="p-2 h-8 flex gap-2 items-center rounded-md hover:bg-muted cursor-pointer"
 	routerLinkActive="text-primary-foreground bg-primary hover:bg-primary! font-medium"
-	[routerLinkActiveOptions]="{ exact: false }"
+	[routerLinkActiveOptions]="{ exact: exact() || false }"
 >
 	<ng-icon [name]="icon()" class="text-[16px]" />
 	@if (!isCollapsed()) {

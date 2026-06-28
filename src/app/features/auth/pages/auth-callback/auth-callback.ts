@@ -16,8 +16,8 @@ export class AuthCallback implements OnInit {
 	private authService = inject(AuthService)
 	private authApiService = inject(AuthApiService)
 
-	token = input<string | undefined>()
-	error = input<string | undefined>()
+	token = input<string>()
+	error = input<string>()
 
 	ngOnInit() {
 		const token = this.token()

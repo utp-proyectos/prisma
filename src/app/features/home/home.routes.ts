@@ -12,7 +12,7 @@ export const homeRoutes: Routes = [
 					import('./pages/recent-projects/recent-projects').then((m) => m.RecentProjects),
 			},
 			{
-				path: 'team',
+				path: 'team/:teamId',
 				loadComponent: () => import('./pages/team/team').then((m) => m.Team),
 			},
 		],

@@ -8,11 +8,12 @@ import {
 	type SidebarItemProps,
 } from '@/shared/components/sidebar'
 
-import { Component } from '@angular/core'
+import { Component, computed, input, Signal } from '@angular/core'
 import { RouterOutlet } from '@angular/router'
 import { provideIcons } from '@ng-icons/core'
 import {
 	lucideCalendar,
+	lucideHome,
 	lucideMessageCircle,
 	lucidePresentation,
 	lucideSquareKanban,
@@ -37,32 +38,42 @@ import {
 			lucideSquareKanban,
 			lucideCalendar,
 			lucidePresentation,
+			lucideHome,
 		}),
 	],
 	templateUrl: './app-layout.html',
 	styles: ``,
 })
 export class AppLayout {
-	protected readonly items: SidebarItemProps[] = [
+	teamId = input<string>()
+	projectId = input<string>()
+
+	protected readonly items: Signal<SidebarItemProps[]> = computed(() => [
+		{
+			icon: 'lucideHome',
+			title: 'Proyecto',
+			to: `/team/${this.teamId()}/project/${this.projectId()}`,
+			exact: true,
+		},
 		{
 			icon: 'lucideMessageCircle',
 			title: 'Chat',
-			to: '/team/project/chat',
+			to: `/team/${this.teamId()}/project/${this.projectId()}/chat`,
 		},
 		{
 			icon: 'lucideSquareKanban',
 			title: 'Kanban',
-			to: '/team/project/kanban',
+			to: `/team/${this.teamId()}/project/${this.projectId()}/kanban`,
 		},
 		{
 			icon: 'lucideCalendar',
 			title: 'Calendario',
-			to: '/team/project/calendar',
+			to: `/team/${this.teamId()}/project/${this.projectId()}/calendar`,
 		},
 		{
 			icon: 'lucidePresentation',
 			title: 'Pizarra',
-			to: '/team/project/board',
+			to: `/team/${this.teamId()}/project/${this.projectId()}/board`,
 		},
-	]
+	])
 }

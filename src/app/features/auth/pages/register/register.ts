@@ -71,9 +71,9 @@ export class Register {
 		},
 		{
 			submission: {
-				action: async () => {
+				action: async (data) => {
 					try {
-						await this.authService.registerUser(this.registerModel())
+						await this.authService.registerUser(data().value())
 
 						this.registerSuccessModalState.set('open')
 					} catch (error) {

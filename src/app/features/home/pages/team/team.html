@@ -1,92 +1,266 @@
-@if (projects().length > 0) {
+@if (teamResource.hasValue()) {
+	@let team = teamResource.value().data;
 	<div class="flex flex-col gap-5 h-full">
 		<div>
 			<h3 class="flex items-center gap-2 text-xl font-medium">
 				<ng-icon name="lucideLayoutGrid"></ng-icon>
-				<span>Equipo 1</span>
+				<span>{{ team.name }}</span>
+				<button
+					hlmBtn
+					variant="ghost"
+					size="icon"
+					[hlmDropdownMenuTrigger]="menu"
+					align="start"
+					class="rounded-full"
+				>
+					<ng-icon name="lucideChevronDown"></ng-icon>
+				</button>
 			</h3>
-			<hlm-separator />
-			<div class="flex items-center justify-between mt-4">
-				<hlm-input-group class="w-70">
-					<input hlmInputGroupInput type="search" placeholder="Nombre del proyecto" />
-					<hlm-input-group-addon align="inline-end">
-						<ng-icon name="lucideSearch" />
-					</hlm-input-group-addon>
-				</hlm-input-group>
 
-				<div class="flex items-center gap-2">
-					<hlm-select [itemToString]="optionToString">
-						<hlm-select-trigger class="w-56">
-							<hlm-select-value placeholder="Ordernar por" />
+			<hlm-separator />
+
+			@if (projects().length) {
+				<div class="flex items-center justify-between mt-4">
+					<hlm-input-group class="w-70">
+						<input hlmInputGroupInput type="search" placeholder="Nombre del proyecto" />
+						<hlm-input-group-addon align="inline-end">
+							<ng-icon name="lucideSearch" />
+						</hlm-input-group-addon>
+					</hlm-input-group>
+
+					<div class="flex items-center gap-2">
+						<hlm-select [itemToString]="optionToString">
+							<hlm-select-trigger class="w-56">
+								<hlm-select-value placeholder="Ordernar por" />
+							</hlm-select-trigger>
+							<hlm-select-content *hlmSelectPortal>
+								<hlm-select-group>
+									@for (option of sortByOptions; track option.value) {
+										<hlm-select-item [value]="option.value">
+											{{ option.label }}
+										</hlm-select-item>
+									}
+								</hlm-select-group>
+							</hlm-select-content>
+						</hlm-select>
+						<button hlmBtn (click)="createProjectModal.set('open')">
+							<ng-icon name="lucidePlus"></ng-icon>
+							Nuevo Proyecto
+						</button>
+					</div>
+				</div>
+			}
+		</div>
+		@if (projects().length) {
+			<div class="flex-1 overflow-auto custom-scroll pe-2">
+				<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
+					@for (project of projects(); track project.id) {
+						<a [routerLink]="['project', project.id]">
+							<hlm-card class="relative pt-0">
+								<div
+									class="bg-primary absolute inset-0 z-30 aspect-video opacity-50 mix-blend-color"
+								></div>
+								<img
+									src="https://images.unsplash.com/photo-1604076850742-4c7221f3101b?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+									alt="Event cover"
+									class="relative z-20 aspect-video w-full object-cover brightness-60 grayscale dark:brightness-40"
+								/>
+								<hlm-card-header>
+									<h3 hlmCardTitle>{{ project.name }}</h3>
+									<p hlmCardDescription>Editado hace 2 horas</p>
+								</hlm-card-header>
+							</hlm-card>
+						</a>
+					}
+				</div>
+			</div>
+		} @else {
+			<div class="flex-1 flex flex-col items-center justify-center gap-4">
+				<ng-icon name="lucideSearch" class="text-xl"></ng-icon>
+				<div class="flex flex-col items-center gap-1">
+					<h3 class="text-xl font-medium">Aun no hay proyectos</h3>
+					<p class="text-muted-foreground text-sm">Crea Tu primer Proyecto</p>
+				</div>
+				<button hlmBtn (click)="createProjectModal.set('open')">
+					<ng-icon name="lucidePlus"></ng-icon>
+					Crear Proyecto
+				</button>
+			</div>
+		}
+	</div>
+
+	<ng-template #menu>
+		<hlm-dropdown-menu>
+			<hlm-dropdown-menu-group>
+				<button hlmDropdownMenuItem>
+					<ng-icon name="lucidePen" />
+					Cambiar nombre
+				</button>
+
+				<hlm-dialog>
+					<button hlmDialogTrigger hlmDropdownMenuItem>
+						<ng-icon name="lucideUsers" />
+						Miembros
+					</button>
+					<hlm-dialog-content *hlmDialogPortal="let ctx" class="w-md">
+						<hlm-dialog-header>
+							<h3 hlmDialogTitle>Miembros del equipo</h3>
+							<p hlmDialogDescription>
+								{{ team.members.length }} miembro {{ team.members.length > 1 ? 's' : '' }}
+							</p>
+						</hlm-dialog-header>
+						<div class="no-scrollbar -mx-4 max-h-[50vh] overflow-y-auto px-4">
+							@for (member of members(); track member.id) {
+								<hlm-item variant="outline">
+									<hlm-item-media>
+										<hlm-avatar class="size-10">
+											<img
+												class="rounded-full aspect-square size-full object-cover"
+												[src]="member.avatar"
+												[alt]="member.name"
+											/>
+										</hlm-avatar>
+									</hlm-item-media>
+									<hlm-item-content>
+										<hlm-item-title>{{ member.name }}</hlm-item-title>
+										<p hlmItemDescription>{{ member.role }}</p>
+									</hlm-item-content>
+									<hlm-item-actions>
+										<button
+											hlmBtn
+											size="icon-sm"
+											variant="outline"
+											class="rounded-full"
+											aria-label="Invite"
+										>
+											<ng-icon name="lucidePlus" />
+										</button>
+									</hlm-item-actions>
+								</hlm-item>
+							}
+						</div>
+
+						<hlm-dialog-footer>
+							<button hlmBtn variant="outline" hlmDialogClose>Cerrar</button>
+							<button hlmBtn type="submit" (click)="inviteMemberModal.set('open')">
+								<ng-icon name="lucidePlus"></ng-icon> Agregar Miembro
+							</button>
+						</hlm-dialog-footer>
+					</hlm-dialog-content>
+				</hlm-dialog>
+			</hlm-dropdown-menu-group>
+			<hlm-dropdown-menu-separator />
+			<hlm-dropdown-menu-group>
+				<button hlmDropdownMenuItem variant="destructive">
+					<ng-icon name="lucideTrash2" />
+					Eliminar Equipo
+				</button>
+			</hlm-dropdown-menu-group>
+		</hlm-dropdown-menu>
+	</ng-template>
+}
+
+<hlm-dialog [state]="createProjectModal()" (closed)="closeCreateProjectModal()">
+	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
+		<form [formRoot]="projectForm" id="create-project-form">
+			<hlm-dialog-header>
+				<h3 hlmDialogTitle>Crear Proyecto</h3>
+				<p hlmDialogDescription>Elije un nombre para tu proyecto</p>
+			</hlm-dialog-header>
+			<hlm-field-group>
+				<hlm-field>
+					<label hlmFieldLabel for="name">Nombre</label>
+					<input hlmInput id="name" placeholder="Software Project" [formField]="projectForm.name" />
+				</hlm-field>
+				<hlm-field>
+					<label hlmFieldLabel for="description">Descripción</label>
+					<textarea
+						hlmTextarea
+						id="description"
+						placeholder="Describe tu proyecto"
+						[formField]="projectForm.description"
+					></textarea>
+				</hlm-field>
+			</hlm-field-group>
+		</form>
+		<hlm-dialog-footer>
+			<button hlmBtn variant="outline" hlmDialogClose>Cancelar</button>
+			<button
+				hlmBtn
+				type="submit"
+				form="create-project-form"
+				[disabled]="projectForm().touched() && projectForm().invalid()"
+			>
+				Crear
+			</button>
+		</hlm-dialog-footer>
+	</hlm-dialog-content>
+</hlm-dialog>
+
+<hlm-dialog [state]="inviteMemberModal()" (closed)="closeInviteMemberModal()">
+	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
+		<hlm-dialog-header>
+			<h3 hlmDialogTitle>Invitar miembro</h3>
+			<p hlmDialogDescription>Ingresa el correo del miembro a invitar</p>
+		</hlm-dialog-header>
+		<form [formRoot]="inviteMemberForm" id="invite-member-form">
+			<hlm-field-group>
+				<hlm-field>
+					<label hlmFieldLabel for="member-email">email</label>
+					<input
+						hlmInput
+						type="email"
+						id="member-email"
+						placeholder="m@example.com"
+						[formField]="inviteMemberForm.email"
+					/>
+					@for (error of inviteMemberForm.email().errors(); track error.kind) {
+						<hlm-field-error [validator]="error.kind">
+							{{ error.message }}
+						</hlm-field-error>
+					}
+				</hlm-field>
+				<hlm-field>
+					<label hlmFieldLabel for="member-role">Rol</label>
+					<hlm-select [formField]="inviteMemberForm.role" [itemToString]="roleOptionToString">
+						<hlm-select-trigger buttonId="member-role" class="w-full">
+							<hlm-select-value placeholder="Selecciona un rol" />
 						</hlm-select-trigger>
 						<hlm-select-content *hlmSelectPortal>
 							<hlm-select-group>
-								@for (option of sortByOptions; track option.value) {
-									<hlm-select-item [value]="option.value">
-										{{ option.label }}
-									</hlm-select-item>
+								<hlm-select-label>Rol</hlm-select-label>
+								@for (role of memberRoleOptions; track role.value) {
+									<hlm-select-item [value]="role.value">{{ role.label }}</hlm-select-item>
 								}
 							</hlm-select-group>
 						</hlm-select-content>
 					</hlm-select>
-					<button hlmBtn (click)="createProjectModal.set('open')">
-						<ng-icon name="lucidePlus"></ng-icon>
-						Nuevo Proyecto
-					</button>
-				</div>
-			</div>
-		</div>
-
-		<div class="flex-1 overflow-auto custom-scroll pe-2">
-			<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
-				@for (project of projects(); track project.id) {
-					<hlm-card class="relative pt-0">
-						<div
-							class="bg-primary absolute inset-0 z-30 aspect-video opacity-50 mix-blend-color"
-						></div>
-						<img
-							src="https://images.unsplash.com/photo-1604076850742-4c7221f3101b?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-							alt="Event cover"
-							class="relative z-20 aspect-video w-full object-cover brightness-60 grayscale dark:brightness-40"
-						/>
-						<hlm-card-header>
-							<h3 hlmCardTitle>{{ project.title }}</h3>
-							<p hlmCardDescription>Editado hace 2 horas</p>
-						</hlm-card-header>
-					</hlm-card>
-				}
-			</div>
-		</div>
-	</div>
-} @else {
-	<div class="flex flex-col items-center justify-center gap-4 h-full">
-		<ng-icon name="lucideSearch" class="text-xl"></ng-icon>
-		<div class="flex flex-col items-center gap-1">
-			<h3 class="text-xl font-medium">Aun no hay proyectos</h3>
-			<p class="text-muted-foreground text-sm">Crea Tu primer Proyecto</p>
-		</div>
-		<button hlmBtn (click)="createProjectModal.set('open')">
-			<ng-icon name="lucidePlus"></ng-icon>
-			Crear Proyecto
-		</button>
-	</div>
-}
-
-<hlm-dialog [state]="createProjectModal()" (closed)="createProjectModal.set('closed')">
-	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
-		<hlm-dialog-header>
-			<h3 hlmDialogTitle>Crear Proyecto</h3>
-			<p hlmDialogDescription>Elije un nombre para tu proyecto</p>
-		</hlm-dialog-header>
-		<hlm-field-group>
-			<hlm-field>
-				<label hlmFieldLabel for="name">Nombre</label>
-				<input hlmInput id="name" placeholder="Software Project" />
-			</hlm-field>
-		</hlm-field-group>
+					@for (error of inviteMemberForm.role().errors(); track error.kind) {
+						<hlm-field-error [validator]="error.kind">
+							{{ error.message }}
+						</hlm-field-error>
+					}
+				</hlm-field>
+			</hlm-field-group>
+		</form>
 		<hlm-dialog-footer>
-			<button hlmBtn variant="outline" hlmDialogClose>Cancel</button>
-			<button hlmBtn type="submit">Crear</button>
+			<button hlmBtn variant="outline" hlmDialogClose>Cancelar</button>
+			<button
+				hlmBtn
+				type="submit"
+				form="invite-member-form"
+				[disabled]="
+					inviteMemberForm().submitting() ||
+					(inviteMemberForm().touched() && inviteMemberForm().invalid())
+				"
+			>
+				@if (inviteMemberForm().submitting()) {
+					<hlm-spinner />
+					Invitando
+				} @else {
+					Invitar
+				}
+			</button>
 		</hlm-dialog-footer>
 	</hlm-dialog-content>
 </hlm-dialog>

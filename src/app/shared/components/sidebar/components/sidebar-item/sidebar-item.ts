@@ -7,7 +7,8 @@ import { SidebarService } from '../../sidebar.service'
 export interface SidebarItemProps {
 	icon: string
 	title: string
-	to: string
+	to: string | any[]
+	exact?: boolean
 }
 
 @Component({
@@ -21,7 +22,9 @@ export class SidebarItem {
 
 	readonly icon = input<string>('')
 	readonly title = input.required<string>()
-	readonly to = input<string>('')
+	readonly to = input<string | any[]>('')
+	readonly exact = input<boolean | undefined>(false)
+
 	readonly disabled = input<boolean>(false)
 
 	protected sidebarItemClasses = computed(() => ({

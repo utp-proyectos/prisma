@@ -10,6 +10,6 @@ export class CreateTeamModalState {
 	}
 
 	close() {
-		this.createTeamModal.set(null)
+		this.createTeamModal.set('closed')
 	}
 }

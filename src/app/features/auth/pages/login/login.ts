@@ -60,9 +60,9 @@ export class Login {
 		},
 		{
 			submission: {
-				action: async () => {
+				action: async (data) => {
 					try {
-						const user = await this.authApiService.login(this.loginModel())
+						const user = await this.authApiService.login(data().value())
 						this.authService.saveSession(user)
 						this.router.navigate(['/'])
 					} catch (error) {

@@ -1,5 +1,8 @@
-<ng-content></ng-content>
+<ng-content select="[append]"></ng-content>
 
 @for (item of items(); track item.title) {
-<sidebar-item [icon]="item.icon" [title]="item.title" [to]="item.to" ]></sidebar-item>
+	<sidebar-item [icon]="item.icon" [title]="item.title" [to]="item.to" [exact]="item.exact">
+	</sidebar-item>
 }
+
+<ng-content></ng-content>

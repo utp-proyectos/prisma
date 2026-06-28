@@ -1,12 +1,12 @@
 import { Component, input } from '@angular/core'
 
 @Component({
-	selector: 'app-chat',
+	selector: 'app-project-resume',
 	imports: [],
-	templateUrl: './chat.html',
+	templateUrl: './project-resume.html',
 	styles: ``,
 })
-export class Chat {
+export class ProjectResume {
 	teamId = input<string>()
 	projectId = input<string>()
 }

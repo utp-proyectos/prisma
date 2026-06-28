@@ -17,9 +17,9 @@ import { HlmSpinnerImports } from '@spartan-ng/helm/spinner'
 export class VerifyEmail {
 	readonly authService = inject(AuthApiService)
 
-	readonly token = input<string | undefined>()
+	readonly token = input<string>()
 
-	readonly verificationResource = this.authService.getVerificationEmailResource(this.token())
+	readonly verificationResource = this.authService.getVerificationEmailResource(this.token)
 
 	readonly hasToken = computed(() => !!this.token())
 

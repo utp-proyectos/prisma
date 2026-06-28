@@ -1,7 +1,7 @@
 <div class="flex gap-2 items-center" [class.flex-col-reverse]="isCollapsed()">
-	<div class="bg-white rounded-lg size-8 flex items-center justify-center">
+	<a routerLink="/" class="bg-white rounded-lg size-8 flex items-center justify-center">
 		<ng-icon class="text-black text-sm" [name]="icon()"></ng-icon>
-	</div>
+	</a>
 	@if (!isCollapsed()) {
 		<p class="font-medium text-sm flex-1">{{ title() }}</p>
 	}

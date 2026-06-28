@@ -5,53 +5,60 @@
 		</sidebar-header>
 
 		<sidebar-content [items]="items">
-			<button hlmBtn class="w-full mt-2" variant="ghost" (click)="createTeamModalState.open()">
-				<ng-icon name="lucidePlus"></ng-icon>
-				Crear equipo
-			</button>
+			@if (teamResource.hasValue()) {
+				@let teams = teamResource.value().data;
+				@if (teams.length === 0) {
+					<button hlmBtn class="w-full mt-2" variant="ghost" (click)="createTeamModalState.open()">
+						<ng-icon name="lucidePlus"></ng-icon>
+						Crear equipo
+					</button>
+				} @else {
+					<hlm-select [itemToString]="itemToString" class="my-2" [(value)]="teamId">
+						<hlm-select-trigger class="w-full">
+							<hlm-select-placeholder>
+								<ng-icon name="lucideUsers"></ng-icon>
+								Elige un equipo
+							</hlm-select-placeholder>
+							<hlm-select-value />
+						</hlm-select-trigger>
 
-			<hlm-select [itemToString]="itemToString" class="my-2" [(value)]="teamId">
-				<hlm-select-trigger class="w-full">
-					<hlm-select-placeholder>
-						<ng-icon name="lucideUsers"></ng-icon>
-						Elige un equipo
-					</hlm-select-placeholder>
-					<hlm-select-value />
-				</hlm-select-trigger>
-
-				<hlm-select-content *hlmSelectPortal>
-					<hlm-select-group>
-						<hlm-select-label>Equipos</hlm-select-label>
-						@for (team of teams; track team.value) {
-							<a routerLink="/team">
-								<hlm-select-item [value]="team.value">
-									{{ team.label }}
+						<hlm-select-content *hlmSelectPortal>
+							<hlm-select-group>
+								<hlm-select-label>Equipos</hlm-select-label>
+								@for (team of teams; track team.id) {
+									<a [routerLink]="['/team', team.id]">
+										<hlm-select-item [value]="team.id">
+											{{ team.name }}
+										</hlm-select-item>
+									</a>
+								}
+							</hlm-select-group>
+							<hlm-select-separator />
+							<hlm-select-group>
+								<hlm-select-item [value]="undefined">
+									<button
+										hlmBtn
+										(click)="createTeamModalState.open()"
+										variant="ghost"
+										size="sm"
+										class="w-full hover:bg-muted!"
+									>
+										<ng-icon name="lucidePlus"></ng-icon>
+										Nuevo Equipo
+									</button>
 								</hlm-select-item>
-							</a>
-						}
-					</hlm-select-group>
-					<hlm-select-separator />
-					<hlm-select-group>
-						<button
-							hlmBtn
-							(click)="createTeamModalState.open()"
-							variant="ghost"
-							size="sm"
-							class="w-full hover:bg-muted!"
-						>
-							<ng-icon name="lucidePlus"></ng-icon>
-							Nuevo Equipo
-						</button>
-					</hlm-select-group>
-				</hlm-select-content>
-			</hlm-select>
+							</hlm-select-group>
+						</hlm-select-content>
+					</hlm-select>
 
-			<sidebar-item
-				icon="lucideLayoutGrid"
-				title="Proyectos"
-				[to]="'team'"
-				[disabled]="!isTeamSelected()"
-			></sidebar-item>
+					<sidebar-item
+						icon="lucideLayoutGrid"
+						title="Proyectos"
+						[to]="['/team', teamId()]"
+						[disabled]="!isTeamSelected()"
+					></sidebar-item>
+				}
+			}
 		</sidebar-content>
 
 		<sidebar-footer>
@@ -64,21 +71,41 @@
 	</div>
 </div>
 
-<hlm-dialog [state]="createTeamModal()" (closed)="createTeamModalState.close()">
+<hlm-dialog [state]="createTeamModal()" (closed)="closeCreateTeamModal()">
 	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
 		<hlm-dialog-header>
 			<h3 hlmDialogTitle>Crear equipo</h3>
 			<p hlmDialogDescription>Elije un nombre para tu equipo</p>
 		</hlm-dialog-header>
-		<hlm-field-group>
-			<hlm-field>
-				<label hlmFieldLabel for="name">Nombre</label>
-				<input hlmInput id="name" placeholder="Software Team" />
-			</hlm-field>
-		</hlm-field-group>
+		<form [formRoot]="teamForm" id="team-form">
+			<hlm-field-group>
+				<hlm-field>
+					<label hlmFieldLabel for="name">Nombre</label>
+					<input
+						hlmInput
+						id="name"
+						type="text"
+						placeholder="Software Team"
+						[formField]="teamForm.name"
+					/>
+					@for (error of teamForm.name().errors(); track error.kind) {
+						<hlm-field-error [validator]="error.kind">
+							{{ error.message }}
+						</hlm-field-error>
+					}
+				</hlm-field>
+			</hlm-field-group>
+		</form>
 		<hlm-dialog-footer>
 			<button hlmBtn variant="outline" hlmDialogClose>Cancel</button>
-			<button hlmBtn type="submit">Crear</button>
+			<button
+				hlmBtn
+				type="submit"
+				form="team-form"
+				[disabled]="teamForm().touched() && teamForm().invalid()"
+			>
+				Crear
+			</button>
 		</hlm-dialog-footer>
 	</hlm-dialog-content>
 </hlm-dialog>

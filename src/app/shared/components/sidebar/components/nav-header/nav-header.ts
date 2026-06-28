@@ -3,10 +3,11 @@ import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideChevronLeft, lucideChevronRight } from '@ng-icons/lucide'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { SidebarService } from '../../sidebar.service'
+import { RouterLink } from '@angular/router'
 
 @Component({
 	selector: 'nav-header',
-	imports: [NgIcon, HlmButtonImports],
+	imports: [NgIcon, HlmButtonImports, RouterLink],
 	providers: [provideIcons({ lucideChevronLeft, lucideChevronRight })],
 	templateUrl: './nav-header.html',
 	styles: ``,
@@ -19,4 +20,9 @@ export class NavHeader {
 
 	canCollapse = computed(() => this.sidebarService.canCollapse())
 	isCollapsed = computed(() => this.sidebarService.isCollapsed())
+
+	collapse(event: MouseEvent) {
+		event.stopPropagation()
+		this.sidebarService.toggleCollapse()
+	}
 }

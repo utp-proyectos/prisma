@@ -14,7 +14,7 @@ export const unauthorizedInterceptor: HttpInterceptorFn = (req, next) => {
 
 			if (error.status === 401 && !isAuthRequest) {
 				authService.clearSession()
-				router.navigate(['/login'])
+				router.navigate(['/auth/login'])
 			}
 
 			return throwError(() => error)

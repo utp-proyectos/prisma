@@ -10,7 +10,7 @@ import { HlmInputImports } from '@spartan-ng/helm/input'
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator'
-import { CreateTeamModalState } from '../../service/create-team-modal-state'
+import { CreateTeamModalState } from '../../services/create-team-modal-state'
 
 interface ProjectProps {
 	id: number
