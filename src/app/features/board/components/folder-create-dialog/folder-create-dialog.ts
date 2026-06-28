@@ -1,4 +1,4 @@
-import { Component, input, model, output } from '@angular/core'
+import { Component, inject, input, model, output, signal } from '@angular/core'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideFolder } from '@ng-icons/lucide'
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
@@ -7,6 +7,10 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog'
 import { HlmFieldImports } from '@spartan-ng/helm/field'
 import { HlmInputImports } from '@spartan-ng/helm/input'
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group'
+import { BoardApiService } from '../../service/board-api.service'
+import { FolderRequest } from '../../models/folder-request'
+import { disabled, form, required, FormRoot, FormField } from '@angular/forms/signals'
+import { firstValueFrom } from 'rxjs'
 
 @Component({
 	selector: 'app-folder-create-dialog',
@@ -18,16 +22,61 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group'
 		HlmFieldImports,
 		HlmDialogImports,
 		HlmButtonImports,
+		FormRoot,
+		FormField,
 	],
 	providers: [
 		provideIcons({
 			lucideFolder,
 		}),
 	],
-
 	templateUrl: './folder-create-dialog.html',
 })
 export class FolderCreateDialog {
-	state = input<BrnDialogState>('closed')
+	//inyecciones de Dependencias
+	private boardApiService = inject(BoardApiService)
+
+	private projectId = 'test-project-1' // temporal
+
+	//  (Inputs) y Salidas (Outputs)
+	state = input<BrnDialogState>('closed') // método para abrir y cerrar
+	isPrivate = input<boolean>(false)
 	closed = output<void>()
+	folderCreated = output<void>()
+
+	// estados del Componente (Signals)
+	folderModel = signal<FolderRequest>({
+		name: '',
+		isPrivate: false,
+	})
+
+	//configuración y Acción del Formulario (Signals Forms)
+	folderForm = form(
+		this.folderModel,
+		(schemaPath) => {
+			required(schemaPath.name, { message: 'El nombre del folder es requerido' })
+			disabled(schemaPath, { when: ({ state }) => state.submitting() })
+		},
+		{
+			submission: {
+				action: async () => {
+					const dto: FolderRequest = {
+						name: this.folderModel().name,
+						isPrivate: this.isPrivate(),
+					}
+					console.log('dto:', dto)
+
+					// Realizar la petición de creación
+					const folder = await firstValueFrom(
+						this.boardApiService.createFolder(this.projectId, dto),
+					)
+
+					// Notificar eventos y resetear formulario
+					this.closed.emit()
+					this.folderCreated.emit()
+					this.folderForm.name().reset('')
+				},
+			},
+		},
+	)
 }

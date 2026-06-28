@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core'
+import { Component, computed, inject, signal } from '@angular/core'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import {
 	lucideClock,
@@ -18,7 +18,6 @@ import {
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmInputImports } from '@spartan-ng/helm/input'
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group'
-import { HlmSelectImports } from '@spartan-ng/helm/select'
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator'
 import { HlmTabsImports } from '@spartan-ng/helm/tabs'
 import { HlmTableImports } from '@spartan-ng/helm/table'
@@ -29,6 +28,9 @@ import { HlmLabel } from '@spartan-ng/helm/label'
 import { HlmScrollAreaImports } from '@spartan-ng/helm/scroll-area'
 import { NgScrollbarModule } from 'ngx-scrollbar'
 import { HlmFieldImports } from '@spartan-ng/helm/field'
+import { HlmDialogImports } from '@spartan-ng/helm/dialog'
+import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker'
+import { HlmSelectImports } from '@spartan-ng/helm/select'
 
 import {
 	CdkDrag,
@@ -38,33 +40,11 @@ import {
 	transferArrayItem,
 } from '@angular/cdk/drag-drop'
 import { TaskCardComponent } from '@/shared/components/sidebar/components/task-card/task-card'
-
-export interface Task {
-	id: number
-	name: string
-	assignedTo: string
-	dueDate: string
-	priority: 'Alta' | 'Media' | 'Baja'
-	status: 'Completado' | 'En curso' | 'Pendiente'
-}
-
-export interface Milestone {
-	id: number
-	name: string
-	deadline: string
-	progress: number
-	totalTasks: number
-	completedTasks: number
-	status: 'Completado' | 'A tiempo' | 'Retrasado'
-	tasks?: Task[]
-}
-
-export interface KanbanColumn {
-	id: string
-	name: string
-	isFixed?: boolean
-	tasks: Task[]
-}
+import { BrnDialogState } from '@spartan-ng/brain/dialog'
+import { TaskModal } from '../../components/task-modal/task-modal'
+import { CreateTaskModalState } from '../../service/create-task-modal-state'
+import { KanbanColumn, Milestone, Task } from '../../models'
+import { MilestoneModalComponent } from '../../components/milestone-modal/milestone-modal'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -78,8 +58,10 @@ export interface KanbanColumn {
 		HlmSeparatorImports,
 		HlmTabsImports,
 		HlmTableImports,
+		HlmDatePickerImports,
 		HlmDropdownMenuImports,
 		HlmEmptyImports,
+		HlmDialogImports,
 		HlmSwitch,
 		HlmLabel,
 		CdkDrag,
@@ -88,8 +70,11 @@ export interface KanbanColumn {
 		NgScrollbarModule,
 		TaskCardComponent,
 		HlmFieldImports,
+		TaskModal,
+		MilestoneModalComponent,
 	],
 	providers: [
+		CreateTaskModalState,
 		provideIcons({
 			lucidePlus,
 			lucideSearch,
@@ -128,9 +113,17 @@ export interface KanbanColumn {
 	`,
 })
 export class KanbanDetail {
+	// Tabs
 	protected readonly activeTab = signal<string>('hitos')
 
+	// Hito seleccionado
 	protected readonly selectedMilestone = signal<Milestone | null>(null)
+
+	// Modales
+	createMilestoneModal = signal<BrnDialogState>('closed')
+
+	createTaskModalState = inject(CreateTaskModalState)
+	createTaskModal = computed(() => this.createTaskModalState.createTaskModal())
 
 	protected changeTab(tabName: string): void {
 		this.activeTab.set(tabName)
@@ -210,43 +203,6 @@ export class KanbanDetail {
 					status: 'Completado',
 				},
 			],
-		},
-		{
-			id: 2,
-			name: 'Hito 2',
-			deadline: 'Jul 23, 2026',
-			progress: 50,
-			totalTasks: 4,
-			completedTasks: 2,
-			status: 'A tiempo',
-			tasks: [
-				{
-					id: 201,
-					name: 'Configurar base de datos',
-					assignedTo: 'user',
-					dueDate: '22 Jun 2026',
-					priority: 'Alta',
-					status: 'Completado',
-				},
-				{
-					id: 202,
-					name: 'Crear endpoints de Auth',
-					assignedTo: 'user',
-					dueDate: '22 Jun 2026',
-					priority: 'Media',
-					status: 'En curso',
-				},
-			],
-		},
-		{
-			id: 3,
-			name: 'Hito 3',
-			deadline: 'May 22, 2026',
-			progress: 50,
-			totalTasks: 4,
-			completedTasks: 2,
-			status: 'Retrasado',
-			tasks: [],
 		},
 	]
 

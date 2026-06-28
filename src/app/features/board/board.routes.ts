@@ -31,7 +31,7 @@ export const boardRoutes: Routes = [
 						component: GroupBoardsPage,
 					},
 					{
-						path: 'folderes/:folderId',
+						path: 'folders/:folderId',
 						component: FolderPage,
 					},
 				],

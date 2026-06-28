@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core'
-import { Router, ActivatedRoute } from '@angular/router'
+import { ActivatedRoute } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideFolder, lucidePlus, lucideSearch } from '@ng-icons/lucide'
 import { BoardCard } from '../../components/board-card/board-card'
@@ -9,11 +9,10 @@ import { HlmSelectImports } from '@spartan-ng/helm/select'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmIconImports } from '@spartan-ng/helm/icon'
 import { CreateBoardModalState } from '../../service/create-board-modal-state'
-interface BoardsProps {
-	id: number
-	name: string
-	description: string
-}
+import { BoardApiService } from '../../service/board-api.service'
+import { Board } from '../../models/board-response'
+import { Folder } from '../../models/folder.model'
+
 @Component({
 	selector: 'app-folder-page',
 	imports: [
@@ -30,21 +29,46 @@ interface BoardsProps {
 	styles: ``,
 })
 export class FolderPage {
-	private router = inject(Router)
+	//inyeccion de dependencias
 	private route = inject(ActivatedRoute)
+	private boardApiService = inject(BoardApiService)
+	createBoardModalState = inject(CreateBoardModalState)
+
+	// parametros de ruta
+	folderId = this.route.snapshot.params['folderId']
+
 	public readonly items = [
 		{ label: 'Todos', value: 'Todos' },
 		{ label: 'Nombre', value: 'Nombre' },
 		{ label: 'Abierto recientemente', value: 'Abierto recientemente' },
 	]
-	createBoardModalState = inject(CreateBoardModalState)
 
-	boards = signal<BoardsProps[]>([
-		{ id: 1, name: 'Board Login', description: 'Funcionalidades del logica' },
-		{ id: 2, name: 'Board Ui', description: 'Estilos' },
-		{ id: 3, name: 'Board Api', description: 'Diseño de la api' },
-	])
-	openFolder(folderId: number) {
-		this.router.navigate(['folders', folderId], { relativeTo: this.route })
+	//signal
+	boards = signal<Board[]>([])
+	folder = signal<Folder | null>(null)
+
+	constructor() {
+		this.loadBoards()
+	}
+
+	//api - carga de datos
+	loadBoards() {
+		this.boardApiService.getFolder(this.folderId).subscribe((f) => {
+			console.log('folder:', f)
+			this.folder.set(f)
+			this.boards.set(f.boards)
+		})
+	}
+	// api - acciones de las cards
+	onDeleteBoard(boardId: string) {
+		console.log('id' + boardId)
+		this.boardApiService.deleteBoard(boardId).subscribe(() => {
+			this.boards.update((boards) => boards.filter((b) => b.id !== boardId))
+		})
+	}
+	onRemoveFromFolder(boardId: string) {
+		this.boardApiService.removeFromFolder(boardId).subscribe(() => {
+			this.boards.update((boards) => boards.filter((b) => b.id !== boardId))
+		})
 	}
 }

@@ -1,0 +1,30 @@
+<hlm-dialog [state]="state()" (closed)="closed.emit()">
+	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
+		<hlm-dialog-header>
+			<h3 hlmDialogTitle>Crear Hito</h3>
+			<p hlmDialogDescription>Empieza creando u hito para englobar tus tareas</p>
+		</hlm-dialog-header>
+
+		<form>
+			<hlm-field-group>
+				<hlm-field>
+					<label hlmFieldLabel for="name">Nombre</label>
+					<input hlmInput id="name" placeholder="Ejem. Estructura inicial" />
+				</hlm-field>
+
+				<hlm-field class="w-full">
+					<label hlmFieldLabel for="date">Fecha límite</label>
+					<hlm-date-picker class="w-full">
+						<hlm-date-picker-trigger buttonId="date" class="w-full justify-between">
+							Selecciona la fecha límite
+						</hlm-date-picker-trigger>
+					</hlm-date-picker>
+				</hlm-field>
+			</hlm-field-group>
+		</form>
+		<hlm-dialog-footer>
+			<button hlmBtn variant="outline" hlmDialogClose>Cancelar</button>
+			<button hlmBtn type="submit">Crear</button>
+		</hlm-dialog-footer>
+	</hlm-dialog-content>
+</hlm-dialog>

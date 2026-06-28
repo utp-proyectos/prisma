@@ -8,28 +8,50 @@
 			<p hlmDialogDescription>Crea una pizarra para empezar a diseñar.</p>
 		</hlm-dialog-header>
 
-		<hlm-field-group>
-			<hlm-field>
-				<label hlmFieldLabel for="field-preview-fullname">Nombre</label>
-				<hlm-input-group>
-					<input hlmInputGroupInput placeholder="Nombre de la pizarra" />
-					<hlm-input-group-addon>
-						<ng-icon name="lucideSquareMousePointer" />
-					</hlm-input-group-addon>
-				</hlm-input-group>
-			</hlm-field>
-
+		<form [formRoot]="boardForm">
 			<hlm-field-group>
 				<hlm-field>
-					<label hlmFieldLabel for="field-preview-comments">Descripcion</label>
-					<textarea hlmTextarea class="resize-none" id="field-preview-comments"></textarea>
+					<label hlmFieldLabel for="field-preview-fullname">Nombre</label>
+					<hlm-input-group>
+						<input
+							[formField]="boardForm.name"
+							hlmInputGroupInput
+							placeholder="Nombre de la pizarra"
+						/>
+						<hlm-input-group-addon>
+							<ng-icon name="lucideSquareMousePointer" />
+						</hlm-input-group-addon>
+					</hlm-input-group>
+					@for (error of boardForm.name().errors(); track error.kind) {
+						<hlm-field-error [validator]="error.kind">
+							{{ error.message }}
+						</hlm-field-error>
+					}
 				</hlm-field>
-			</hlm-field-group>
-		</hlm-field-group>
 
-		<hlm-dialog-footer>
-			<button hlmBtn variant="outline" hlmDialogClose>Cancel</button>
-			<button hlmBtn type="submit">Guardar pizarra</button>
-		</hlm-dialog-footer>
+				<hlm-field-group>
+					<hlm-field>
+						<label hlmFieldLabel for="field-preview-comments">Descripcion</label>
+						<textarea
+							hlmTextarea
+							[formField]="boardForm.description"
+							class="resize-none"
+							id="field-preview-comments"
+						></textarea>
+					</hlm-field>
+				</hlm-field-group>
+			</hlm-field-group>
+
+			<hlm-dialog-footer>
+				<button hlmBtn variant="outline" hlmDialogClose>Cancel</button>
+				<button
+					hlmBtn
+					type="submit"
+					[disabled]="boardForm().submitting() || (boardForm().touched() && boardForm().invalid())"
+				>
+					Guardar pizarra
+				</button>
+			</hlm-dialog-footer>
+		</form>
 	</hlm-dialog-content>
 </hlm-dialog>
