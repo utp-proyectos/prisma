@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core'
+import { Component, computed, inject, input, signal } from '@angular/core'
 import { RouterOutlet } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideTriangle, lucidePlus, lucideMoreHorizontal, lucidePanelLeft } from '@ng-icons/lucide'
@@ -8,6 +8,7 @@ import { CreateKanbanModalState } from '../service/create-kanban-modal-state'
 import { HlmDialogImports } from '@spartan-ng/helm/dialog'
 import { HlmInputImports } from '@spartan-ng/helm/input'
 import { HlmSwitch } from '@spartan-ng/helm/switch'
+import { KanbanApi } from '../service/kanban-api'
 
 import {
 	Sidebar,
@@ -16,6 +17,7 @@ import {
 	NavHeader,
 	type SidebarItemProps,
 } from '@/shared/components/sidebar'
+import { ProjectResponse } from '@/features/home/models/project-response'
 
 @Component({
 	selector: 'app-kanban-layout',
@@ -48,20 +50,24 @@ export class KanbanLayout {
 	createKanbanModalState = inject(CreateKanbanModalState)
 	createKanbanModal = computed(() => this.createKanbanModalState.createKanbanModal())
 
-	protected readonly privateKanban = signal(false)
+	// Para ver los tableros de bd
+	teamId = input<string>()
+	projectId = input<string>()
 
-	protected readonly kanbanItems = signal<SidebarItemProps[]>([
-		{
+	kanbanApi = inject(KanbanApi)
+	kanbansResource = this.kanbanApi.kanbansResource(this.projectId)
+
+	readonly kanbanItems = computed<SidebarItemProps[]>(() => {
+		const kanbans = this.kanbansResource.value()?.data ?? []
+
+		return kanbans.map((kanban) => ({
 			icon: 'lucidePanelLeft',
-			title: 'Tablero general',
-			to: '/team/project/kanban/general',
-		},
-		{
-			icon: 'lucidePanelLeft',
-			title: 'Tablero 1',
-			to: '/team/project/kanban/tablero-1',
-		},
-	])
+			title: kanban.name,
+			to: `/team/${this.teamId()}/project/${this.projectId()}/kanban/${kanban.id}`,
+		}))
+	})
+
+	protected readonly privateKanban = signal(false)
 
 	// protected createNewBoard(): void {
 	// 	const currentBoards = this.tusTableros()

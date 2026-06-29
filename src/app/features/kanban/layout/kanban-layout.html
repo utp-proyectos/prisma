@@ -6,16 +6,18 @@
 		</sidebar-header>
 
 		<sidebar-content [items]="kanbanItems()">
-			<button hlmBtn class="w-full mt-2 mb-4" (click)="createKanbanModalState.open()">
-				<ng-icon name="lucidePlus"></ng-icon>
-				Crear tablero
-			</button>
+			<ng-container append>
+				<button hlmBtn class="w-full mt-2 mb-4" (click)="createKanbanModalState.open()">
+					<ng-icon name="lucidePlus"></ng-icon>
+					Crear tablero
+				</button>
 
-			<hlm-field-separator />
+				<hlm-field-separator />
 
-			<div class="font-medium text-primary px-2 mt-4 mb-2 text-center">
-				Tus Tableros
-			</div>
+				<div class="font-medium text-primary px-2 mt-4 mb-2 text-center">
+					Tus Tableros
+				</div>
+			</ng-container>
 		</sidebar-content>
 	</app-sidebar>
 
