@@ -1,4 +1,4 @@
-import { inject, Service } from '@angular/core'
+import { effect, inject, Service } from '@angular/core'
 import { IMessage, RxStomp } from '@stomp/rx-stomp'
 import SockJS from 'sockjs-client'
 import { AuthService } from './auth.serive'
@@ -11,15 +11,35 @@ export class Websocket {
 	private authService = inject(AuthService)
 
 	constructor() {
+		effect(() => {
+			const user = this.authService.currentUser()
+
+			if (user && user.token) {
+				this.connect(user.token)
+			} else {
+				this.disconnect()
+			}
+		})
+	}
+
+	private connect(token: string) {
+		this.disconnect()
+
 		this.stomp.configure({
 			webSocketFactory: () => new SockJS(`${config.apiUrl}/ws`),
 			connectHeaders: {
-				Authorization: `Bearer ${this.authService.currentUser()?.token}`,
+				Authorization: `Bearer ${token}`,
 			},
 			reconnectDelay: 3000,
 		})
 
 		this.stomp.activate()
+	}
+
+	private disconnect() {
+		if (this.stomp.active) {
+			this.stomp.deactivate()
+		}
 	}
 
 	watch(topic: string): Observable<IMessage> {
