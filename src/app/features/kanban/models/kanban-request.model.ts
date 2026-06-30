@@ -1,7 +1,8 @@
 export interface CreateKanbanRequest {
-	name: string
-	isPrivate: boolean
 	projectId: string
+	teamId: string
+	name: string
+	privateSwitch: boolean
 }
 
 export interface UpdateKanbanRequest {

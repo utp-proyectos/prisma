@@ -1,4 +1,4 @@
-import { ApiReponse } from '@/core/models/api-response.model'
+import { ApiResponse } from '@/core/models/api-response.model'
 import { HttpClient } from '@angular/common/http'
 import { inject, Service } from '@angular/core'
 import { map } from 'rxjs'
@@ -10,6 +10,6 @@ export class InvitationsApi {
 
 	accept = (token: string) =>
 		this.http
-			.get<ApiReponse<AcceptInvitationResponse>>(`/invitations/accept?token=${token}`)
+			.get<ApiResponse<AcceptInvitationResponse>>(`/invitations/accept?token=${token}`)
 			.pipe(map((res) => res.data))
 }

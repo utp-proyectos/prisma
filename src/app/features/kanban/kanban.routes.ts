@@ -13,8 +13,13 @@ export const kanbanRoutes: Routes = [
 				component: MainKanban,
 			},
 			{
-				path: 'tablero-1',
+				path: ':kanbanId',
 				component: KanbanDetail,
+			},
+			{
+				path: '',
+				pathMatch: 'full',
+				redirectTo: 'general',
 			},
 		],
 	},

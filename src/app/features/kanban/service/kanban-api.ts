@@ -22,7 +22,9 @@ export class KanbanApi {
 		)
 
 	createKanban(kanban: CreateKanbanRequest) {
+		console.log('kanban', kanban)
 		this.ws.publish('/app/kanban.create', kanban)
+		console.log('despues publish')
 	}
 
 	updateKanban(kanban: UpdateKanbanRequest) {
@@ -35,9 +37,9 @@ export class KanbanApi {
 		})
 	}
 
-	watchKanbans(projectId: string): Observable<KanbanResponse> {
+	getKanbans(projectId: string, teamId: string): Observable<KanbanResponse> {
 		return this.ws
-			.watch(`/topic/project/${projectId}/kanbans`)
+			.watch(`/topic/${teamId}/${projectId}/kanbans`)
 			.pipe(map((res) => JSON.parse(res.body) as KanbanResponse))
 	}
 }

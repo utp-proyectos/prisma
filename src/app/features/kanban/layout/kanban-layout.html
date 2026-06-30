@@ -26,18 +26,23 @@
 	</div>
 </div>
 
-<hlm-dialog [state]="createKanbanModal()" (closed)="createKanbanModalState.close()">
+<hlm-dialog [state]="createKanbanModal()" (closed)="closeCreateKanbanModal()">
 	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
 		<hlm-dialog-header>
 			<h3 hlmDialogTitle>Crear Tablero</h3>
 			<p hlmDialogDescription>Crea un tablero kanban y empieza a organizar tus tareas</p>
 		</hlm-dialog-header>
 
-		<form>
+		<form [formRoot]="kanbanForm" id="create-kanban-form">
 			<hlm-field-group>
 				<hlm-field>
 					<label hlmFieldLabel for="name">Nombre</label>
-					<input hlmInput id="name" placeholder="Ejem. Campaña" />
+					<input hlmInput id="name" placeholder="Ejem. Campaña" [formField]="kanbanForm.name" />
+					@for (error of kanbanForm.name().errors(); track error.kind) {
+					<hlm-field-error [validator]="error.kind">
+						{{ error.message }}
+					</hlm-field-error>
+					}
 				</hlm-field>
 
 				<hlm-field orientation="horizontal" class="flex items-center gap-3 border px-4 py-2 rounded-lg">
@@ -47,13 +52,13 @@
 							Solo tu tendrás acceso a este tablero
 						</hlm-field-description>
 					</hlm-field-content>
-					<hlm-switch [checked]="privateKanban()" (checkedChange)="privateKanban.set($event)" />
+					<hlm-switch [formField]="kanbanForm.privateSwitch" />
 				</hlm-field>
 			</hlm-field-group>
 		</form>
 		<hlm-dialog-footer>
 			<button hlmBtn variant="outline" hlmDialogClose>Cancelar</button>
-			<button hlmBtn type="submit">Crear</button>
+			<button hlmBtn form="create-kanban-form" type="submit" [disabled]="kanbanForm().submitting()">Crear</button>
 		</hlm-dialog-footer>
 	</hlm-dialog-content>
 </hlm-dialog>
