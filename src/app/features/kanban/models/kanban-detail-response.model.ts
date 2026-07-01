@@ -1,4 +1,4 @@
-import { ColumnKanban } from './column-kanban/column-kanban.model'
+import { ColumnKanbanDetailResponse } from './column-kanban/column-kanban-detail-response.model'
 import { MilestoneDetailResponse } from './milestone/milestone-detail-response.model'
 
 export interface KanbanDetailResponse {
@@ -8,6 +8,6 @@ export interface KanbanDetailResponse {
 	projectId: string
 	creatorId: string
 
-	columns: ColumnKanban[]
+	columns: ColumnKanbanDetailResponse[]
 	milestones: MilestoneDetailResponse[]
 }

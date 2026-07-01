@@ -45,7 +45,6 @@ import { TaskModal } from '../../components/task-modal/task-modal'
 import { CreateTaskModalState } from '../../service/create-task-modal-state'
 import { MilestoneModalComponent } from '../../components/milestone-modal/milestone-modal'
 import { KanbanApi } from '../../service/kanban-api'
-import { ColumnKanban } from '../../models/column-kanban/column-kanban.model'
 import { Task } from '../../models/task.model'
 import { MilestoneDetailResponse } from '../../models/milestone/milestone-detail-response.model'
 import { CreateMilestoneRequest } from '../../models/milestone/milestone-request.model'
@@ -53,6 +52,7 @@ import { disabled, form, minLength, required } from '@angular/forms/signals'
 import { toast } from '@spartan-ng/brain/sonner'
 import { Subscription } from 'rxjs'
 import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
+import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -157,7 +157,7 @@ export class KanbanDetail implements OnDestroy {
 
 	protected readonly onlyMyTasks = signal(false)
 
-	protected dropColumn(event: CdkDragDrop<ColumnKanban[]>) {
+	protected dropColumn(event: CdkDragDrop<ColumnKanbanDetailResponse[]>) {
 		const movable = [...this.movableColumns()]
 
 		moveItemInArray(movable, event.previousIndex, event.currentIndex)
@@ -168,11 +168,11 @@ export class KanbanDetail implements OnDestroy {
 	}
 
 	protected readonly movableColumns = computed(() =>
-		this.columns().filter((column) => !column.isFixed),
+		this.columns().filter((column) => !column.fixed),
 	)
 
 	protected readonly completedColumn = computed(
-		() => this.columns().find((column) => column.isFixed)!,
+		() => this.columns().find((column) => column.fixed)!,
 	)
 
 	protected readonly connectedLists = computed(() => this.columns().map((column) => column.id))
@@ -195,14 +195,19 @@ export class KanbanDetail implements OnDestroy {
 
 	kanbanApi = inject(KanbanApi)
 	milestones = signal<MilestoneSummaryResponse[]>([])
+	columns = signal<ColumnKanbanDetailResponse[]>([])
 	kanbanResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
 
 	constructor() {
 		effect(() => {
 			if (!this.kanbanResource.hasValue()) return
 
-			const initialMilestones = this.kanbanResource.value()?.data.milestones ?? []
-			this.milestones.set(initialMilestones)
+			const data = this.kanbanResource.value()!.data
+
+			console.log('Kanban data:', data.columns)
+
+			this.milestones.set(data.milestones)
+			this.columns.set(data.columns)
 		})
 
 		effect(() => {
@@ -225,50 +230,4 @@ export class KanbanDetail implements OnDestroy {
 	ngOnDestroy() {
 		this.milestoneSub?.unsubscribe()
 	}
-
-	protected readonly columns = signal<ColumnKanban[]>([
-		{
-			id: 'pending',
-			name: 'Pendiente',
-			tasks: [
-				{
-					id: 1,
-					name: 'Diseñar login',
-					assignedTo: 'Alex',
-					dueDate: '22 Jun 2026',
-					priority: 'Alta',
-					status: 'Pendiente',
-				},
-			],
-		},
-		{
-			id: 'progress',
-			name: 'En curso',
-			tasks: [
-				{
-					id: 2,
-					name: 'Implementar JWT',
-					assignedTo: 'Alex',
-					dueDate: '22 Jun 2026',
-					priority: 'Media',
-					status: 'En curso',
-				},
-			],
-		},
-		{
-			id: 'completed',
-			name: 'Completado',
-			isFixed: true,
-			tasks: [
-				{
-					id: 3,
-					name: 'Crear base de datos',
-					assignedTo: 'Alex',
-					dueDate: '22 Jun 2026',
-					priority: 'Alta',
-					status: 'Completado',
-				},
-			],
-		},
-	])
 }
