@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal } from '@angular/core'
+import { Component, effect, inject, input, output, signal } from '@angular/core'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmInputImports } from '@spartan-ng/helm/input'
 import { HlmFieldImports } from '@spartan-ng/helm/field'
@@ -27,12 +27,16 @@ import { toast } from '@spartan-ng/brain/sonner'
 })
 export class MilestoneModalComponent {
 	readonly state = input.required<BrnDialogState | null>()
-	readonly kanbanId = input.required<string>()
 	readonly closed = output<void>()
+
+	// Input para el ws
+	teamId = input.required<string>()
+	projectId = input.required<string>()
+	kanbanId = input.required<string>()
 
 	kanbanApi = inject(KanbanApi)
 
-	milestoneModel = signal<Omit<CreateMilestoneRequest, 'kanbanId'>>({
+	milestoneModel = signal<Omit<CreateMilestoneRequest, 'kanbanId' | 'projectId' | 'teamId'>>({
 		title: '',
 		deadline: '',
 	})
@@ -64,12 +68,14 @@ export class MilestoneModalComponent {
 					try {
 						this.kanbanApi.createMilestone({
 							kanbanId: this.kanbanId(),
+							projectId: this.projectId(),
+							teamId: this.teamId(),
 							...data().value(),
 						})
 
 						toast.success('Hito creado')
 
-						this.close()
+						this.closeCreateMilestoneModal()
 					} catch {
 						toast.error('Error al crear el hito')
 					}
@@ -78,12 +84,15 @@ export class MilestoneModalComponent {
 		},
 	)
 
-	close() {
-		this.milestoneForm().reset({
-			title: '',
-			deadline: '',
+	constructor() {
+		effect(() => {
+			if (this.state() === 'closed') {
+				this.milestoneForm().reset({ title: '', deadline: '' })
+			}
 		})
+	}
 
+	closeCreateMilestoneModal() {
 		this.closed.emit()
 	}
 }

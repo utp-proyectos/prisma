@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core'
+import { Component, computed, effect, inject, input, OnDestroy, signal } from '@angular/core'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import {
 	lucideClock,
@@ -51,6 +51,8 @@ import { MilestoneDetailResponse } from '../../models/milestone/milestone-detail
 import { CreateMilestoneRequest } from '../../models/milestone/milestone-request.model'
 import { disabled, form, minLength, required } from '@angular/forms/signals'
 import { toast } from '@spartan-ng/brain/sonner'
+import { Subscription } from 'rxjs'
+import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -119,7 +121,12 @@ import { toast } from '@spartan-ng/brain/sonner'
 		}
 	`,
 })
-export class KanbanDetail {
+export class KanbanDetail implements OnDestroy {
+	// Input para el ws
+	teamId = input.required<string>()
+	projectId = input.required<string>()
+	kanbanId = input.required<string>()
+
 	// Tabs
 	protected readonly activeTab = signal<string>('hitos')
 
@@ -184,11 +191,40 @@ export class KanbanDetail {
 	}
 
 	// Renderizar hitos
+	private milestoneSub?: Subscription
+
 	kanbanApi = inject(KanbanApi)
-	kanbanId = input.required<string>()
+	milestones = signal<MilestoneSummaryResponse[]>([])
 	kanbanResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
 
-	readonly milestones = computed(() => this.kanbanResource.value()?.data.milestones ?? [])
+	constructor() {
+		effect(() => {
+			if (!this.kanbanResource.hasValue()) return
+
+			const initialMilestones = this.kanbanResource.value()?.data.milestones ?? []
+			this.milestones.set(initialMilestones)
+		})
+
+		effect(() => {
+			if (!this.kanbanId() || !this.projectId() || !this.teamId()) return
+
+			this.milestoneSub?.unsubscribe()
+
+			this.milestoneSub = this.kanbanApi
+				.getMilestones(this.teamId(), this.projectId(), this.kanbanId())
+				.subscribe((event) => {
+					switch (event.action) {
+						case 'CREATE':
+							this.milestones.update((list) => [event.payload, ...list])
+							break
+					}
+				})
+		})
+	}
+
+	ngOnDestroy() {
+		this.milestoneSub?.unsubscribe()
+	}
 
 	protected readonly columns = signal<ColumnKanban[]>([
 		{

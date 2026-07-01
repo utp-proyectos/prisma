@@ -283,8 +283,8 @@
 
 	</div>
 
-	<app-milestone-modal [state]="createMilestoneModal() " [kanbanId]="kanbanId()"
-		(closed)="createMilestoneModal.set('closed')"></app-milestone-modal>
+	<app-milestone-modal [state]="createMilestoneModal() " [kanbanId]="kanbanId()" [projectId]="projectId()"
+		[teamId]="teamId()" (closed)="createMilestoneModal.set('closed')"></app-milestone-modal>
 
 	<app-task-modal [state]="createTaskModal()" (closed)="createTaskModalState.close()">
 	</app-task-modal>

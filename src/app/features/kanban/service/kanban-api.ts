@@ -8,6 +8,7 @@ import { map, Observable } from 'rxjs'
 import { WsResponse } from '@/core/models/ws-response'
 import { KanbanDetailResponse } from '../models/kanban-detail-response.model'
 import { CreateMilestoneRequest } from '../models/milestone/milestone-request.model'
+import { MilestoneSummaryResponse } from '../models/milestone/milestone-summary-response.model'
 
 @Injectable()
 export class KanbanApi {
@@ -48,5 +49,15 @@ export class KanbanApi {
 	createMilestone(milestone: CreateMilestoneRequest) {
 		console.log(milestone)
 		this.ws.publish(`/app/milestone.create`, milestone)
+	}
+
+	getMilestones(
+		teamId: string,
+		projectId: string,
+		kanbanId: string,
+	): Observable<WsResponse<MilestoneSummaryResponse>> {
+		return this.ws
+			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/milestones`)
+			.pipe(map((res) => JSON.parse(res.body) as WsResponse<MilestoneSummaryResponse>))
 	}
 }
