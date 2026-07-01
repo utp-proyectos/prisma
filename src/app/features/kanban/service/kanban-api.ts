@@ -5,6 +5,9 @@ import { KanbanResponse } from '../models/kanban-response.model'
 import { ApiResponse } from '@/core/models/api-response.model'
 import { CreateKanbanRequest, UpdateKanbanRequest } from '../models/kanban-request.model'
 import { map, Observable } from 'rxjs'
+import { WsResponse } from '@/core/models/ws-response'
+import { KanbanDetailResponse } from '../models/kanban-detail-response.model'
+import { CreateMilestoneRequest } from '../models/milestone/milestone-request.model'
 
 @Injectable()
 export class KanbanApi {
@@ -17,14 +20,12 @@ export class KanbanApi {
 		)
 
 	kanbanDetailResource = (kanbanId: Signal<string | undefined>) =>
-		httpResource<ApiResponse<KanbanResponse>>(() =>
+		httpResource<ApiResponse<KanbanDetailResponse>>(() =>
 			kanbanId() ? `/kanbans/${kanbanId()}` : undefined,
 		)
 
 	createKanban(kanban: CreateKanbanRequest) {
-		console.log('kanban', kanban)
 		this.ws.publish('/app/kanban.create', kanban)
-		console.log('despues publish')
 	}
 
 	updateKanban(kanban: UpdateKanbanRequest) {
@@ -37,9 +38,15 @@ export class KanbanApi {
 		})
 	}
 
-	getKanbans(projectId: string, teamId: string): Observable<KanbanResponse> {
+	getKanbans(projectId: string, teamId: string): Observable<WsResponse<KanbanResponse>> {
 		return this.ws
 			.watch(`/topic/${teamId}/${projectId}/kanbans`)
-			.pipe(map((res) => JSON.parse(res.body) as KanbanResponse))
+			.pipe(map((res) => JSON.parse(res.body) as WsResponse<KanbanResponse>))
+	}
+
+	//Para milestones
+	createMilestone(milestone: CreateMilestoneRequest) {
+		console.log(milestone)
+		this.ws.publish(`/app/milestone.create`, milestone)
 	}
 }

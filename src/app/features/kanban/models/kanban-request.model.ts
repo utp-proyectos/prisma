@@ -1,6 +1,5 @@
 export interface CreateKanbanRequest {
 	projectId: string
-	teamId: string
 	name: string
 	privateSwitch: boolean
 }

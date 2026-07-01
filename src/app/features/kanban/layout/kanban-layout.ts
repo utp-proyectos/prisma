@@ -93,7 +93,7 @@ export class KanbanLayout implements OnDestroy {
 	})
 
 	//---------- Modal crear tablero
-	kanbanModel = signal<Omit<CreateKanbanRequest, 'projectId' | 'teamId'>>({
+	kanbanModel = signal<Omit<CreateKanbanRequest, 'projectId'>>({
 		name: '',
 		privateSwitch: false,
 	})
@@ -113,7 +113,6 @@ export class KanbanLayout implements OnDestroy {
 
 						this.kanbanApi.createKanban({
 							projectId: this.projectId()!,
-							teamId: this.teamId()!,
 							...data().value(),
 						})
 						this.createKanbanModalState.close()
@@ -133,18 +132,28 @@ export class KanbanLayout implements OnDestroy {
 		})
 
 		effect(() => {
-			console.log('effect websocket')
-
 			if (!this.projectId()) return
 
 			this.kanbanSub?.unsubscribe()
 
-			console.log('nuevo watch')
-
 			this.kanbanSub = this.kanbanApi
 				.getKanbans(this.projectId(), this.teamId())
-				.subscribe((kanban) => {
-					this.kanbans.update((list) => [kanban, ...list])
+				.subscribe((event) => {
+					switch (event.action) {
+						case 'CREATE':
+							this.kanbans.update((list) => [event.payload, ...list])
+							break
+
+						case 'UPDATE':
+							this.kanbans.update((list) =>
+								list.map((k) => (k.id === event.payload.id ? event.payload : k)),
+							)
+							break
+
+						case 'DELETE':
+							this.kanbans.update((list) => list.filter((k) => k.id !== event.payload.id))
+							break
+					}
 				})
 		})
 	}

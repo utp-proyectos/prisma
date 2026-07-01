@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core'
+import { Component, computed, inject, input, signal } from '@angular/core'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import {
 	lucideClock,
@@ -43,8 +43,14 @@ import { TaskCardComponent } from '@/shared/components/sidebar/components/task-c
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
 import { TaskModal } from '../../components/task-modal/task-modal'
 import { CreateTaskModalState } from '../../service/create-task-modal-state'
-import { KanbanColumn, Milestone, Task } from '../../models'
 import { MilestoneModalComponent } from '../../components/milestone-modal/milestone-modal'
+import { KanbanApi } from '../../service/kanban-api'
+import { ColumnKanban } from '../../models/column-kanban/column-kanban.model'
+import { Task } from '../../models/task.model'
+import { MilestoneDetailResponse } from '../../models/milestone/milestone-detail-response.model'
+import { CreateMilestoneRequest } from '../../models/milestone/milestone-request.model'
+import { disabled, form, minLength, required } from '@angular/forms/signals'
+import { toast } from '@spartan-ng/brain/sonner'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -75,6 +81,7 @@ import { MilestoneModalComponent } from '../../components/milestone-modal/milest
 	],
 	providers: [
 		CreateTaskModalState,
+		KanbanApi,
 		provideIcons({
 			lucidePlus,
 			lucideSearch,
@@ -117,7 +124,7 @@ export class KanbanDetail {
 	protected readonly activeTab = signal<string>('hitos')
 
 	// Hito seleccionado
-	protected readonly selectedMilestone = signal<Milestone | null>(null)
+	protected readonly selectedMilestone = signal<MilestoneDetailResponse | null>(null)
 
 	// Modales
 	createMilestoneModal = signal<BrnDialogState>('closed')
@@ -133,7 +140,7 @@ export class KanbanDetail {
 		}
 	}
 
-	protected viewMilestoneDetail(milestone: Milestone): void {
+	protected viewMilestoneDetail(milestone: MilestoneDetailResponse): void {
 		this.selectedMilestone.set(milestone)
 	}
 
@@ -143,7 +150,7 @@ export class KanbanDetail {
 
 	protected readonly onlyMyTasks = signal(false)
 
-	protected dropColumn(event: CdkDragDrop<KanbanColumn[]>) {
+	protected dropColumn(event: CdkDragDrop<ColumnKanban[]>) {
 		const movable = [...this.movableColumns()]
 
 		moveItemInArray(movable, event.previousIndex, event.currentIndex)
@@ -176,37 +183,14 @@ export class KanbanDetail {
 		}
 	}
 
-	protected readonly milestones: Milestone[] = [
-		{
-			id: 1,
-			name: 'Hito 1',
-			deadline: 'Jun 1, 2026',
-			progress: 100,
-			totalTasks: 2,
-			completedTasks: 2,
-			status: 'Completado',
-			tasks: [
-				{
-					id: 101,
-					name: 'Tarea 1',
-					assignedTo: 'user',
-					dueDate: '22 Jun 2026',
-					priority: 'Alta',
-					status: 'Completado',
-				},
-				{
-					id: 102,
-					name: 'Tarea 2',
-					assignedTo: 'user',
-					dueDate: '22 Jun 2026',
-					priority: 'Baja',
-					status: 'Completado',
-				},
-			],
-		},
-	]
+	// Renderizar hitos
+	kanbanApi = inject(KanbanApi)
+	kanbanId = input.required<string>()
+	kanbanResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
 
-	protected readonly columns = signal<KanbanColumn[]>([
+	readonly milestones = computed(() => this.kanbanResource.value()?.data.milestones ?? [])
+
+	protected readonly columns = signal<ColumnKanban[]>([
 		{
 			id: 'pending',
 			name: 'Pendiente',
