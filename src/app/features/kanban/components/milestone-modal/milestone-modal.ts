@@ -63,8 +63,6 @@ export class MilestoneModalComponent {
 		{
 			submission: {
 				action: async (data) => {
-					console.log(data().value())
-
 					try {
 						this.kanbanApi.createMilestone({
 							kanbanId: this.kanbanId(),

@@ -53,6 +53,7 @@ import { toast } from '@spartan-ng/brain/sonner'
 import { Subscription } from 'rxjs'
 import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
 import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
+import { ColumnKanbanModalComponent } from '../../components/column-kanban-modal/column-kanban-modal'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -80,6 +81,7 @@ import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-ka
 		HlmFieldImports,
 		TaskModal,
 		MilestoneModalComponent,
+		ColumnKanbanModalComponent,
 	],
 	providers: [
 		CreateTaskModalState,
@@ -135,6 +137,7 @@ export class KanbanDetail implements OnDestroy {
 
 	// Modales
 	createMilestoneModal = signal<BrnDialogState>('closed')
+	createColumnKanbanModal = signal<BrnDialogState>('closed')
 
 	createTaskModalState = inject(CreateTaskModalState)
 	createTaskModal = computed(() => this.createTaskModalState.createTaskModal())
@@ -159,11 +162,8 @@ export class KanbanDetail implements OnDestroy {
 
 	protected dropColumn(event: CdkDragDrop<ColumnKanbanDetailResponse[]>) {
 		const movable = [...this.movableColumns()]
-
 		moveItemInArray(movable, event.previousIndex, event.currentIndex)
-
 		const completed = this.completedColumn()
-
 		this.columns.set([...movable, completed])
 	}
 
@@ -190,8 +190,9 @@ export class KanbanDetail implements OnDestroy {
 		}
 	}
 
-	// Renderizar hitos
+	// Renderizar hitos y columnas
 	private milestoneSub?: Subscription
+	private columnSub?: Subscription
 
 	kanbanApi = inject(KanbanApi)
 	milestones = signal<MilestoneSummaryResponse[]>([])
@@ -225,9 +226,26 @@ export class KanbanDetail implements OnDestroy {
 					}
 				})
 		})
+
+		effect(() => {
+			if (!this.kanbanId() || !this.projectId() || !this.teamId()) return
+
+			this.columnSub?.unsubscribe()
+
+			this.columnSub = this.kanbanApi
+				.getColumnsKanban(this.teamId(), this.projectId(), this.kanbanId())
+				.subscribe((event) => {
+					switch (event.action) {
+						case 'CREATE':
+							this.columns.update((list) => [...list, event.payload])
+							break
+					}
+				})
+		})
 	}
 
 	ngOnDestroy() {
 		this.milestoneSub?.unsubscribe()
+		this.columnSub?.unsubscribe()
 	}
 }

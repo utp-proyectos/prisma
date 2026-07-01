@@ -5,6 +5,6 @@ export interface ColumnKanbanDetailResponse {
 	title: string
 	position: number
 	fixed?: boolean
-	ColumnType?: 'PENDIENTE' | 'EN_PROGRESO' | 'COMPLETADO'
+	ColumnType?: 'PENDING' | ' IN_PROGRESS' | 'COMPLETED' | 'CUSTOM'
 	tasks: Task[]
 }

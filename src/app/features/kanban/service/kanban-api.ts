@@ -9,6 +9,8 @@ import { WsResponse } from '@/core/models/ws-response'
 import { KanbanDetailResponse } from '../models/kanban-detail-response.model'
 import { CreateMilestoneRequest } from '../models/milestone/milestone-request.model'
 import { MilestoneSummaryResponse } from '../models/milestone/milestone-summary-response.model'
+import { CreateColumnKanbanRequest } from '../models/column-kanban/column-kanban-request.model'
+import { ColumnKanbanDetailResponse } from '../models/column-kanban/column-kanban-detail-response.model'
 
 @Injectable()
 export class KanbanApi {
@@ -47,7 +49,6 @@ export class KanbanApi {
 
 	//Para milestones
 	createMilestone(milestone: CreateMilestoneRequest) {
-		console.log(milestone)
 		this.ws.publish(`/app/milestone.create`, milestone)
 	}
 
@@ -59,5 +60,21 @@ export class KanbanApi {
 		return this.ws
 			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/milestones`)
 			.pipe(map((res) => JSON.parse(res.body) as WsResponse<MilestoneSummaryResponse>))
+	}
+
+	//Para columnas
+	createColumn(columnKanban: CreateColumnKanbanRequest) {
+		console.log('columnKanban', columnKanban)
+		this.ws.publish(`/app/columnKanban.create`, columnKanban)
+	}
+
+	getColumnsKanban(
+		teamId: string,
+		projectId: string,
+		kanbanId: string,
+	): Observable<WsResponse<ColumnKanbanDetailResponse>> {
+		return this.ws
+			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/columns`)
+			.pipe(map((res) => JSON.parse(res.body) as WsResponse<ColumnKanbanDetailResponse>))
 	}
 }

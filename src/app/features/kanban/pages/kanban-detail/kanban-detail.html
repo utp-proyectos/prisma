@@ -230,7 +230,7 @@
 
 						<div class="w-72 shrink-0">
 
-							<button hlmBtn class="w-full">
+							<button hlmBtn class="w-full" (click)="createColumnKanbanModal.set('open')">
 								<ng-icon name="lucidePlus" />
 								Nueva columna
 							</button>
@@ -285,6 +285,10 @@
 
 	<app-milestone-modal [state]="createMilestoneModal() " [kanbanId]="kanbanId()" [projectId]="projectId()"
 		[teamId]="teamId()" (closed)="createMilestoneModal.set('closed')"></app-milestone-modal>
+
+
+	<app-column-kanban-modal [state]="createColumnKanbanModal()" [kanbanId]="kanbanId()" [projectId]="projectId()"
+		[teamId]="teamId()" (closed)="createColumnKanbanModal.set('closed')"></app-column-kanban-modal>
 
 	<app-task-modal [state]="createTaskModal()" (closed)="createTaskModalState.close()">
 	</app-task-modal>
