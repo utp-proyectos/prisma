@@ -1,4 +1,4 @@
-import { ApiReponse } from '@/core/models/api-response.model'
+import { ApiResponse } from '@/core/models/api-response.model'
 import { HttpClient } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
 import { map, Observable } from 'rxjs'
@@ -16,7 +16,7 @@ export class ApiKanbanDeadlineRepository extends KanbanDeadlineRepository {
 		endDate: Date,
 	): Observable<KanbanDeadline[]> {
 		return this.http
-			.get<ApiReponse<CalendarItemResponse[]>>(`/projects/${projectId}/calendar`, {
+			.get<ApiResponse<CalendarItemResponse[]>>(`/projects/${projectId}/calendar`, {
 				params: {
 					startDate: toDateOnly(startDate),
 					endDate: toDateOnly(endDate),
