@@ -13,6 +13,7 @@ import { CreateColumnKanbanRequest } from '../models/column-kanban/column-kanban
 import { ColumnKanbanDetailResponse } from '../models/column-kanban/column-kanban-detail-response.model'
 import { CreateTaskRequest, UpdateTaskRequest } from '../models/task/task-request.model'
 import { TaskDetailResponse } from '../models/task/task-detail-response.model'
+import { ReorderColumnsRequest, ReorderTasksRequest } from '../models/reorder.model'
 
 @Injectable()
 export class KanbanApi {
@@ -97,5 +98,13 @@ export class KanbanApi {
 		return this.ws
 			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/tasks`)
 			.pipe(map((res) => JSON.parse(res.body) as WsResponse<TaskDetailResponse>))
+	}
+
+	reorderColumns(payload: ReorderColumnsRequest) {
+		this.ws.publish('/app/columnKanban.reorder', payload)
+	}
+
+	reorderTasks(payload: ReorderTasksRequest) {
+		this.ws.publish('/app/task.reorder', payload)
 	}
 }

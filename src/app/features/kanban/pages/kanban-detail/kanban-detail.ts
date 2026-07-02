@@ -130,6 +130,7 @@ export class KanbanDetail implements OnDestroy {
 
 	// Tabs
 	protected readonly activeTab = signal<string>('hitos')
+	protected readonly onlyMyTasks = signal(false)
 
 	// Hito seleccionado
 	protected readonly selectedMilestone = signal<MilestoneDetailResponse | null>(null)
@@ -153,8 +154,6 @@ export class KanbanDetail implements OnDestroy {
 	protected closeDetail(): void {
 		this.selectedMilestone.set(null)
 	}
-
-	protected readonly onlyMyTasks = signal(false)
 
 	protected dropColumn(event: CdkDragDrop<ColumnKanbanDetailResponse[]>) {
 		const movable = [...this.movableColumns()]
