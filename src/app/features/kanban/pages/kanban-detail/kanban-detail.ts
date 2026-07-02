@@ -132,27 +132,41 @@ export class KanbanDetail implements OnDestroy {
 	protected readonly activeTab = signal<string>('hitos')
 	protected readonly onlyMyTasks = signal(false)
 
-	// Hito seleccionado
-	protected readonly selectedMilestone = signal<MilestoneDetailResponse | null>(null)
-
 	// Modales
 	createMilestoneModal = signal<BrnDialogState>('closed')
 	createColumnKanbanModal = signal<BrnDialogState>('closed')
 
+	// conexion bd
+	kanbanApi = inject(KanbanApi)
+	teamApi = inject(TeamApi)
+	milestones = signal<MilestoneSummaryResponse[]>([])
+	columns = signal<ColumnKanbanDetailResponse[]>([])
+
+	protected readonly selectedMilestoneId = signal<string | null>(null)
+
+	protected readonly milestoneDetailRes = this.kanbanApi.milestoneDetailResource(
+		this.selectedMilestoneId,
+	)
+
+	protected readonly selectedMilestone = computed(() => {
+		if (!this.milestoneDetailRes.hasValue()) return null
+
+		return this.milestoneDetailRes.value()?.data ?? null
+	})
+
 	protected changeTab(tabName: string): void {
 		this.activeTab.set(tabName)
-
 		if (tabName !== 'hitos') {
-			this.selectedMilestone.set(null)
+			this.selectedMilestoneId.set(null)
 		}
 	}
 
-	protected viewMilestoneDetail(milestone: MilestoneDetailResponse): void {
-		this.selectedMilestone.set(milestone)
+	protected viewMilestoneDetail(milestone: MilestoneSummaryResponse): void {
+		this.selectedMilestoneId.set(milestone.id)
 	}
 
 	protected closeDetail(): void {
-		this.selectedMilestone.set(null)
+		this.selectedMilestoneId.set(null)
 	}
 
 	protected dropColumn(event: CdkDragDrop<ColumnKanbanDetailResponse[]>) {
@@ -220,11 +234,6 @@ export class KanbanDetail implements OnDestroy {
 	private taskSub?: Subscription
 	private columnReorderSub?: Subscription
 	private taskReorderSub?: Subscription
-
-	kanbanApi = inject(KanbanApi)
-	teamApi = inject(TeamApi)
-	milestones = signal<MilestoneSummaryResponse[]>([])
-	columns = signal<ColumnKanbanDetailResponse[]>([])
 
 	teamDetailResource = this.teamApi.teamDetailResource(this.teamId)
 
@@ -361,6 +370,12 @@ export class KanbanDetail implements OnDestroy {
 									}
 								})
 							})
+
+							if (this.selectedMilestoneId()) {
+								this.milestoneDetailRes.reload()
+							}
+
+							this.kanbanResource.reload()
 
 							break
 					}

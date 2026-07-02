@@ -14,6 +14,7 @@ import { ColumnKanbanDetailResponse } from '../models/column-kanban/column-kanba
 import { CreateTaskRequest, UpdateTaskRequest } from '../models/task/task-request.model'
 import { TaskDetailResponse } from '../models/task/task-detail-response.model'
 import { ReorderColumnsRequest, ReorderTasksRequest } from '../models/reorder.model'
+import { MilestoneDetailResponse } from '../models/milestone/milestone-detail-response.model'
 
 @Injectable()
 export class KanbanApi {
@@ -51,6 +52,11 @@ export class KanbanApi {
 	}
 
 	//Para milestones
+	milestoneDetailResource = (milestoneId: Signal<string | null>) =>
+		httpResource<ApiResponse<MilestoneDetailResponse>>(() =>
+			milestoneId() ? `/milestones/${milestoneId()}` : undefined,
+		)
+
 	createMilestone(milestone: CreateMilestoneRequest) {
 		this.ws.publish(`/app/milestone.create`, milestone)
 	}

@@ -99,6 +99,12 @@
 						Regresar a hitos
 					</button>
 
+					@if (milestoneDetailRes.isLoading()) {
+					<div class="flex items-center justify-center py-12 text-zinc-400 gap-2">
+						<span class="animate-spin rounded-full h-4 w-4 border border-zinc-500 border-t-transparent"></span>
+						Cargando tareas del hito...
+					</div>
+					} @else {
 					<div class="flex items-center justify-between gap-4 mt-2">
 						<div class="flex items-center gap-3">
 							<h4 class="text-2xl font-bold text-white">{{ selectedMilestone()?.title }}</h4>
@@ -128,9 +134,9 @@
 									<th hlmTableHead>
 										<div class="flex items-center gap-1.5"><ng-icon name="lucideFlag" /><span>Prioridad</span></div>
 									</th>
-									<th hlmTableHead>
+									<!-- <th hlmTableHead>
 										<div class="flex items-center gap-1.5"><ng-icon name="lucideClock" /><span>Estado</span></div>
-									</th>
+									</th> -->
 									<th hlmTableHead class="text-right">Acción</th>
 								</tr>
 							</thead>
@@ -145,7 +151,9 @@
 										</div>
 									</td>
 									<td hlmTableCell><span class="text-zinc-400">{{ task.priority }}</span></td>
-									<td hlmTableCell><span class="text-emerald-400">{{ task.priority }}</span></td>
+
+									<!-- <td hlmTableCell><span class="text-emerald-400">{{ task. || 'Pendiente' }}</span></td> -->
+
 									<td hlmTableCell class="text-right">
 										<button hlmBtn variant="ghost" size="icon-sm">
 											<ng-icon name="lucideMoreHorizontal" />
@@ -162,6 +170,7 @@
 							</tbody>
 						</table>
 					</div>
+					}
 				</div>
 				}
 
