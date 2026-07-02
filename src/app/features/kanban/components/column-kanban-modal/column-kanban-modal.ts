@@ -1,31 +1,29 @@
 import { Component, effect, inject, input, output, signal } from '@angular/core'
+import { KanbanApi } from '../../service/kanban-api'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmInputImports } from '@spartan-ng/helm/input'
 import { HlmFieldImports } from '@spartan-ng/helm/field'
 import { HlmDialogImports } from '@spartan-ng/helm/dialog'
-import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker'
-import { BrnDialogState } from '@spartan-ng/brain/dialog'
-import { CreateMilestoneRequest } from '../../models/milestone/milestone-request.model'
 import { disabled, form, FormField, FormRoot, minLength, required } from '@angular/forms/signals'
-import { KanbanApi } from '../../service/kanban-api'
+import { BrnDialogState } from '@spartan-ng/brain/dialog'
+import { CreateColumnKanbanRequest } from '../../models/column-kanban/column-kanban-request.model'
 import { toast } from '@spartan-ng/brain/sonner'
 
 @Component({
-	selector: 'app-milestone-modal',
+	selector: 'app-column-kanban-modal',
 	standalone: true,
 	imports: [
 		HlmButtonImports,
 		HlmInputImports,
 		HlmFieldImports,
 		HlmDialogImports,
-		HlmDatePickerImports,
 		FormField,
 		FormRoot,
 	],
 	providers: [KanbanApi],
-	templateUrl: './milestone-modal.html',
+	templateUrl: './column-kanban-modal.html',
 })
-export class MilestoneModalComponent {
+export class ColumnKanbanModalComponent {
 	readonly state = input.required<BrnDialogState | null>()
 	readonly closed = output<void>()
 
@@ -36,46 +34,34 @@ export class MilestoneModalComponent {
 
 	kanbanApi = inject(KanbanApi)
 
-	milestoneModel = signal<Omit<CreateMilestoneRequest, 'kanbanId' | 'projectId' | 'teamId'>>({
+	columnKanbanModel = signal<Omit<CreateColumnKanbanRequest, 'kanbanId' | 'projectId' | 'teamId'>>({
 		title: '',
-		deadline: '',
 	})
 
-	milestoneForm = form(
-		this.milestoneModel,
+	columnKanbanForm = form(
+		this.columnKanbanModel,
 		(schemaPath) => {
-			required(schemaPath.title, {
-				message: 'El nombre es requerido',
-			})
-
-			minLength(schemaPath.title, 2, {
-				message: 'Debe tener al menos 2 caracteres',
-			})
-
-			required(schemaPath.deadline, {
-				message: 'La fecha límite es requerida',
-			})
-
-			disabled(schemaPath, {
-				when: ({ state }) => state.submitting(),
-			})
+			required(schemaPath.title, { message: 'El nombre es requerido' })
+			minLength(schemaPath.title, 2, { message: 'El nombre debe tener al menos 2 caracteres' })
+			disabled(schemaPath, { when: ({ state }) => state.submitting() })
 		},
 		{
 			submission: {
 				action: async (data) => {
+					console.log(data().value())
+
 					try {
-						this.kanbanApi.createMilestone({
+						this.kanbanApi.createColumn({
 							kanbanId: this.kanbanId(),
 							projectId: this.projectId(),
 							teamId: this.teamId(),
 							...data().value(),
 						})
 
-						toast.success('Hito creado')
-
-						this.closeCreateMilestoneModal()
+						this.closeCreateColumnKanbanModal()
+						toast.success('Columna creada')
 					} catch {
-						toast.error('Error al crear el hito')
+						toast.error('Error al crear la columna')
 					}
 				},
 			},
@@ -85,12 +71,12 @@ export class MilestoneModalComponent {
 	constructor() {
 		effect(() => {
 			if (this.state() === 'closed') {
-				this.milestoneForm().reset({ title: '', deadline: '' })
+				this.columnKanbanForm().reset({ title: '' })
 			}
 		})
 	}
 
-	closeCreateMilestoneModal() {
+	closeCreateColumnKanbanModal() {
 		this.closed.emit()
 	}
 }

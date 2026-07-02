@@ -11,8 +11,6 @@
 			<hlm-tabs-list class="w-full max-w-md mb-4 mx-auto">
 				<button hlmTabsTrigger="hitos">Hitos</button>
 				<button hlmTabsTrigger="kanban">Kanban</button>
-				<button hlmTabsTrigger="tablas">Tablas</button>
-				<button hlmTabsTrigger="gantt">Gantt</button>
 			</hlm-tabs-list>
 
 			<hlm-separator />
@@ -139,7 +137,7 @@
 							<tbody hlmTableBody>
 								@for (task of selectedMilestone()?.tasks; track task.id) {
 								<tr hlmTableRow>
-									<td hlmTableCell class="font-medium text-zinc-200">{{ task.name }}</td>
+									<td hlmTableCell class="font-medium text-zinc-200">{{ task.title }}</td>
 									<td hlmTableCell>
 										<div
 											class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
@@ -147,7 +145,7 @@
 										</div>
 									</td>
 									<td hlmTableCell><span class="text-zinc-400">{{ task.priority }}</span></td>
-									<td hlmTableCell><span class="text-emerald-400">{{ task.status }}</span></td>
+									<td hlmTableCell><span class="text-emerald-400">{{ task.priority }}</span></td>
 									<td hlmTableCell class="text-right">
 										<button hlmBtn variant="ghost" size="icon-sm">
 											<ng-icon name="lucideMoreHorizontal" />
@@ -211,7 +209,7 @@
 									@for(task of column.tasks; track task.id) {
 
 									<div cdkDrag>
-										<app-task-card [task]="task" />
+										<app-task-card [task]="task" (opened)="openEditTask($event)" />
 									</div>
 									}
 
@@ -219,7 +217,7 @@
 							</ng-scrollbar>
 
 
-							<button hlmBtn class="w-full mt-auto">
+							<button hlmBtn class="w-full mt-auto" (click)="openCreateTask(column)">
 								<ng-icon name="lucidePlus" />
 								Crear tarea
 							</button>
@@ -230,7 +228,7 @@
 
 						<div class="w-72 shrink-0">
 
-							<button hlmBtn class="w-full">
+							<button hlmBtn class="w-full" (click)="createColumnKanbanModal.set('open')">
 								<ng-icon name="lucidePlus" />
 								Nueva columna
 							</button>
@@ -261,7 +259,7 @@
 									@for(task of completed.tasks; track task.id) {
 
 									<div cdkDrag>
-										<app-task-card [task]="task" />
+										<app-task-card [task]="task" (opened)="openEditTask($event)" />
 									</div>
 									}
 								</div>
@@ -271,14 +269,6 @@
 					</div>
 				</ng-scrollbar>
 			</div>
-
-			<div hlmTabsContent="tablas">
-				Contenido de tablas
-			</div>
-
-			<div hlmTabsContent="gantt">
-				Contenido de gantt
-			</div>
 		</hlm-tabs>
 
 	</div>
@@ -286,5 +276,11 @@
 	<app-milestone-modal [state]="createMilestoneModal() " [kanbanId]="kanbanId()" [projectId]="projectId()"
 		[teamId]="teamId()" (closed)="createMilestoneModal.set('closed')"></app-milestone-modal>
 
-	<app-task-modal [state]="createTaskModal()" (closed)="createTaskModalState.close()">
+
+	<app-column-kanban-modal [state]="createColumnKanbanModal()" [kanbanId]="kanbanId()" [projectId]="projectId()"
+		[teamId]="teamId()" (closed)="createColumnKanbanModal.set('closed')"></app-column-kanban-modal>
+
+	<app-task-modal [state]="createTaskModal()" [columns]="columns()" [milestones]="milestones()"
+		[workspaceMembers]="workspaceMembers()" [task]="selectedTask()" [kanbanId]="kanbanId()" [projectId]="projectId()"
+		[teamId]="teamId()" (closed)="createTaskModalState.close(); selectedTask.set(null)">
 	</app-task-modal>

@@ -1,5 +1,5 @@
 export interface MilestoneSummaryResponse {
-	id: number
+	id: string
 	title: string
 	deadline: string
 	progress: number

@@ -110,7 +110,7 @@
 									Podras ver el avance de los miembros
 								</hlm-field-description>
 							</hlm-field-content>
-							<hlm-switch [checked]="isGroupTask()" (checkedChange)="isGroupTask.set($event)" />
+							<hlm-switch [checked]="isGroupTask()" (checkedChange)="changeGroupTask($event)" />
 						</hlm-field>
 
 						<hlm-field>
@@ -124,13 +124,13 @@
 								@for(member of visibleMembers(); track member.id){
 
 								<button hlmBtn variant="outline" size="icon-sm" [hlmDropdownMenuTrigger]="memberMenu">
-									{{ member.initials }}
+									{{ getInitials(member) }}
 								</button>
 
 								<ng-template #memberMenu>
 									<hlm-dropdown-menu>
 										<div class="px-2 py-1 text-sm font-medium">
-											{{ member.name }}
+											{{ member.name }} {{ member.lastName }}
 										</div>
 
 										<hlm-dropdown-menu-separator />
@@ -164,9 +164,9 @@
 											<div class="flex items-center justify-between w-full">
 												<div class="flex items-center gap-3">
 													<div class="size-8 rounded-full bg-secondary flex items-center justify-center">
-														{{ member.initials }}
+														{{ getInitials(member) }}
 													</div>
-													{{ member.name }}
+													{{ member.name }} {{ member.lastName }}
 												</div>
 
 												<span class="text-destructive text-xs ml-2"> Quitar </span>
@@ -201,7 +201,7 @@
 										<button hlmDropdownMenuItem (click)="assignMember(member)">
 											<div class="flex items-center gap-3">
 												<div class="size-8 rounded-full bg-secondary flex items-center justify-center">
-													{{ member.initials }}
+													{{ getInitials(member) }}
 												</div>
 
 												<span> {{ member.name }} </span>
@@ -216,38 +216,19 @@
 						</hlm-field>
 
 						<hlm-field>
-							<label hlmFieldLabel>Tablero</label>
+							<label hlmFieldLabel>Columnas</label>
 
-							<hlm-select [itemToString]="tableroToString">
+							<hlm-select [value]="selectedColumnId()" (valueChange)="changeColumn($event)"
+								[itemToString]="columnToString">
 								<hlm-select-trigger class="w-full">
-									<hlm-select-value placeholder="Seleccionar tablero" />
+									<hlm-select-value placeholder="Seleccionar columna" />
 								</hlm-select-trigger>
 
 								<hlm-select-content *hlmSelectPortal>
 									<hlm-select-group>
-										@for (tablero of tableros; track tablero.value) {
-										<hlm-select-item [value]="tablero.value">
-											{{ tablero.label }}
-										</hlm-select-item>
-										}
-									</hlm-select-group>
-								</hlm-select-content>
-							</hlm-select>
-						</hlm-field>
-
-						<hlm-field>
-							<label hlmFieldLabel>Estado</label>
-
-							<hlm-select [itemToString]="stateToString">
-								<hlm-select-trigger class="w-full">
-									<hlm-select-value placeholder="Pendiente" />
-								</hlm-select-trigger>
-
-								<hlm-select-content *hlmSelectPortal>
-									<hlm-select-group>
-										@for (state of states; track state.value) {
-										<hlm-select-item [value]="state.value">
-											{{ state.label }}
+										@for (column of columns(); track column.id) {
+										<hlm-select-item [value]="column.id">
+											{{ column.title }}
 										</hlm-select-item>
 										}
 									</hlm-select-group>
@@ -260,7 +241,7 @@
 							<label hlmFieldLabel>Tipo de fecha</label>
 
 							<hlm-radio-group class="grid grid-cols-3 gap-3 mt-2" [value]="dateType()"
-								(valueChange)="dateType.set($event)">
+								(valueChange)="changeDateType($any($event))">
 
 								<label hlmLabel [class]="radioCardClass">
 									<hlm-radio value="none">
@@ -288,19 +269,16 @@
 						</hlm-field>
 
 						@if(dateType() === 'manual') {
-
 						<hlm-field class="w-full mt-4">
 							<label hlmFieldLabel for="date">
 								Fecha límite
 							</label>
 
-							<hlm-date-picker class="w-full">
-								<hlm-date-picker-trigger buttonId="date" class="w-full justify-between">
-									Selecciona la fecha límite
-								</hlm-date-picker-trigger>
-							</hlm-date-picker>
+							<div class="relative w-full">
+								<input hlmInput type="date" id="date" class="w-full justify-between" [value]="deadline() ?? ''"
+									(change)="changeManualDeadline($any($event.target).value)" />
+							</div>
 						</hlm-field>
-
 						}
 
 						@if(dateType() === 'milestone') {
@@ -310,7 +288,8 @@
 								Hito
 							</label>
 
-							<hlm-select [itemToString]="milestoneToString">
+							<hlm-select [value]="selectedMilestoneId()" (valueChange)="changeMilestone($event)"
+								[itemToString]="milestoneToString">
 								<hlm-select-trigger class="w-full">
 									<hlm-select-value placeholder="Selecciona un hito" />
 								</hlm-select-trigger>
@@ -318,10 +297,10 @@
 								<hlm-select-content *hlmSelectPortal>
 
 									<hlm-select-group>
-										@for(milestone of milestones; track milestone.value){
+										@for(milestone of milestones(); track milestone.id){
 
-										<hlm-select-item [value]="milestone.value">
-											{{ milestone.label }}
+										<hlm-select-item [value]="milestone.id">
+											{{ milestone.title }}
 										</hlm-select-item>
 
 										}
@@ -335,7 +314,7 @@
 						<hlm-field>
 							<label hlmFieldLabel>Prioridad</label>
 
-							<hlm-select [itemToString]="priorityToString">
+							<hlm-select [value]="priority()" (valueChange)="changePriority($event)" [itemToString]="priorityToString">
 								<hlm-select-trigger class="w-full">
 									<hlm-select-value placeholder="Pendiente" />
 								</hlm-select-trigger>

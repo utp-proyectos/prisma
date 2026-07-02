@@ -1,10 +1,10 @@
-import { Task } from '../task.model'
+import { TaskDetailResponse } from '../task/task-detail-response.model'
 
 export interface ColumnKanbanDetailResponse {
 	id: string
 	title: string
 	position: number
 	fixed?: boolean
-	ColumnType?: 'PENDIENTE' | 'EN_PROGRESO' | 'COMPLETADO'
-	tasks: Task[]
+	ColumnType?: 'PENDING' | ' IN_PROGRESS' | 'COMPLETED' | 'CUSTOM'
+	tasks: TaskDetailResponse[]
 }
