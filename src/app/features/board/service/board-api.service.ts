@@ -8,7 +8,7 @@ import { BoardDetail } from '../models/board-detail'
 import { FolderRequest } from '../models/folder-request'
 import { Websocket } from '@/core/servies/websocket'
 import { map, Observable, tap } from 'rxjs'
-import { ApiReponse } from '../../../core/models/api-response.model'
+import { ApiResponse } from '../../../core/models/api-response.model'
 
 @Injectable({ providedIn: 'root' })
 export class BoardApiService {
@@ -16,13 +16,13 @@ export class BoardApiService {
 	private ws = inject(Websocket)
 
 	boardsResource = (projectId: Signal<string | undefined>, isPrivate: boolean) =>
-		httpResource<ApiReponse<Board[]>>(() =>
+		httpResource<ApiResponse<Board[]>>(() =>
 			// ← ApiReponse<Board[]>
 			projectId() ? `projects/${projectId()}/boards?isPrivate=${isPrivate}` : undefined,
 		)
 
 	foldersResource = (projectId: Signal<string | undefined>, isPrivate: boolean) =>
-		httpResource<ApiReponse<Folder[]>>(() =>
+		httpResource<ApiResponse<Folder[]>>(() =>
 			// ← ApiReponse<Folder[]>
 			projectId() ? `projects/${projectId()}/folders?isPrivate=${isPrivate}` : undefined,
 		)
