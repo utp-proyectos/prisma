@@ -178,7 +178,7 @@ export class Team implements OnDestroy {
 	}
 
 	ngOnDestroy() {
-		;`	this.projectSub?.unsubscribe()`
+		this.projectSub?.unsubscribe()
 	}
 
 	public readonly optionToString = (value: string) =>

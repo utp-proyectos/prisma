@@ -2,7 +2,7 @@ import { HttpClient, httpResource } from '@angular/common/http'
 import { inject, Injectable, Service, Signal } from '@angular/core'
 import { TeamResponse } from '../models/team-response.model'
 
-import { ApiReponse } from '@/core/models/api-response.model'
+import { ApiResponse } from '@/core/models/api-response.model'
 import { TeamRequest } from '../models/team-request.model'
 import { firstValueFrom, map, Observable, tap } from 'rxjs'
 import { TeamDetailResponse } from '../models/team-detail-response'
@@ -16,16 +16,16 @@ export class TeamApi {
 	http = inject(HttpClient)
 	ws = inject(Websocket)
 
-	teamResource = httpResource<ApiReponse<TeamResponse[]>>(() => '/teams')
+	teamResource = httpResource<ApiResponse<TeamResponse[]>>(() => '/teams')
 
 	teamDetailResource = (teamId: Signal<string | undefined>) =>
-		httpResource<ApiReponse<TeamDetailResponse>>(() =>
+		httpResource<ApiResponse<TeamDetailResponse>>(() =>
 			teamId() ? `/teams/${teamId()}` : undefined,
 		)
 
 	createTeam = (team: TeamRequest) =>
 		firstValueFrom(
-			this.http.post<ApiReponse<TeamResponse>>('/teams', team).pipe(
+			this.http.post<ApiResponse<TeamResponse>>('/teams', team).pipe(
 				tap(() => this.teamResource.reload()),
 				map((res) => res.data),
 			),

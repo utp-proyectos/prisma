@@ -10,6 +10,6 @@ export class CreateKanbanModalState {
 	}
 
 	close() {
-		this.createKanbanModal.set(null)
+		this.createKanbanModal.set('closed')
 	}
 }

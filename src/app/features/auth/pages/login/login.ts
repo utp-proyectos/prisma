@@ -7,7 +7,7 @@ import { HlmFieldImports } from '@spartan-ng/helm/field'
 import { HlmInputImports } from '@spartan-ng/helm/input'
 import { Router, RouterLink } from '@angular/router'
 import { AuthHeader } from '../../components/auth-header/auth-header'
-import { LoginRequest } from '../model/login-request'
+import { LoginRequest } from '../../model/login-request'
 import {
 	disabled,
 	email,

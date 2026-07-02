@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core'
+import { Component, computed, effect, inject, input, OnDestroy, signal } from '@angular/core'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import {
 	lucideClock,
@@ -43,8 +43,15 @@ import { TaskCardComponent } from '@/shared/components/sidebar/components/task-c
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
 import { TaskModal } from '../../components/task-modal/task-modal'
 import { CreateTaskModalState } from '../../service/create-task-modal-state'
-import { KanbanColumn, Milestone, Task } from '../../models'
 import { MilestoneModalComponent } from '../../components/milestone-modal/milestone-modal'
+import { KanbanApi } from '../../service/kanban-api'
+import { MilestoneDetailResponse } from '../../models/milestone/milestone-detail-response.model'
+import { Subscription } from 'rxjs'
+import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
+import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
+import { ColumnKanbanModalComponent } from '../../components/column-kanban-modal/column-kanban-modal'
+import { TaskDetailResponse } from '../../models/task/task-detail-response.model'
+import { TeamApi } from '@/features/home/services/team-api'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -72,9 +79,12 @@ import { MilestoneModalComponent } from '../../components/milestone-modal/milest
 		HlmFieldImports,
 		TaskModal,
 		MilestoneModalComponent,
+		ColumnKanbanModalComponent,
 	],
 	providers: [
 		CreateTaskModalState,
+		KanbanApi,
+		TeamApi,
 		provideIcons({
 			lucidePlus,
 			lucideSearch,
@@ -112,18 +122,21 @@ import { MilestoneModalComponent } from '../../components/milestone-modal/milest
 		}
 	`,
 })
-export class KanbanDetail {
+export class KanbanDetail implements OnDestroy {
+	// Input para el ws
+	teamId = input.required<string>()
+	projectId = input.required<string>()
+	kanbanId = input.required<string>()
+
 	// Tabs
 	protected readonly activeTab = signal<string>('hitos')
 
 	// Hito seleccionado
-	protected readonly selectedMilestone = signal<Milestone | null>(null)
+	protected readonly selectedMilestone = signal<MilestoneDetailResponse | null>(null)
 
 	// Modales
 	createMilestoneModal = signal<BrnDialogState>('closed')
-
-	createTaskModalState = inject(CreateTaskModalState)
-	createTaskModal = computed(() => this.createTaskModalState.createTaskModal())
+	createColumnKanbanModal = signal<BrnDialogState>('closed')
 
 	protected changeTab(tabName: string): void {
 		this.activeTab.set(tabName)
@@ -133,7 +146,7 @@ export class KanbanDetail {
 		}
 	}
 
-	protected viewMilestoneDetail(milestone: Milestone): void {
+	protected viewMilestoneDetail(milestone: MilestoneDetailResponse): void {
 		this.selectedMilestone.set(milestone)
 	}
 
@@ -143,27 +156,24 @@ export class KanbanDetail {
 
 	protected readonly onlyMyTasks = signal(false)
 
-	protected dropColumn(event: CdkDragDrop<KanbanColumn[]>) {
+	protected dropColumn(event: CdkDragDrop<ColumnKanbanDetailResponse[]>) {
 		const movable = [...this.movableColumns()]
-
 		moveItemInArray(movable, event.previousIndex, event.currentIndex)
-
 		const completed = this.completedColumn()
-
 		this.columns.set([...movable, completed])
 	}
 
 	protected readonly movableColumns = computed(() =>
-		this.columns().filter((column) => !column.isFixed),
+		this.columns().filter((column) => !column.fixed),
 	)
 
 	protected readonly completedColumn = computed(
-		() => this.columns().find((column) => column.isFixed)!,
+		() => this.columns().find((column) => column.fixed)!,
 	)
 
 	protected readonly connectedLists = computed(() => this.columns().map((column) => column.id))
 
-	protected dropTask(event: CdkDragDrop<Task[]>) {
+	protected dropTask(event: CdkDragDrop<TaskDetailResponse[]>) {
 		if (event.previousContainer === event.container) {
 			moveItemInArray(event.container.data, event.previousIndex, event.currentIndex)
 		} else {
@@ -176,79 +186,161 @@ export class KanbanDetail {
 		}
 	}
 
-	protected readonly milestones: Milestone[] = [
-		{
-			id: 1,
-			name: 'Hito 1',
-			deadline: 'Jun 1, 2026',
-			progress: 100,
-			totalTasks: 2,
-			completedTasks: 2,
-			status: 'Completado',
-			tasks: [
-				{
-					id: 101,
-					name: 'Tarea 1',
-					assignedTo: 'user',
-					dueDate: '22 Jun 2026',
-					priority: 'Alta',
-					status: 'Completado',
-				},
-				{
-					id: 102,
-					name: 'Tarea 2',
-					assignedTo: 'user',
-					dueDate: '22 Jun 2026',
-					priority: 'Baja',
-					status: 'Completado',
-				},
-			],
-		},
-	]
+	// Renderizar hitos, columnas y tareas
+	private milestoneSub?: Subscription
+	private columnSub?: Subscription
+	private taskSub?: Subscription
 
-	protected readonly columns = signal<KanbanColumn[]>([
-		{
-			id: 'pending',
-			name: 'Pendiente',
-			tasks: [
-				{
-					id: 1,
-					name: 'Diseñar login',
-					assignedTo: 'Alex',
-					dueDate: '22 Jun 2026',
-					priority: 'Alta',
-					status: 'Pendiente',
-				},
-			],
-		},
-		{
-			id: 'progress',
-			name: 'En curso',
-			tasks: [
-				{
-					id: 2,
-					name: 'Implementar JWT',
-					assignedTo: 'Alex',
-					dueDate: '22 Jun 2026',
-					priority: 'Media',
-					status: 'En curso',
-				},
-			],
-		},
-		{
-			id: 'completed',
-			name: 'Completado',
-			isFixed: true,
-			tasks: [
-				{
-					id: 3,
-					name: 'Crear base de datos',
-					assignedTo: 'Alex',
-					dueDate: '22 Jun 2026',
-					priority: 'Alta',
-					status: 'Completado',
-				},
-			],
-		},
-	])
+	kanbanApi = inject(KanbanApi)
+	teamApi = inject(TeamApi)
+	milestones = signal<MilestoneSummaryResponse[]>([])
+	columns = signal<ColumnKanbanDetailResponse[]>([])
+
+	teamDetailResource = this.teamApi.teamDetailResource(this.teamId)
+
+	workspaceMembers = computed(() => {
+		if (!this.teamDetailResource.hasValue()) return []
+		return this.teamDetailResource.value()!.data.members || []
+	})
+	kanbanResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
+
+	openCreateTask(column: ColumnKanbanDetailResponse) {
+		this.kanbanApi.createTask({
+			title: 'Nueva tarea',
+			description: '',
+			deadline: '',
+			priority: 'BAJA',
+			groupTask: false,
+			milestoneId: '',
+			columnId: column.id,
+			teamId: this.teamId(),
+			projectId: this.projectId(),
+			kanbanId: this.kanbanId(),
+		})
+	}
+
+	// Señal para guardar la tarea que se va a editar
+	protected readonly selectedTask = signal<TaskDetailResponse | null>(null)
+
+	// Estado del modal de la tarea
+	createTaskModalState = inject(CreateTaskModalState)
+	protected readonly createTaskModal = computed(() => this.createTaskModalState.createTaskModal())
+
+	// Método para abrir el modal con la información cargada
+	protected openEditTask(task: TaskDetailResponse): void {
+		this.selectedTask.set(task)
+		this.createTaskModalState.open()
+	}
+
+	constructor() {
+		effect(() => {
+			if (!this.kanbanResource.hasValue()) return
+
+			const data = this.kanbanResource.value()!.data
+
+			this.milestones.set(data.milestones)
+			this.columns.set(data.columns)
+		})
+
+		effect(() => {
+			if (!this.kanbanId() || !this.projectId() || !this.teamId()) return
+
+			this.milestoneSub?.unsubscribe()
+
+			this.milestoneSub = this.kanbanApi
+				.getMilestones(this.teamId(), this.projectId(), this.kanbanId())
+				.subscribe((event) => {
+					switch (event.action) {
+						case 'CREATE':
+							this.milestones.update((list) => [event.payload, ...list])
+							break
+					}
+				})
+		})
+
+		effect(() => {
+			if (!this.kanbanId() || !this.projectId() || !this.teamId()) return
+
+			this.columnSub?.unsubscribe()
+
+			this.columnSub = this.kanbanApi
+				.getColumnsKanban(this.teamId(), this.projectId(), this.kanbanId())
+				.subscribe((event) => {
+					switch (event.action) {
+						case 'CREATE':
+							this.columns.update((list) => [...list, event.payload])
+							break
+					}
+				})
+		})
+
+		effect(() => {
+			if (!this.kanbanId() || !this.projectId() || !this.teamId()) return
+
+			this.taskSub?.unsubscribe()
+
+			this.taskSub = this.kanbanApi
+				.getTasks(this.teamId(), this.projectId(), this.kanbanId())
+				.subscribe((event) => {
+					switch (event.action) {
+						case 'CREATE':
+							this.columns.update((columns) =>
+								columns.map((column) =>
+									column.id === event.payload.columnId
+										? {
+												...column,
+												tasks: [...column.tasks, event.payload],
+											}
+										: column,
+								),
+							)
+							break
+
+						case 'UPDATE':
+							this.columns.update((columns) => {
+								const previousColumn = columns.find((column) =>
+									column.tasks.some((task) => task.id === event.payload.id),
+								)
+
+								if (previousColumn?.id === event.payload.columnId) {
+									return columns.map((column) => {
+										if (column.id !== event.payload.columnId) return column
+
+										return {
+											...column,
+											tasks: column.tasks.map((task) =>
+												task.id === event.payload.id ? event.payload : task,
+											),
+										}
+									})
+								}
+
+								return columns.map((column) => {
+									const tasksWithout = column.tasks.filter((task) => task.id !== event.payload.id)
+
+									if (column.id === event.payload.columnId) {
+										return {
+											...column,
+											tasks: [...tasksWithout, event.payload],
+										}
+									}
+
+									return {
+										...column,
+										tasks: tasksWithout,
+									}
+								})
+							})
+
+							break
+					}
+				})
+		})
+	}
+
+	ngOnDestroy() {
+		this.milestoneSub?.unsubscribe()
+		this.columnSub?.unsubscribe()
+		this.taskSub?.unsubscribe()
+	}
 }
