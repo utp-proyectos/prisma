@@ -1,0 +1,96 @@
+<hlm-dialog [state]="dialogState()" (closed)="close()">
+	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:max-w-md">
+		<hlm-dialog-header>
+			<h1 hlmDialogTitle class="text-2xl font-bold text-primary">
+				{{ isEditing() ? 'Editar evento' : 'Nuevo evento' }}
+			</h1>
+			<p hlmDialogDescription>Los asistentes recibirán una notificación.</p>
+		</hlm-dialog-header>
+
+		<form class="space-y-5" (submit)="$event.preventDefault()">
+			<div hlmField>
+				<label hlmFieldLabel for="ev-title">Título</label>
+				<input
+					hlmInput
+					id="ev-title"
+					class="w-full"
+					placeholder="Asuntos pendientes"
+					[formField]="eventForm.title"
+				/>
+				@if (eventForm.title().touched() && !eventForm.title().valid()) {
+					<p class="text-sm text-destructive">El título es obligatorio</p>
+				}
+			</div>
+
+			<div hlmField>
+				<label hlmFieldLabel for="ev-date-range">Fecha(s)</label>
+
+				<hlm-date-range-picker
+					class="w-full"
+					[formField]="eventForm.dateRange"
+					[autoCloseOnEndSelection]="true"
+				>
+					<hlm-date-picker-trigger buttonId="ev-date-range" class="w-full justify-start">
+						Selecciona una fecha o rango
+					</hlm-date-picker-trigger>
+				</hlm-date-range-picker>
+			</div>
+
+			<label class="flex items-center justify-between rounded-lg border border-border px-4 py-3">
+				<span class="text-sm font-medium">Todo el día</span>
+				<button
+					type="button"
+					role="switch"
+					[attr.aria-checked]="eventForm.allDay().value()"
+					(click)="eventForm.allDay().value.set(!eventForm.allDay().value())"
+					class="relative h-6 w-11 rounded-full transition-colors"
+					[class]="eventForm.allDay().value() ? 'bg-primary' : 'bg-secondary'"
+				>
+					<span
+						class="absolute top-0.5 left-0.5 size-5 rounded-full bg-white transition-transform"
+						[class.translate-x-5]="eventForm.allDay().value()"
+					></span>
+				</button>
+			</label>
+
+			@if (!eventForm.allDay().value()) {
+				<div class="grid grid-cols-2 gap-4">
+					<div hlmField>
+						<label hlmFieldLabel for="ev-start">Hora inicio</label>
+						<input hlmInput type="time" id="ev-start" [formField]="eventForm.startTime" />
+					</div>
+					<div hlmField>
+						<label hlmFieldLabel for="ev-end">Hora fin</label>
+						<input hlmInput type="time" id="ev-end" [formField]="eventForm.endTime" />
+					</div>
+				</div>
+			}
+
+
+			<div hlmField>
+				<label hlmFieldLabel for="ev-desc">Detalle de la reunión</label>
+				<textarea
+					hlmTextarea
+					id="ev-desc"
+					class="w-full resize-none"
+					placeholder="Asuntos pendientes"
+					[formField]="eventForm.description"
+				></textarea>
+			</div>
+		</form>
+
+		<hlm-dialog-footer class="flex items-center justify-between gap-2">
+			@if (isEditing()) {
+				<button hlmBtn variant="outline" class="text-destructive" (click)="delete()">
+					Eliminar
+				</button>
+			}
+			<div class="ml-auto flex gap-2">
+				<button hlmBtn variant="outline" (click)="close()">Cancelar</button>
+				<button hlmBtn (click)="save()">
+					{{ isEditing() ? 'Editar evento' : 'Crear evento' }}
+				</button>
+			</div>
+		</hlm-dialog-footer>
+	</hlm-dialog-content>
+</hlm-dialog>

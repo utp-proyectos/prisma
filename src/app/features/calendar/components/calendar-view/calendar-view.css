@@ -1,0 +1,143 @@
+.calendar-host {
+	--fc-border-color: var(--border);
+	--fc-page-bg-color: var(--background);
+	--fc-today-bg-color: transparent;
+
+	--fc-event-bg-color: var(--primary);
+	--fc-event-border-color: var(--primary);
+	--fc-event-text-color: var(--primary-foreground);
+
+	--fc-neutral-text-color: var(--muted-foreground);
+	--fc-list-event-hover-bg-color: var(--secondary);
+
+	height: 100%;
+}
+
+/* Encabezado Dom, Lun */
+:host ::ng-deep .calendar-host .fc .fc-col-header-cell-cushion {
+	padding: 0.75rem 0;
+	font-weight: 700;
+	font-size: 1rem;
+	color: var(--foreground);
+	text-decoration: none;
+}
+
+/* Número de todos los días con círculo */
+:host ::ng-deep .calendar-host .fc .fc-daygrid-day-number {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+
+	width: 1.65rem;
+	height: 1.65rem;
+	margin: 0.25rem;
+
+	border-radius: 9999px;
+	background: var(--primary);
+	color: var(--primary-foreground);
+
+	font-weight: 700;
+	font-size: 0.8rem;
+	text-decoration: none;
+}
+
+/* Días de otro mes */
+:host ::ng-deep .calendar-host .fc .fc-day-other .fc-daygrid-day-number {
+	background: color-mix(in oklch, var(--muted-foreground) 25%, transparent);
+	color: var(--muted-foreground);
+	opacity: 0.55;
+}
+
+/* Día de hoy con forma de mini calendario */
+:host ::ng-deep .calendar-host .fc .fc-day-today .fc-daygrid-day-number {
+	position: relative;
+	width: 100%;
+	height: 2.25rem;
+	border-radius: 1rem 1rem 0 0;
+	background: var(--primary);
+	color: var(--primary-foreground);
+	padding: 0;
+	margin: 0;
+	font-weight: 800;
+	overflow: visible;
+}
+
+/* Dos argollas del mini calendario */
+:host ::ng-deep .calendar-host .fc .fc-day-today .fc-daygrid-day-number::before,
+:host ::ng-deep .calendar-host .fc .fc-day-today .fc-daygrid-day-number::after {
+	content: '';
+	position: absolute;
+	top: -0.2rem; /* ajusta altura */
+	width: 0.3rem;
+	height: 0.9rem;
+	border-radius: 9999px;
+	background: var(--background);
+}
+
+/* Primera argolla, más a la izquierda */
+:host ::ng-deep .calendar-host .fc .fc-day-today .fc-daygrid-day-number::before {
+	left: calc(50% - 1.1rem);
+	transform: translateX(-300%); /* aumenta el valor negativo para separarla más */
+}
+
+/* Segunda argolla, más a la derecha */
+:host ::ng-deep .calendar-host .fc .fc-day-today .fc-daygrid-day-number::after {
+	left: calc(50% + 1.1rem);
+	transform: translateX(200%); /* aumenta el valor positivo para separarla más */
+}
+
+/* Celda del día de hoy */
+:host ::ng-deep .calendar-host .fc .fc-day-today {
+	background: color-mix(in oklch, var(--primary) 10%, transparent);
+}
+
+/* Eventos */
+:host ::ng-deep .calendar-host .fc .fc-daygrid-event {
+	padding: 0.15rem 0.5rem;
+	border-radius: 0.375rem;
+	font-size: 0.8rem;
+	font-weight: 500;
+}
+
+/* Quitar punto de eventos */
+:host ::ng-deep .calendar-host .fc .fc-daygrid-dot-event .fc-daygrid-event-dot {
+	display: none;
+}
+
+/* Bordes del calendario */
+:host ::ng-deep .calendar-host .fc .fc-scrollgrid {
+	border-radius: 0.75rem;
+	overflow: hidden;
+	border-color: var(--border);
+}
+
+/* Agenda */
+:host ::ng-deep .calendar-host .fc .fc-list {
+	border-color: var(--border);
+}
+
+:host ::ng-deep .calendar-host .fc .fc-list-day-cushion {
+	background: var(--secondary);
+	color: var(--foreground);
+}
+
+/* Deadlines */
+:host ::ng-deep .calendar-deadline-event {
+	border-style: dashed !important;
+	border-width: 1.5px !important;
+	background-color: transparent !important;
+	font-weight: 600;
+}
+
+:host ::ng-deep .calendar-deadline-event .fc-event-title {
+	color: inherit;
+}
+
+:host ::ng-deep .calendar-event-owned {
+	border-radius: 0.5rem;
+	font-weight: 600;
+}
+
+:host ::ng-deep .calendar-deadline-event {
+	cursor: pointer;
+}
