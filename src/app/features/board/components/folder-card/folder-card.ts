@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core'
+import { Component, Input, Output, EventEmitter, signal } from '@angular/core'
 import { CommonModule } from '@angular/common'
 
 import { NgIcon, provideIcons } from '@ng-icons/core'
@@ -12,10 +12,11 @@ import {
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu'
 import { HlmCardImports } from '@spartan-ng/helm/card'
 import { Folder } from '../../models/folder.model'
+import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComponent'
 
 @Component({
 	selector: 'app-folder-card',
-	imports: [NgIcon, HlmDropdownMenuImports, HlmCardImports],
+	imports: [NgIcon, HlmDropdownMenuImports, HlmCardImports, DeleteModalComponent],
 	providers: [
 		provideIcons({
 			lucideMoreHorizontal,
@@ -33,7 +34,11 @@ export class FolderCardComponent {
 	@Input() isReceiving = false
 	@Output() folderClick = new EventEmitter<string>()
 	@Output() deleteFolder = new EventEmitter<string>()
+	deleteModalState = signal<'open' | 'closed'>('closed')
 
 	// grid
 	readonly gridSlots = [0, 1, 2, 3]
+	confirmDelete() {
+		this.deleteFolder.emit(this.folder.id)
+	}
 }

@@ -5,7 +5,7 @@ import {
 	SidebarHeader,
 	SidebarItemProps,
 } from '@/shared/components/sidebar'
-import { Component, computed, inject, signal } from '@angular/core'
+import { Component, computed, inject, input } from '@angular/core'
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucidePlus, lucideTrash2, lucideUser, lucideUsers } from '@ng-icons/lucide'
@@ -36,8 +36,10 @@ import { toSignal } from '@angular/core/rxjs-interop'
 export class BoardsLayout {
 	//inyeccion de dependecias
 	createBoardModalState = inject(CreateBoardModalState)
-	private router = inject(Router)
 
+	private router = inject(Router)
+	projectId = input<string>()
+	teamId = input<string>()
 	//estados derivados de la ruta
 	isTrash = toSignal(
 		this.router.events.pipe(
@@ -59,21 +61,21 @@ export class BoardsLayout {
 	//estaods de la vista y modales
 	createBoardModal = computed(() => this.createBoardModalState.createBoardModal())
 
-	protected readonly SidebarBoardOptions = signal<SidebarItemProps[]>([
+	protected readonly SidebarBoardOptions = computed<SidebarItemProps[]>(() => [
 		{
 			icon: 'lucideUser',
 			title: 'Mis pizarras',
-			to: '/team/project/board/my',
+			to: `/team/${this.teamId()}/project/${this.projectId()}/board/my`,
 		},
 		{
 			icon: 'lucideUsers',
 			title: 'Pizarras grupales',
-			to: '/team/project/board/group',
+			to: `/team/${this.teamId()}/project/${this.projectId()}/board/group`,
 		},
 		{
 			icon: 'lucideTrash2',
 			title: 'Papelera',
-			to: '/team/project/board/trash',
+			to: `/team/${this.teamId()}/project/${this.projectId()}/board/trash`,
 		},
 	])
 

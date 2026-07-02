@@ -1,6 +1,15 @@
-import { Injectable, signal, computed } from '@angular/core'
+import { Injectable, signal, computed, inject } from '@angular/core'
+import { CanvasWsService } from './canvas-ws-service'
 
-export type ShapeType = 'CIRCLE' | 'RECT' | 'TEXT' | 'ARROW' | 'START' | 'POLYGON'
+export type ShapeType =
+	| 'CIRCLE'
+	| 'RECT'
+	| 'TEXT'
+	| 'ARROW'
+	| 'START'
+	| 'POLYGON'
+	| 'LINE'
+	| 'PENCIL'
 export type ToolType =
 	| 'NONE'
 	| 'HAND'
@@ -12,6 +21,7 @@ export type ToolType =
 	| 'ARROW'
 	| 'START'
 	| 'POLYGON'
+	| 'LINE'
 export type ColorTarget = 'fill' | 'stroke'
 
 export interface Shape {
@@ -34,11 +44,17 @@ export interface Shape {
 	text?: string
 	fontSize?: number
 	fontFamily?: string
+	lineCap?: 'butt' | 'round' | 'square'
+	lineJoin?: 'round' | 'bevel' | 'miter'
+	tension?: number
 }
 
 @Injectable({ providedIn: 'root' })
 export class BoardStateService {
 	//  Herramienta activa
+	private canvasWsService = inject(CanvasWsService)
+	private boardId = signal<string | null>(null)
+
 	activeTool = signal<ToolType>('HAND')
 
 	setTool(tool: ToolType): void {
@@ -53,13 +69,16 @@ export class BoardStateService {
 
 	// cambio de fondo
 	backgroundColor = signal<string>('#121212')
-
+	strokeColor = signal<string>('#121212')
 	setColor(color: string): void {
 		this.activeColor.set(color)
 	}
 
 	setBackgroundColor(color: string): void {
 		this.backgroundColor.set(color)
+	}
+	setStrokeColor(color: string): void {
+		this.strokeColor.set(color)
 	}
 	setColorTarget(target: ColorTarget): void {
 		this.colorTarget.set(target)
@@ -87,36 +106,46 @@ export class BoardStateService {
 		return {
 			shapes: this.shapes(),
 			backgroundColor: this.backgroundColor(),
+			strokeColor: this.strokeColor(),
 		}
 	}
 	// cargar lienzo
 	loadBoard(data: any): void {
 		this.shapes.set(data.shapes)
 		this.backgroundColor.set(data.backgroundColor)
+		this.strokeColor.set(data.strokeColor)
 	}
 	//socket
-	addShape(shape: Shape): void {
-		this.shapes.update((current) => [...current, shape])
-		console.log('Listo para enviar creación por socket:', shape)
+	setBoardId(id: string) {
+		this.boardId.set(id)
 	}
 
-	updateShape(payload: Partial<Shape> & { name: string }): void {
+	addShape(shape: Shape): void {
+		this.shapes.update((current) => [...current, shape])
+		console.log('enviando shape, boardId:', this.boardId())
+		this.canvasWsService.sendShape(this.boardId()!, 'CREATE', shape)
+	}
+
+	updateShape(payload: Partial<Shape> & { name: string }, remote = false): void {
 		this.shapes.update((current) =>
 			current.map((s) => (s.name === payload.name ? ({ ...s, ...payload } as Shape) : s)),
 		)
-		console.log('Listo para enviar actualización por socket:', payload)
+		if (!remote) {
+			this.canvasWsService.sendShape(this.boardId()!, 'UPDATE', payload)
+		}
+	}
+	removeShape(name: string): void {
+		this.shapes.update((current) => current.filter((s) => s.name !== name))
+		this.canvasWsService.sendShape(this.boardId()!, 'DELETE', { name })
 	}
 
 	updateShapesBatch(names: string[], payload: Partial<Shape>): void {
 		this.shapes.update((current) =>
 			current.map((s) => (names.includes(s.name) ? ({ ...s, ...payload } as Shape) : s)),
 		)
-		console.log('Listo para enviar actualización batch por socket:', names, payload)
-	}
-
-	removeShape(name: string): void {
-		this.shapes.update((current) => current.filter((s) => s.name !== name))
-		console.log('Listo para enviar eliminación por socket:', name)
+		names.forEach((name) => {
+			this.canvasWsService.sendShape(this.boardId()!, 'UPDATE', { name, ...payload })
+		})
 	}
 
 	// ─── Selección

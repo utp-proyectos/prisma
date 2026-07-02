@@ -36,6 +36,10 @@ export const routes: Routes = [
 				path: 'kanban',
 				loadChildren: () => import('./features/kanban/kanban.routes').then((m) => m.kanbanRoutes),
 			},
+			{
+				path: 'calendar',
+				loadChildren: () => import('./features/calendar/calendar.routes').then((m) => m.calendarRoutes),
+			},
 		],
 	},
 	{

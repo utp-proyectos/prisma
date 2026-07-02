@@ -1,0 +1,42 @@
+<header class="flex flex-col gap-6 pb-6 lg:flex-row lg:items-center lg:justify-between">
+	<div>
+		<h2 class="text-3xl font-extrabold tracking-tight text-foreground">Calendario</h2>
+		<p class="text-lg font-bold text-muted-foreground">{{ title() }}</p>
+	</div>
+
+	<div class="flex flex-wrap items-center gap-2">
+		<div class="flex items-center gap-2">
+			<button hlmBtn variant="outline" size="icon" (click)="previous.emit()">
+				<ng-icon name="lucideChevronLeft" />
+			</button>
+			<button hlmBtn (click)="today.emit()">Hoy</button>
+			<button hlmBtn variant="outline" size="icon" (click)="next.emit()">
+				<ng-icon name="lucideChevronRight" />
+			</button>
+		</div>
+
+		<div class="inline-flex items-center gap-1 rounded-lg bg-secondary p-1" role="tablist">
+			@for (view of views; track view[0]) {
+				<button
+					type="button"
+					role="tab"
+					[attr.aria-selected]="activeView() === view[0]"
+					(click)="viewSelected.emit(view[0])"
+					class="rounded-md px-4 py-1.5 text-sm font-semibold transition-colors"
+					[class]="
+						activeView() === view[0]
+							? 'bg-primary text-primary-foreground'
+							: 'text-primary hover:bg-primary/10'
+					"
+				>
+					{{ view[1] }}
+				</button>
+			}
+		</div>
+
+		<button hlmBtn class="gap-2" (click)="newEvent.emit()">
+			<ng-icon name="lucidePlus" />
+			Nuevo Evento
+		</button>
+	</div>
+</header>

@@ -11,6 +11,7 @@ import { BoardApiService } from '../../service/board-api.service'
 import { FolderRequest } from '../../models/folder-request'
 import { disabled, form, required, FormRoot, FormField } from '@angular/forms/signals'
 import { firstValueFrom } from 'rxjs'
+import { toast } from '@spartan-ng/brain/sonner'
 
 @Component({
 	selector: 'app-folder-create-dialog',
@@ -36,8 +37,8 @@ export class FolderCreateDialog {
 	//inyecciones de Dependencias
 	private boardApiService = inject(BoardApiService)
 
-	private projectId = 'test-project-1' // temporal
-
+	projectId = input.required<string>() // ✅ Obligatorio desde el HTML del padre
+	teamId = input.required<string>()
 	//  (Inputs) y Salidas (Outputs)
 	state = input<BrnDialogState>('closed') // método para abrir y cerrar
 	isPrivate = input<boolean>(false)
@@ -64,17 +65,10 @@ export class FolderCreateDialog {
 						name: this.folderModel().name,
 						isPrivate: this.isPrivate(),
 					}
-					console.log('dto:', dto)
-
-					// Realizar la petición de creación
-					const folder = await firstValueFrom(
-						this.boardApiService.createFolder(this.projectId, dto),
-					)
-
-					// Notificar eventos y resetear formulario
+					this.boardApiService.sendFolder(dto, this.teamId(), this.projectId())
 					this.closed.emit()
-					this.folderCreated.emit()
 					this.folderForm.name().reset('')
+					toast.success('Folder creado')
 				},
 			},
 		},

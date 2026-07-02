@@ -63,4 +63,6 @@
 	[state]="createFolderModal()"
 	(closed)="createFolderModal.set('closed')"
 	(folderCreated)="loadFolders()"
+	[projectId]="projectId() ?? ''"
+	[teamId]="teamId() ?? ''"
 />

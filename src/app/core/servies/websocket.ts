@@ -2,7 +2,7 @@ import { effect, inject, Service } from '@angular/core'
 import { IMessage, RxStomp } from '@stomp/rx-stomp'
 import SockJS from 'sockjs-client'
 import { AuthService } from './auth.serive'
-import { Observable } from 'rxjs'
+import { Observable, tap } from 'rxjs'
 import { config } from '../config'
 
 @Service()

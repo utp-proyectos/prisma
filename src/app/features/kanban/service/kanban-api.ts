@@ -9,6 +9,12 @@ import { WsResponse } from '@/core/models/ws-response'
 import { KanbanDetailResponse } from '../models/kanban-detail-response.model'
 import { CreateMilestoneRequest } from '../models/milestone/milestone-request.model'
 import { MilestoneSummaryResponse } from '../models/milestone/milestone-summary-response.model'
+import { CreateColumnKanbanRequest } from '../models/column-kanban/column-kanban-request.model'
+import { ColumnKanbanDetailResponse } from '../models/column-kanban/column-kanban-detail-response.model'
+import { CreateTaskRequest, UpdateTaskRequest } from '../models/task/task-request.model'
+import { TaskDetailResponse } from '../models/task/task-detail-response.model'
+import { ReorderColumnsRequest, ReorderTasksRequest } from '../models/reorder.model'
+import { MilestoneDetailResponse } from '../models/milestone/milestone-detail-response.model'
 
 @Injectable()
 export class KanbanApi {
@@ -46,8 +52,12 @@ export class KanbanApi {
 	}
 
 	//Para milestones
+	milestoneDetailResource = (milestoneId: Signal<string | null>) =>
+		httpResource<ApiResponse<MilestoneDetailResponse>>(() =>
+			milestoneId() ? `/milestones/${milestoneId()}` : undefined,
+		)
+
 	createMilestone(milestone: CreateMilestoneRequest) {
-		console.log(milestone)
 		this.ws.publish(`/app/milestone.create`, milestone)
 	}
 
@@ -59,5 +69,71 @@ export class KanbanApi {
 		return this.ws
 			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/milestones`)
 			.pipe(map((res) => JSON.parse(res.body) as WsResponse<MilestoneSummaryResponse>))
+	}
+
+	//Para columnas
+	createColumn(columnKanban: CreateColumnKanbanRequest) {
+		console.log('columnKanban', columnKanban)
+		this.ws.publish(`/app/columnKanban.create`, columnKanban)
+	}
+
+	getColumnsKanban(
+		teamId: string,
+		projectId: string,
+		kanbanId: string,
+	): Observable<WsResponse<ColumnKanbanDetailResponse>> {
+		return this.ws
+			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/columns`)
+			.pipe(map((res) => JSON.parse(res.body) as WsResponse<ColumnKanbanDetailResponse>))
+	}
+
+	//Para tareas
+	createTask(task: CreateTaskRequest) {
+		this.ws.publish(`/app/task.create`, task)
+	}
+
+	updateTask(task: UpdateTaskRequest) {
+		this.ws.publish(`/app/task.update`, task)
+	}
+
+	getTasks(
+		teamId: string,
+		projectId: string,
+		kanbanId: string,
+	): Observable<WsResponse<TaskDetailResponse>> {
+		return this.ws
+			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/tasks`)
+			.pipe(map((res) => JSON.parse(res.body) as WsResponse<TaskDetailResponse>))
+	}
+
+	// Metodos para reordenar columnas y tareas
+	getColumnsReorder(
+		teamId: string,
+		projectId: string,
+		kanbanId: string,
+	): Observable<WsResponse<ColumnKanbanDetailResponse[]>> {
+		return this.ws
+			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/columns/reorder`)
+			.pipe(map((res) => JSON.parse(res.body) as WsResponse<ColumnKanbanDetailResponse[]>))
+	}
+
+	getTasksReorder(
+		teamId: string,
+		projectId: string,
+		kanbanId: string,
+	): Observable<WsResponse<ColumnKanbanDetailResponse[]>> {
+		return this.ws
+			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/tasks/reorder`)
+			.pipe(map((res) => JSON.parse(res.body) as WsResponse<ColumnKanbanDetailResponse[]>))
+	}
+
+	reorderColumns(payload: ReorderColumnsRequest) {
+		console.log('payload', payload)
+		this.ws.publish('/app/columnKanban.reorder', payload)
+	}
+
+	reorderTasks(payload: ReorderTasksRequest) {
+		console.log('payload', payload)
+		this.ws.publish('/app/task.reorder', payload)
 	}
 }
