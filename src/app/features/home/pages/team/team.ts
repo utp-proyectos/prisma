@@ -111,7 +111,11 @@ export class Team implements OnDestroy {
 		{
 			submission: {
 				action: async (data) => {
-					this.teamApi.sendProject({ teamId: this.teamId()!, ...data().value() })
+					const teamId = this.teamId()
+
+					if (!teamId) return
+
+					this.teamApi.sendProject({ teamId, ...data().value() })
 					this.closeCreateProjectModal()
 				},
 			},
@@ -164,11 +168,13 @@ export class Team implements OnDestroy {
 		})
 
 		effect(() => {
-			if (!this.teamId()) return
+			const teamId = this.teamId()
+
+			if (!teamId) return
 
 			this.projectSub?.unsubscribe()
 
-			this.projectSub = this.teamApi.getProjects(this.teamId()!).subscribe((res) => {
+			this.projectSub = this.teamApi.getProjects(teamId).subscribe((res) => {
 				this.projects.update((projects) => [res, ...projects])
 			})
 		})

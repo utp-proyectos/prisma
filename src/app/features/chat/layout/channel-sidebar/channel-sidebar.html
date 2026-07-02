@@ -1,0 +1,56 @@
+<app-sidebar>
+	<sidebar-header>
+		<div class="flex flex-col gap-4 p-2">
+			<h3>Canales</h3>
+			<button hlmBtn class="w-full" size="sm" (click)="createChannelDialog.open()">
+				<ng-icon name="lucidePlus" />
+				Crear Canal
+			</button>
+		</div>
+	</sidebar-header>
+	<sidebar-content>
+		@for (channel of channels(); track channel.id) {
+			<a
+				[routerLink]="['/team', teamId(), 'project', projectId(), 'chat', channel.id]"
+				[routerLinkActive]="'bg-white/10'"
+				class="flex items-center gap-1 p-2 hover:bg-muted rounded-md group"
+			>
+				<ng-icon name="lucideHash"></ng-icon>
+				<span class="text-sm flex-1">{{ channel.name }}</span>
+				<ng-icon name="lucideSettings" class="opacity-0 group-hover:opacity-100"></ng-icon>
+			</a>
+		}
+	</sidebar-content>
+</app-sidebar>
+
+<div class="flex-1">
+	<router-outlet></router-outlet>
+</div>
+
+<hlm-dialog [state]="createChannelDialogState()" (closed)="closeCreateChannelDialog()">
+	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
+		<hlm-dialog-header>
+			<h3 hlmDialogTitle>Crear canal</h3>
+			<p hlmDialogDescription>Elije un nombre para tu canal</p>
+		</hlm-dialog-header>
+
+		<form id="create-channel-form" [formRoot]="channelForm">
+			<hlm-field-group>
+				<hlm-field>
+					<label hlmFieldLabel for="name">Nombre</label>
+					<input hlmInput id="name" placeholder="Nuevo Canal" [formField]="channelForm.name" />
+					@for (error of channelForm.name().errors(); track error.kind) {
+						<hlm-field-error [validator]="error.kind">
+							{{ error.message }}
+						</hlm-field-error>
+					}
+				</hlm-field>
+			</hlm-field-group>
+		</form>
+
+		<hlm-dialog-footer>
+			<button hlmBtn variant="outline" hlmDialogClose>Cancel</button>
+			<button hlmBtn type="submit" form="create-channel-form">Crear</button>
+		</hlm-dialog-footer>
+	</hlm-dialog-content>
+</hlm-dialog>

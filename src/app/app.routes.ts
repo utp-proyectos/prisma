@@ -16,13 +16,16 @@ export const routes: Routes = [
 		children: [
 			{
 				path: '',
-				loadComponent: () =>
-					import('./features/resume/pages/project-resume/project-resume').then(
-						(m) => m.ProjectResume,
-					),
+				// loadComponent: () =>
+				// 	import('./features/resume/pages/project-resume/project-resume').then(
+				// 		(m) => m.ProjectResume,
+				// 	),
+				redirectTo: 'chat',
+				pathMatch: 'full',
 			},
 			{
 				path: 'chat',
+				title: 'Chat',
 				loadChildren: () => import('./features/chat/chat.routes').then((m) => m.chatRoutes),
 			},
 			{
