@@ -10,11 +10,7 @@ import { CalendarEventRepository } from './calendar-event.repository'
 export class ApiCalendarEventRepository extends CalendarEventRepository {
 	private readonly http = inject(HttpClient)
 
-	override list(
-		projectId: string,
-		startDate: Date,
-		endDate: Date,
-	): Observable<CalendarEvent[]> {
+	override list(projectId: string, startDate: Date, endDate: Date): Observable<CalendarEvent[]> {
 		return this.http
 			.get<ApiReponse<CalendarItemResponse[]>>(`/projects/${projectId}/calendar`, {
 				params: {
@@ -25,9 +21,7 @@ export class ApiCalendarEventRepository extends CalendarEventRepository {
 			.pipe(
 				map((res) => res.data),
 				map((items) =>
-					items
-						.filter((item) => item.type === 'EVENT')
-						.map((item) => calendarItemToEvent(item)),
+					items.filter((item) => item.type === 'EVENT').map((item) => calendarItemToEvent(item)),
 				),
 			)
 	}
@@ -36,10 +30,7 @@ export class ApiCalendarEventRepository extends CalendarEventRepository {
 		const request = eventToRequest(event)
 
 		return this.http
-			.post<ApiReponse<CalendarItemResponse>>(
-				`/projects/${projectId}/calendar/events`,
-				request,
-			)
+			.post<ApiReponse<CalendarItemResponse>>(`/projects/${projectId}/calendar/events`, request)
 			.pipe(
 				map((res) => res.data),
 				map((item) => calendarItemToEvent(item)),
@@ -51,10 +42,9 @@ export class ApiCalendarEventRepository extends CalendarEventRepository {
 		const request = eventToRequest(event)
 
 		return this.http
-			.put<ApiReponse<CalendarItemResponse>>(
-				`/projects/${projectId}/calendar/events/${eventId}`,
-				request,
-			)
+			.put<
+				ApiReponse<CalendarItemResponse>
+			>(`/projects/${projectId}/calendar/events/${eventId}`, request)
 			.pipe(
 				map((res) => res.data),
 				map((item) => calendarItemToEvent(item)),
@@ -85,7 +75,7 @@ function calendarItemToEvent(item: CalendarItemResponse): CalendarEvent {
 
 function eventToRequest(event: CalendarEvent): CalendarEventRequest {
 	const backendEndDate =
-		event.allDay && event.end ? addDays(event.end, -1) : event.end ?? event.start
+		event.allDay && event.end ? addDays(event.end, -1) : (event.end ?? event.start)
 
 	return {
 		title: event.title,
