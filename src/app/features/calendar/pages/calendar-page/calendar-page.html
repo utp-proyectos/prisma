@@ -1,0 +1,22 @@
+<main class="flex h-screen flex-col p-6">
+	<app-calendar-toolbar
+		[title]="title()"
+		[activeView]="activeView()"
+		(previous)="onPrevious()"
+		(today)="onToday()"
+		(next)="onNext()"
+		(viewSelected)="onViewSelected($event)"
+		(newEvent)="onNewEvent()"
+	/>
+
+	<div class="min-h-0 flex-1">
+		<app-calendar-view
+			(titleChange)="onTitleChange($event)"
+			(viewChange)="onViewChange($event)"
+			(rangeChange)="onRangeChange($event)"
+		/>
+	</div>
+
+	<app-calendar-event-dialog />
+	<app-calendar-deadline-dialog />
+</main>
