@@ -1,4 +1,4 @@
-import { ApiReponse } from '@/core/models/api-response.model'
+import { ApiResponse } from '@/core/models/api-response.model'
 import { HttpClient, httpResource } from '@angular/common/http'
 import { inject, Service, Signal } from '@angular/core'
 import { RegisterRequest } from '../model/register-request'
@@ -14,19 +14,19 @@ export class AuthApiService {
 
 	login = (credentials: LoginRequest) =>
 		firstValueFrom(
-			this.http.post<ApiReponse<User>>('/auth/login', credentials).pipe(map((res) => res.data)),
+			this.http.post<ApiResponse<User>>('/auth/login', credentials).pipe(map((res) => res.data)),
 		)
 
 	registerUser = (user: RegisterRequest) =>
 		firstValueFrom(
-			this.http.post<ApiReponse<User>>('/auth/register', user).pipe(map((res) => res.data)),
+			this.http.post<ApiResponse<User>>('/auth/register', user).pipe(map((res) => res.data)),
 		)
 
 	getCurrentUser = (token: string) =>
-		this.http.get<ApiReponse<CurrentUser>>(`/auth/me?token=${token}`).pipe(map((res) => res.data))
+		this.http.get<ApiResponse<CurrentUser>>(`/auth/me?token=${token}`).pipe(map((res) => res.data))
 
 	getVerificationEmailResource(token: Signal<string | undefined>) {
-		return httpResource<ApiReponse<null>>(() =>
+		return httpResource<ApiResponse<null>>(() =>
 			token() ? `/auth/verify-email?token=${token()}` : undefined,
 		)
 	}

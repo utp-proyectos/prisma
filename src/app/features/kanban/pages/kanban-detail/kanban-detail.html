@@ -58,13 +58,13 @@
 								</tr>
 							</thead>
 							<tbody hlmTableBody>
-								@for (milestone of milestones; track milestone.id) {
+								@for (milestone of milestones(); track milestone.id) {
 								<tr hlmTableRow>
-									<td hlmTableCell class="font-medium">{{ milestone.name }}</td>
+									<td hlmTableCell class="font-medium">{{ milestone.title }}</td>
 									<td hlmTableCell>{{ milestone.deadline }}</td>
 									<td hlmTableCell>{{ milestone.progress }}%</td>
 									<td hlmTableCell>{{ milestone.totalTasks }} tareas - {{ milestone.completedTasks }} completadas</td>
-									<td hlmTableCell>{{ milestone.status }}</td>
+									<td hlmTableCell>{{ milestone.state }}</td>
 									<td hlmTableCell class="text-right">
 										<button hlmBtn variant="ghost" size="icon-sm" [hlmDropdownMenuTrigger]="menu" align="end">
 											<ng-icon name="lucideMoreHorizontal" />
@@ -103,10 +103,10 @@
 
 					<div class="flex items-center justify-between gap-4 mt-2">
 						<div class="flex items-center gap-3">
-							<h4 class="text-2xl font-bold text-white">{{ selectedMilestone()?.name }}</h4>
+							<h4 class="text-2xl font-bold text-white">{{ selectedMilestone()?.title }}</h4>
 							<span
 								class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-								{{ selectedMilestone()?.status }}
+								{{ selectedMilestone()?.state }}
 							</span>
 							<span class="text-zinc-400">
 								Finaliza en {{ selectedMilestone()?.deadline }} - {{ selectedMilestone()?.progress }}% completado
@@ -193,7 +193,7 @@
 							class="flex flex-col gap-3 bg-primary-foreground border border-border rounded-xl p-3 w-72 shrink-0 max-h-[70vh]">
 
 							<span class="font-semibold text-muted-foreground px-1">
-								{{ column.name }}
+								{{ column.title }}
 							</span>
 
 							<ng-scrollbar hlm appearance="compact" class="flex-1">
@@ -243,7 +243,7 @@
 							class="flex flex-col gap-3 bg-primary-foreground border border-green-500/30 rounded-xl p-3 w-72 shrink-0 max-h-[70vh]">
 
 							<span class="font-semibold text-green-500 px-1">
-								{{ completed.name }}
+								{{ completed.title }}
 							</span>
 
 							<ng-scrollbar hlm appearance="compact" class="flex-1">
@@ -283,8 +283,8 @@
 
 	</div>
 
-	<app-milestone-modal [state]="createMilestoneModal()"
-		(closed)="createMilestoneModal.set('closed')"></app-milestone-modal>
+	<app-milestone-modal [state]="createMilestoneModal() " [kanbanId]="kanbanId()" [projectId]="projectId()"
+		[teamId]="teamId()" (closed)="createMilestoneModal.set('closed')"></app-milestone-modal>
 
 	<app-task-modal [state]="createTaskModal()" (closed)="createTaskModalState.close()">
 	</app-task-modal>

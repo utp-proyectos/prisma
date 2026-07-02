@@ -2,7 +2,7 @@ import { Component, input } from '@angular/core'
 import { lucideCalendar, lucideFlag, lucideMoreHorizontal, lucideUsers } from '@ng-icons/lucide'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { HlmCardImports } from '@spartan-ng/helm/card'
-import { Task } from '@/features/kanban/models'
+import { Task } from '@/features/kanban/models/task.model'
 
 @Component({
 	selector: 'app-task-card',

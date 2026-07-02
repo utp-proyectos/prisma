@@ -10,6 +10,6 @@ export class CreateTaskModalState {
 	}
 
 	close() {
-		this.createTaskModal.set(null)
+		this.createTaskModal.set('closed')
 	}
 }

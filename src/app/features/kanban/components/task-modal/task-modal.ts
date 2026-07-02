@@ -16,8 +16,8 @@ import { HlmSelectImports } from '@spartan-ng/helm/select'
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator'
 import { HlmSwitch } from '@spartan-ng/helm/switch'
 import { hlm } from '@spartan-ng/helm/utils'
-import { Member } from '../../models'
 import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker'
+import { Member } from '../../models/member.model'
 
 type DateType = 'none' | 'manual' | 'milestone'
 
