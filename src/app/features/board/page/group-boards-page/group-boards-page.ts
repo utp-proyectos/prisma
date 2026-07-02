@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core'
+import { Component, computed, effect, inject, input, OnDestroy, signal } from '@angular/core'
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator'
 import { BoardsAction } from '../../components/boards-action/boards-action'
 import { BoardCard } from '../../components/board-card/board-card'
@@ -14,6 +14,8 @@ import { FolderCardComponent } from '../../components/folder-card/folder-card'
 import { BoardApiService } from '../../service/board-api.service'
 import { Board } from '../../models/board-response'
 import { Folder } from '../../models/folder.model'
+import { Subscription } from 'rxjs'
+import { toast } from '@spartan-ng/brain/sonner'
 
 @Component({
 	selector: 'app-group-boards-page',
@@ -41,74 +43,119 @@ import { Folder } from '../../models/folder.model'
 		}
 	`,
 })
-export class GroupBoardsPage {
-	//inyeccion de dependencias
+export class GroupBoardsPage implements OnDestroy {
 	private boardApiService = inject(BoardApiService)
 	private router = inject(Router)
 	private route = inject(ActivatedRoute)
 	createBoardModalState = inject(CreateBoardModalState)
+	private subs: Subscription[] = []
 
-	//mock
-	private projectId = 'test-project-1' // temporal
+	projectId = input<string>()
+	teamId = input<string>()
 
-	//signal
 	createFolderModal = signal<BrnDialogState>('closed')
 	boards = signal<Board[]>([])
 	folders = signal<Folder[]>([])
 	draggingOverFolder = signal<string | null>(null)
 
 	constructor() {
-		this.loadBoards()
-		this.loadFolders()
+		effect(() => {
+			if (!this.projectId() || !this.teamId()) return
+
+			this.subs.forEach((s) => s.unsubscribe())
+			this.subs = []
+
+			this.loadBoards()
+			this.loadFolders()
+
+			this.subs.push(
+				//  escucha boards creados, movidos o sacados de folder
+				this.boardApiService.watchBoards(this.teamId()!, this.projectId()!).subscribe((board) => {
+					if (board.isPrivate !== false) return
+					if (board.folderId) {
+						this.boards.update((boards) => boards.filter((b) => b.id !== board.id))
+						this.folders.update((folders) =>
+							folders.map((folder) =>
+								folder.id === board.folderId
+									? { ...folder, boards: [...folder.boards, board] }
+									: folder,
+							),
+						)
+					} else {
+						// board sacado del folder, actualiza todos los folders quitándolo
+						this.folders.update((folders) =>
+							folders.map((folder) => ({
+								...folder,
+								boards: folder.boards.filter((b) => b.id !== board.id),
+							})),
+						)
+						this.boards.update((boards) => [board, ...boards])
+					}
+				}),
+				//escucha folders creados
+				this.boardApiService.watchFolders(this.teamId()!, this.projectId()!).subscribe((folder) => {
+					if (folder.isPrivate !== false) return
+					this.folders.update((folders) => [{ ...folder, boards: folder.boards ?? [] }, ...folders])
+				}),
+				//escucha boards eliminados
+				this.boardApiService
+					.watchBoardDeletes(this.teamId()!, this.projectId()!)
+					.subscribe(({ boardId }) => {
+						this.boards.update((boards) => boards.filter((b) => b.id !== boardId))
+						this.folders.update((folders) =>
+							folders.map((folder) => ({
+								...folder,
+								boards: folder.boards.filter((b) => b.id !== boardId),
+							})),
+						)
+					}),
+				// escucha folders eliminados
+				this.boardApiService
+					.watchFolderDeletes(this.teamId()!, this.projectId()!)
+					.subscribe(({ folderId }) => {
+						this.folders.update((folders) => folders.filter((f) => f.id !== folderId))
+					}),
+			)
+		})
 	}
 
-	//api - carga de datos
+	ngOnDestroy() {
+		this.subs.forEach((s) => s.unsubscribe())
+	}
+
+	onDeleteBoard(boardId: string) {
+		this.boardApiService.deleteBoard(boardId, this.teamId()!, this.projectId()!)
+		this.boards.update((boards) => boards.filter((b) => b.id !== boardId))
+		toast.success('Pizarra eliminada')
+	}
+
+	onDeleteFolder(folderId: string) {
+		this.boardApiService.deleteFolder(folderId, this.teamId()!, this.projectId()!)
+		this.folders.update((folders) => folders.filter((f) => f.id !== folderId))
+		toast.success('Folder eliminado')
+	}
+
+	dropIntoFolder(event: CdkDragDrop<any[]>, folderId: string) {
+		this.draggingOverFolder.set(null)
+		const board = event.item.data
+		this.boardApiService.moveToFolder(board.id, folderId, this.teamId()!, this.projectId()!)
+		this.boards.update((boards) => boards.filter((b) => b.id !== board.id))
+	}
 	loadBoards() {
-		this.boardApiService.getBoards(this.projectId, false).subscribe((boards) => {
+		this.boardApiService.getBoards(this.projectId()!, false).subscribe((boards) => {
 			this.boards.set(boards)
 		})
 	}
 
 	loadFolders() {
-		this.boardApiService.getFolders(this.projectId, false).subscribe((folders) => {
+		this.boardApiService.getFolders(this.projectId()!, false).subscribe((folders) => {
 			this.folders.set(folders)
 		})
 	}
 
-	//api - navegacion
 	openFolder(folderId: string) {
 		this.router.navigate(['folders', folderId], { relativeTo: this.route })
 	}
 
-	//api - acciones
-	onDeleteBoard(boardId: string) {
-		console.log('id' + boardId)
-		this.boardApiService.deleteBoard(boardId).subscribe(() => {
-			this.boards.update((boards) => boards.filter((b) => b.id !== boardId))
-		})
-	}
-
-	onDeleteFolder(folderId: string) {
-		this.boardApiService.deleteFolder(folderId).subscribe(() => {
-			this.folders.update((folders) => folders.filter((f) => f.id !== folderId))
-		})
-	}
-
-	//drag and drop - board dentro de folder
 	folderDropLists = computed(() => this.folders().map((f) => f.id))
-
-	dropIntoFolder(event: CdkDragDrop<any[]>, folderId: string) {
-		this.draggingOverFolder.set(null)
-		const board = event.item.data
-		this.boardApiService.moveToFolder(board.id, folderId).subscribe(() => {
-			this.boards.update((boards) => boards.filter((b) => b.id !== board.id))
-			this.folders.update((folders) =>
-				folders.map((folder) =>
-					folder.id === folderId
-						? { ...folder, boards: [...folder.boards, { ...board, folderId }] }
-						: folder,
-				),
-			)
-		})
-	}
 }

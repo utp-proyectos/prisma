@@ -1,65 +1,53 @@
-@if (boards().length > 0) {
-	<div class="flex flex-col gap-5 h-full">
-		<div>
-			<h3 class="flex items-center gap-2 text-xl font-medium">
-				<ng-icon name="lucideTrash2"></ng-icon>
-				<span>Papelera</span>
-			</h3>
-			<hlm-separator />
+<div class="flex flex-col gap-5 h-full">
+	<div>
+		<h3 class="flex items-center gap-2 text-xl font-medium">
+			<ng-icon name="lucideTrash2"></ng-icon>
+			<span>Papelera</span>
+		</h3>
+		<hlm-separator />
 
-			<div class="flex items-center justify-between mt-4">
-				<hlm-input-group class="w-70">
-					<input hlmInputGroupInput placeholder="Buscar pizarras" />
-					<hlm-input-group-addon>
-						<ng-icon name="lucideSearch" />
-					</hlm-input-group-addon>
-				</hlm-input-group>
+		<div class="flex items-center justify-between mt-4">
+			<hlm-input-group class="w-70">
+				<input hlmInputGroupInput placeholder="Buscar pizarras" />
+				<hlm-input-group-addon>
+					<ng-icon name="lucideSearch" />
+				</hlm-input-group-addon>
+			</hlm-input-group>
 
-				<div class="flex items-center gap-2">
-					<hlm-select>
-						<hlm-select-trigger class="w-57">
-							<hlm-select-value placeholder="Fecha en la que se elimino" />
-						</hlm-select-trigger>
-						<hlm-select-content *hlmSelectPortal>
-							<hlm-select-group>
-								@for (item of items; track item.value) {
-									<hlm-select-item [value]="item.value">{{ item.label }}</hlm-select-item>
-								}
-							</hlm-select-group>
-						</hlm-select-content>
-					</hlm-select>
+			<div class="flex items-center gap-2">
+				<hlm-select>
+					<hlm-select-trigger class="w-57">
+						<hlm-select-value placeholder="Fecha en la que se elimino" />
+					</hlm-select-trigger>
+					<hlm-select-content *hlmSelectPortal>
+						<hlm-select-group>
+							@for (item of items; track item.value) {
+								<hlm-select-item [value]="item.value">{{ item.label }}</hlm-select-item>
+							}
+						</hlm-select-group>
+					</hlm-select-content>
+				</hlm-select>
 
-					<hlm-select>
-						<hlm-select-trigger>
-							<hlm-select-value placeholder="Creado por ti" />
-						</hlm-select-trigger>
-						<hlm-select-content *hlmSelectPortal>
-							<hlm-select-group>
-								@for (created of createds; track created.value) {
-									<hlm-select-item [value]="created.value">{{ created.label }}</hlm-select-item>
-								}
-							</hlm-select-group>
-						</hlm-select-content>
-					</hlm-select>
-				</div>
-			</div>
-		</div>
-		<div class="flex-1 overflow-auto custom-scroll pe-2">
-			<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
-				@for (board of boards(); track board.id) {
-					<app-board-card [board]="board" />
-				}
+				<hlm-select>
+					<hlm-select-trigger>
+						<hlm-select-value placeholder="Creado por ti" />
+					</hlm-select-trigger>
+					<hlm-select-content *hlmSelectPortal>
+						<hlm-select-group>
+							@for (created of createds; track created.value) {
+								<hlm-select-item [value]="created.value">{{ created.label }}</hlm-select-item>
+							}
+						</hlm-select-group>
+					</hlm-select-content>
+				</hlm-select>
 			</div>
 		</div>
 	</div>
-} @else {
-	<div class="flex flex-col items-center justify-center gap-4 h-full">
-		<ng-icon name="lucideSearch" class="text-xl"></ng-icon>
-		<div class="flex flex-col items-center gap-1">
-			<h3 class="text-xl font-medium">No sean eliminado pizarras</h3>
-			<p class="text-muted-foreground text-sm">
-				Las pizarras eliminadas recientemente se mostraran aqui
-			</p>
+	<div class="flex-1 overflow-auto custom-scroll pe-2">
+		<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
+			@for (board of boards(); track board.id) {
+				<app-board-card [board]="board" />
+			}
 		</div>
 	</div>
-}
+</div>

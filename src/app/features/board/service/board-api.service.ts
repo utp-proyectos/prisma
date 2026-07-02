@@ -1,83 +1,123 @@
 // board.service.ts
-import { Injectable, inject } from '@angular/core'
-import { HttpClient } from '@angular/common/http'
+import { Injectable, Signal, inject } from '@angular/core'
+import { HttpClient, httpResource } from '@angular/common/http'
 import { Board } from '../models/board-response'
 import { BoardRequest } from '../models/board-request'
 import { Folder } from '../models/folder.model'
 import { BoardDetail } from '../models/board-detail'
 import { FolderRequest } from '../models/folder-request'
+import { Websocket } from '@/core/servies/websocket'
+import { map, Observable, tap } from 'rxjs'
+import { ApiResponse } from '../../../core/models/api-response.model'
 
 @Injectable({ providedIn: 'root' })
 export class BoardApiService {
 	private http = inject(HttpClient)
-	private baseUrl = 'http://localhost:8080/api'
+	private ws = inject(Websocket)
 
-	private projectId = 'test-project-1' // temporal
-	getCanvas(boardId: string) {
-		return this.http.get(
-			`${this.baseUrl}/boards/${boardId}/canvas`,
-			//el backend va devolver un string
-			{ responseType: 'text' },
+	boardsResource = (projectId: Signal<string | undefined>, isPrivate: boolean) =>
+		httpResource<ApiResponse<Board[]>>(() =>
+			// ← ApiReponse<Board[]>
+			projectId() ? `projects/${projectId()}/boards?isPrivate=${isPrivate}` : undefined,
 		)
+
+	foldersResource = (projectId: Signal<string | undefined>, isPrivate: boolean) =>
+		httpResource<ApiResponse<Folder[]>>(() =>
+			// ← ApiReponse<Folder[]>
+			projectId() ? `projects/${projectId()}/folders?isPrivate=${isPrivate}` : undefined,
+		)
+
+	//  maneja el canvas de Konva
+	getCanvas(boardId: string) {
+		return this.http.get(`/boards/${boardId}/canvas`, { responseType: 'text' })
 	}
 
-	// guarda canva
 	saveCanvas(boardId: string, konvaData: object) {
-		return this.http.patch(`${this.baseUrl}/boards/${boardId}/canvas`, JSON.stringify(konvaData), {
-			// lo pasa como string para el redis
+		return this.http.patch(`/boards/${boardId}/canvas`, JSON.stringify(konvaData), {
 			headers: { 'Content-Type': 'application/json' },
 		})
 	}
-	//getAllBoards
-	getBoards(projectId: string, isPrivate: boolean) {
-		return this.http.get<Board[]>(`${this.baseUrl}/projects/${projectId}/boards`, {
-			params: { isPrivate },
-		})
-	}
-
-	//getAllFolder
-	getFolders(projectId: string, isPrivate: boolean) {
-		return this.http.get<Folder[]>(`${this.baseUrl}/projects/${projectId}/folders`, {
-			params: { isPrivate },
-		})
-	}
-
+	//  obtiene detalle de un board o folder
 	getBoardDetail(boardId: string) {
-		return this.http.get<BoardDetail>(`${this.baseUrl}/boards/${boardId}`)
+		return this.http.get<BoardDetail>(`/boards/${boardId}`)
 	}
 
-	//getFolder{id}
 	getFolder(folderId: string) {
-		return this.http.get<Folder>(`${this.baseUrl}/folders/${folderId}`)
+		return this.http.get<Folder>(`/folders/${folderId}`)
+	}
+	// crea un board y devuelve el id para navegar al editor
+	createBoard(projectId: string, teamId: string, dto: BoardRequest) {
+		return this.http.post<Board>(`/projects/${projectId}/boards`, { ...dto, teamId })
 	}
 
-	//create board
-	createBoard(projectId: string, dto: BoardRequest) {
-		return this.http.post<Board>(`${this.baseUrl}/projects/${projectId}/boards`, dto)
-	}
-
-	//create folder
 	createFolder(projectId: string, dto: FolderRequest) {
-		return this.http.post<Folder>(`${this.baseUrl}/projects/${projectId}/folders`, dto)
+		return this.http.post<Folder>(`/projects/${projectId}/folders`, dto)
 	}
 
-	//moveBoardToFolder
-	moveToFolder(boardId: string, folderId: string) {
-		return this.http.patch<Board>(`${this.baseUrl}/boards/${boardId}/move-to-folder`, null, {
-			params: { folderId },
+	//carga inicial de de datos
+	getBoards(projectId: string, isPrivate: boolean) {
+		return this.http.get<Board[]>(`/projects/${projectId}/boards`, {
+			params: { isPrivate },
 		})
 	}
-	//sacar del folder
-	removeFromFolder(boardId: string) {
-		return this.http.patch(`${this.baseUrl}/boards/${boardId}/remove-from-folder`, null)
-	}
-	//deleteBoard
-	deleteBoard(boardId: string) {
-		return this.http.delete(`${this.baseUrl}/boards/${boardId}`)
+
+	getFolders(projectId: string, isPrivate: boolean) {
+		return this.http.get<Folder[]>(`/projects/${projectId}/folders`, {
+			params: { isPrivate },
+		})
 	}
 
-	//deleteFolder
-	deleteFolder(folderId: string) {
-		return this.http.delete(`${this.baseUrl}/folders/${folderId}`)
+	// boards creados, movidos
+	watchBoards(teamId: string, projectId: string): Observable<Board> {
+		return this.ws.watch(`/topic/${teamId}/project/${projectId}/boards`).pipe(
+			tap((msg) => console.log('mensaje boards:', msg.body)),
+			map((res) => JSON.parse(res.body) as Board),
+		)
+	}
+
+	//boards eliminados
+	watchBoardDeletes(teamId: string, projectId: string): Observable<{ boardId: string }> {
+		return this.ws
+			.watch(`/topic/${teamId}/project/${projectId}/boards/delete`)
+			.pipe(map((res) => JSON.parse(res.body)))
+	}
+
+	// folders creados
+	watchFolders(teamId: string, projectId: string): Observable<Folder> {
+		return this.ws
+			.watch(`/topic/${teamId}/project/${projectId}/folders`)
+			.pipe(map((res) => JSON.parse(res.body) as Folder))
+	}
+
+	// folders eliminados
+	watchFolderDeletes(teamId: string, projectId: string): Observable<{ folderId: string }> {
+		return this.ws
+			.watch(`/topic/${teamId}/project/${projectId}/folders/delete`)
+			.pipe(map((res) => JSON.parse(res.body)))
+	}
+
+	//enviar acciones al servidor
+	sendBoard(dto: BoardRequest, teamId: string, projectId: string) {
+		this.ws.publish('/app/board.create', { ...dto, teamId, projectId })
+	}
+
+	deleteBoard(boardId: string, teamId: string, projectId: string) {
+		this.ws.publish('/app/board.delete', { boardId, teamId, projectId })
+	}
+
+	moveToFolder(boardId: string, folderId: string, teamId: string, projectId: string) {
+		this.ws.publish('/app/board.move', { boardId, folderId, teamId, projectId })
+	}
+
+	removeFromFolder(boardId: string, teamId: string, projectId: string) {
+		this.ws.publish('/app/board.move', { boardId, folderId: null, teamId, projectId })
+	}
+
+	sendFolder(dto: FolderRequest, teamId: string, projectId: string) {
+		this.ws.publish('/app/folder.create', { ...dto, teamId, projectId })
+	}
+
+	deleteFolder(folderId: string, teamId: string, projectId: string) {
+		this.ws.publish('/app/folder.delete', { folderId, teamId, projectId })
 	}
 }

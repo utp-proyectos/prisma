@@ -20,7 +20,7 @@
 				<div
 					class="relative flex items-center justify-center rounded-md bg-[#121214] border border-zinc-800 overflow-hidden w-full h-full"
 				>
-					@if (folder.boards[slot]?.thumbnailUrl) {
+					@if (folder.boards?.[slot]?.thumbnailUrl) {
 						<img
 							[src]="folder.boards[slot].thumbnailUrl"
 							[alt]="folder.boards[slot].name"
@@ -54,7 +54,8 @@
 			</div>
 
 			<p hlmCardDescription class="text-xs text-neutral-500">
-				{{ folder.boards.length }} {{ folder.boards.length === 1 ? 'pizarra' : 'pizarras' }}
+				{{ (folder.boards ?? []).length }}
+				{{ (folder.boards ?? []).length === 1 ? 'pizarra' : 'pizarras' }}
 			</p>
 		</hlm-card-header>
 	</hlm-card>
@@ -71,10 +72,21 @@
 		</hlm-dropdown-menu-group>
 		<hlm-dropdown-menu-separator />
 		<hlm-dropdown-menu-group>
-			<button hlmDropdownMenuItem variant="destructive" (click)="deleteFolder.emit(folder.id)">
-				<ng-icon name="lucideTrash2" class="mr-2" />
+			<button
+				hlmDropdownMenuItem
+				variant="destructive"
+				(click)="$event.stopPropagation(); deleteModalState.set('open')"
+			>
+				<ng-icon name="lucideTrash2" />
 				Eliminar
 			</button>
 		</hlm-dropdown-menu-group>
 	</hlm-dropdown-menu>
 </ng-template>
+<app-delete-modal
+	[state]="deleteModalState()"
+	(stateChanged)="deleteModalState.set($event)"
+	(confirm)="confirmDelete()"
+	title="¿Eliminar folder?"
+	description="Esta acción no se puede deshacer. Se eliminará permanentemente esta pizarra."
+/>
