@@ -158,8 +158,21 @@ export class KanbanDetail implements OnDestroy {
 	protected dropColumn(event: CdkDragDrop<ColumnKanbanDetailResponse[]>) {
 		const movable = [...this.movableColumns()]
 		moveItemInArray(movable, event.previousIndex, event.currentIndex)
+
 		const completed = this.completedColumn()
 		this.columns.set([...movable, completed])
+
+		const reorderedColumns = movable.map((col, index) => ({
+			id: col.id,
+			position: index,
+		}))
+
+		this.kanbanApi.reorderColumns({
+			teamId: this.teamId(),
+			projectId: this.projectId(),
+			kanbanId: this.kanbanId(),
+			columns: reorderedColumns,
+		})
 	}
 
 	protected readonly movableColumns = computed(() =>
@@ -173,6 +186,8 @@ export class KanbanDetail implements OnDestroy {
 	protected readonly connectedLists = computed(() => this.columns().map((column) => column.id))
 
 	protected dropTask(event: CdkDragDrop<TaskDetailResponse[]>) {
+		const targetColumnId = event.container.id
+
 		if (event.previousContainer === event.container) {
 			moveItemInArray(event.container.data, event.previousIndex, event.currentIndex)
 		} else {
@@ -183,12 +198,28 @@ export class KanbanDetail implements OnDestroy {
 				event.currentIndex,
 			)
 		}
+
+		const targetTasks = event.container.data.map((task, index) => ({
+			id: task.id,
+			position: index,
+		}))
+
+		this.kanbanApi.reorderTasks({
+			teamId: this.teamId(),
+			projectId: this.projectId(),
+			kanbanId: this.kanbanId(),
+			taskId: event.item.data.id,
+			targetColumnId: targetColumnId,
+			targetTasks: targetTasks,
+		})
 	}
 
 	// Renderizar hitos, columnas y tareas
 	private milestoneSub?: Subscription
 	private columnSub?: Subscription
 	private taskSub?: Subscription
+	private columnReorderSub?: Subscription
+	private taskReorderSub?: Subscription
 
 	kanbanApi = inject(KanbanApi)
 	teamApi = inject(TeamApi)
@@ -335,11 +366,41 @@ export class KanbanDetail implements OnDestroy {
 					}
 				})
 		})
+
+		effect(() => {
+			if (!this.kanbanId() || !this.projectId() || !this.teamId()) return
+
+			this.columnReorderSub?.unsubscribe()
+
+			this.columnReorderSub = this.kanbanApi
+				.getColumnsReorder(this.teamId(), this.projectId(), this.kanbanId())
+				.subscribe((event) => {
+					if (event.action === 'REORDER') {
+						this.columns.set(event.payload)
+					}
+				})
+		})
+
+		effect(() => {
+			if (!this.kanbanId() || !this.projectId() || !this.teamId()) return
+
+			this.taskReorderSub?.unsubscribe()
+
+			this.taskReorderSub = this.kanbanApi
+				.getTasksReorder(this.teamId(), this.projectId(), this.kanbanId())
+				.subscribe((event) => {
+					if (event.action === 'REORDER') {
+						this.columns.set(event.payload)
+					}
+				})
+		})
 	}
 
 	ngOnDestroy() {
 		this.milestoneSub?.unsubscribe()
 		this.columnSub?.unsubscribe()
 		this.taskSub?.unsubscribe()
+		this.columnReorderSub?.unsubscribe()
+		this.taskReorderSub?.unsubscribe()
 	}
 }

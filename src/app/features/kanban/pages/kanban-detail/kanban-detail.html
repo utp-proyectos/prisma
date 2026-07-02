@@ -188,7 +188,8 @@
 						@for(column of movableColumns(); track column.id) {
 
 						<div cdkDrag
-							class="flex flex-col gap-3 bg-primary-foreground border border-border rounded-xl p-3 w-72 shrink-0 max-h-[70vh]">
+							class="flex flex-col gap-3 bg-primary-foreground border border-border rounded-xl p-3 w-72 shrink-0 max-h-[70vh]"
+							[cdkDragData]="column">
 
 							<span class="font-semibold text-muted-foreground px-1">
 								{{ column.title }}
@@ -208,7 +209,7 @@
 
 									@for(task of column.tasks; track task.id) {
 
-									<div cdkDrag>
+									<div cdkDrag [cdkDragData]="task">
 										<app-task-card [task]="task" (opened)="openEditTask($event)" />
 									</div>
 									}
