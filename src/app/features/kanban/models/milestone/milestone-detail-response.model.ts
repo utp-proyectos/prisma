@@ -1,12 +1,12 @@
-import { Task } from '../task.model'
+import { TaskDetailResponse } from '../task/task-detail-response.model'
 
 export interface MilestoneDetailResponse {
-	id: number
+	id: string
 	title: string
 	deadline: string
 	progress: number
 	totalTasks: number
 	completedTasks: number
 	state: 'COMPLETADO' | 'A_TIEMPO' | 'RETRASADO'
-	tasks?: Task[]
+	tasks?: TaskDetailResponse[]
 }

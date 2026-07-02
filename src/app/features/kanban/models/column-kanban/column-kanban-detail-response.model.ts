@@ -1,4 +1,4 @@
-import { Task } from '../task.model'
+import { TaskDetailResponse } from '../task/task-detail-response.model'
 
 export interface ColumnKanbanDetailResponse {
 	id: string
@@ -6,5 +6,5 @@ export interface ColumnKanbanDetailResponse {
 	position: number
 	fixed?: boolean
 	ColumnType?: 'PENDING' | ' IN_PROGRESS' | 'COMPLETED' | 'CUSTOM'
-	tasks: Task[]
+	tasks: TaskDetailResponse[]
 }

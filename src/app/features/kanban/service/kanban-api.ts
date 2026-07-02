@@ -11,6 +11,8 @@ import { CreateMilestoneRequest } from '../models/milestone/milestone-request.mo
 import { MilestoneSummaryResponse } from '../models/milestone/milestone-summary-response.model'
 import { CreateColumnKanbanRequest } from '../models/column-kanban/column-kanban-request.model'
 import { ColumnKanbanDetailResponse } from '../models/column-kanban/column-kanban-detail-response.model'
+import { CreateTaskRequest, UpdateTaskRequest } from '../models/task/task-request.model'
+import { TaskDetailResponse } from '../models/task/task-detail-response.model'
 
 @Injectable()
 export class KanbanApi {
@@ -76,5 +78,24 @@ export class KanbanApi {
 		return this.ws
 			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/columns`)
 			.pipe(map((res) => JSON.parse(res.body) as WsResponse<ColumnKanbanDetailResponse>))
+	}
+
+	//Para tareas
+	createTask(task: CreateTaskRequest) {
+		this.ws.publish(`/app/task.create`, task)
+	}
+
+	updateTask(task: UpdateTaskRequest) {
+		this.ws.publish(`/app/task.update`, task)
+	}
+
+	getTasks(
+		teamId: string,
+		projectId: string,
+		kanbanId: string,
+	): Observable<WsResponse<TaskDetailResponse>> {
+		return this.ws
+			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/tasks`)
+			.pipe(map((res) => JSON.parse(res.body) as WsResponse<TaskDetailResponse>))
 	}
 }

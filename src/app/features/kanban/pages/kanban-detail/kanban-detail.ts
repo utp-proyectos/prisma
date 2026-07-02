@@ -45,15 +45,13 @@ import { TaskModal } from '../../components/task-modal/task-modal'
 import { CreateTaskModalState } from '../../service/create-task-modal-state'
 import { MilestoneModalComponent } from '../../components/milestone-modal/milestone-modal'
 import { KanbanApi } from '../../service/kanban-api'
-import { Task } from '../../models/task.model'
 import { MilestoneDetailResponse } from '../../models/milestone/milestone-detail-response.model'
-import { CreateMilestoneRequest } from '../../models/milestone/milestone-request.model'
-import { disabled, form, minLength, required } from '@angular/forms/signals'
-import { toast } from '@spartan-ng/brain/sonner'
 import { Subscription } from 'rxjs'
 import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
 import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
 import { ColumnKanbanModalComponent } from '../../components/column-kanban-modal/column-kanban-modal'
+import { TaskDetailResponse } from '../../models/task/task-detail-response.model'
+import { TeamApi } from '@/features/home/services/team-api'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -86,6 +84,7 @@ import { ColumnKanbanModalComponent } from '../../components/column-kanban-modal
 	providers: [
 		CreateTaskModalState,
 		KanbanApi,
+		TeamApi,
 		provideIcons({
 			lucidePlus,
 			lucideSearch,
@@ -139,9 +138,6 @@ export class KanbanDetail implements OnDestroy {
 	createMilestoneModal = signal<BrnDialogState>('closed')
 	createColumnKanbanModal = signal<BrnDialogState>('closed')
 
-	createTaskModalState = inject(CreateTaskModalState)
-	createTaskModal = computed(() => this.createTaskModalState.createTaskModal())
-
 	protected changeTab(tabName: string): void {
 		this.activeTab.set(tabName)
 
@@ -177,7 +173,7 @@ export class KanbanDetail implements OnDestroy {
 
 	protected readonly connectedLists = computed(() => this.columns().map((column) => column.id))
 
-	protected dropTask(event: CdkDragDrop<Task[]>) {
+	protected dropTask(event: CdkDragDrop<TaskDetailResponse[]>) {
 		if (event.previousContainer === event.container) {
 			moveItemInArray(event.container.data, event.previousIndex, event.currentIndex)
 		} else {
@@ -190,22 +186,57 @@ export class KanbanDetail implements OnDestroy {
 		}
 	}
 
-	// Renderizar hitos y columnas
+	// Renderizar hitos, columnas y tareas
 	private milestoneSub?: Subscription
 	private columnSub?: Subscription
+	private taskSub?: Subscription
 
 	kanbanApi = inject(KanbanApi)
+	teamApi = inject(TeamApi)
 	milestones = signal<MilestoneSummaryResponse[]>([])
 	columns = signal<ColumnKanbanDetailResponse[]>([])
+
+	teamDetailResource = this.teamApi.teamDetailResource(this.teamId)
+
+	workspaceMembers = computed(() => {
+		if (!this.teamDetailResource.hasValue()) return []
+		return this.teamDetailResource.value()!.data.members || []
+	})
 	kanbanResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
+
+	openCreateTask(column: ColumnKanbanDetailResponse) {
+		this.kanbanApi.createTask({
+			title: 'Nueva tarea',
+			description: '',
+			deadline: '',
+			priority: 'BAJA',
+			groupTask: false,
+			milestoneId: '',
+			columnId: column.id,
+			teamId: this.teamId(),
+			projectId: this.projectId(),
+			kanbanId: this.kanbanId(),
+		})
+	}
+
+	// Señal para guardar la tarea que se va a editar
+	protected readonly selectedTask = signal<TaskDetailResponse | null>(null)
+
+	// Estado del modal de la tarea
+	createTaskModalState = inject(CreateTaskModalState)
+	protected readonly createTaskModal = computed(() => this.createTaskModalState.createTaskModal())
+
+	// Método para abrir el modal con la información cargada
+	protected openEditTask(task: TaskDetailResponse): void {
+		this.selectedTask.set(task)
+		this.createTaskModalState.open()
+	}
 
 	constructor() {
 		effect(() => {
 			if (!this.kanbanResource.hasValue()) return
 
 			const data = this.kanbanResource.value()!.data
-
-			console.log('Kanban data:', data.columns)
 
 			this.milestones.set(data.milestones)
 			this.columns.set(data.columns)
@@ -242,10 +273,74 @@ export class KanbanDetail implements OnDestroy {
 					}
 				})
 		})
+
+		effect(() => {
+			if (!this.kanbanId() || !this.projectId() || !this.teamId()) return
+
+			this.taskSub?.unsubscribe()
+
+			this.taskSub = this.kanbanApi
+				.getTasks(this.teamId(), this.projectId(), this.kanbanId())
+				.subscribe((event) => {
+					switch (event.action) {
+						case 'CREATE':
+							this.columns.update((columns) =>
+								columns.map((column) =>
+									column.id === event.payload.columnId
+										? {
+												...column,
+												tasks: [...column.tasks, event.payload],
+											}
+										: column,
+								),
+							)
+							break
+
+						case 'UPDATE':
+							this.columns.update((columns) => {
+								const previousColumn = columns.find((column) =>
+									column.tasks.some((task) => task.id === event.payload.id),
+								)
+
+								if (previousColumn?.id === event.payload.columnId) {
+									return columns.map((column) => {
+										if (column.id !== event.payload.columnId) return column
+
+										return {
+											...column,
+											tasks: column.tasks.map((task) =>
+												task.id === event.payload.id ? event.payload : task,
+											),
+										}
+									})
+								}
+
+								return columns.map((column) => {
+									const tasksWithout = column.tasks.filter((task) => task.id !== event.payload.id)
+
+									if (column.id === event.payload.columnId) {
+										return {
+											...column,
+											tasks: [...tasksWithout, event.payload],
+										}
+									}
+
+									return {
+										...column,
+										tasks: tasksWithout,
+									}
+								})
+							})
+
+							break
+					}
+				})
+		})
 	}
 
 	ngOnDestroy() {
 		this.milestoneSub?.unsubscribe()
 		this.columnSub?.unsubscribe()
+		this.taskSub?.unsubscribe()
 	}
 }

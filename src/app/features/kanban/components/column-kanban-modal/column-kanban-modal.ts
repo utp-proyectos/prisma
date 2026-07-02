@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal } from '@angular/core'
+import { Component, effect, inject, input, output, signal } from '@angular/core'
 import { KanbanApi } from '../../service/kanban-api'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmInputImports } from '@spartan-ng/helm/input'
@@ -68,8 +68,15 @@ export class ColumnKanbanModalComponent {
 		},
 	)
 
+	constructor() {
+		effect(() => {
+			if (this.state() === 'closed') {
+				this.columnKanbanForm().reset({ title: '' })
+			}
+		})
+	}
+
 	closeCreateColumnKanbanModal() {
 		this.closed.emit()
-		this.columnKanbanForm().reset({ title: '' })
 	}
 }
