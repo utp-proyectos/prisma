@@ -73,7 +73,16 @@
 	>
 		<ng-icon name="lucideType" />
 	</button>
-
+	<button
+		hlmBtn
+		size="icon"
+		variant="ghost"
+		class="rounded-full w-9 h-9"
+		[class.bg-secondary]="board.activeTool() === 'LINE'"
+		(click)="board.setTool('LINE')"
+	>
+		<ng-icon name="lucideMinus" />
+	</button>
 	<div class="w-px h-5 bg-zinc-700 mx-1"></div>
 
 	<div (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
@@ -309,6 +318,24 @@
 						(transformend)="handleTransformEnd($event)"
 					/>
 				}
+				@case ('LINE') {
+					<ko-line
+						[config]="shape"
+						(click)="handleShapeClick($event)"
+						(dragstart)="handleDragStart()"
+						(dragend)="handleDragEnd($event)"
+						(transformend)="handleTransformEnd($event)"
+					/>
+				}
+				@case ('PENCIL') {
+					<ko-line
+						[config]="shape"
+						(click)="handleShapeClick($event)"
+						(dragstart)="handleDragStart()"
+						(dragend)="handleDragEnd($event)"
+						(transformend)="handleTransformEnd($event)"
+					/>
+				}
 			}
 		}
 
@@ -328,6 +355,12 @@
 				}
 				@case ('POLYGON') {
 					<ko-regular-polygon [config]="preview" />
+				}
+				@case ('LINE') {
+					<ko-line [config]="preview" />
+				}
+				@case ('PENCIL') {
+					<ko-line [config]="preview" />
 				}
 			}
 		}

@@ -30,6 +30,7 @@ import {
 	lucideStar,
 	lucideType,
 	lucideRabbit,
+	lucideMinus,
 } from '@ng-icons/lucide'
 import { HlmSelectImports } from '../../../../../../libs/ui/select/src/index'
 import { HlmSheetImports } from '@spartan-ng/helm/sheet'
@@ -66,6 +67,7 @@ import { BrnSheet } from '@spartan-ng/brain/sheet'
 			lucideArrowRight,
 			lucidePaintBucket,
 			lucideRabbit,
+			lucideMinus,
 		}),
 	],
 	templateUrl: './canvas-board-component.html',
@@ -76,7 +78,8 @@ export class CanvasBoardComponent implements AfterViewInit {
 	openSheet() {
 		this.sheet()?.open()
 	}
-
+	private isSpacePanning = false
+	private previousTool: string | null = null
 	//referencia al tronsformador de konva
 	@ViewChild('transformer') transformer!: any
 
@@ -138,10 +141,10 @@ export class CanvasBoardComponent implements AfterViewInit {
 		if (!this.lastColor || this.lastSelectedNames.length === 0) return
 		this.board.setColor(this.lastColor)
 		this.board.updateShapesBatch(this.lastSelectedNames, {
-			[this.board.colorTarget()]: this.lastColor,
+			fill: this.lastColor,
+			stroke: this.lastColor,
 		})
 	}
-
 	//implementacion color pizarra
 	onBackgroundColorChange(event: Event) {
 		const color = (event.target as HTMLInputElement).value
@@ -184,8 +187,9 @@ export class CanvasBoardComponent implements AfterViewInit {
 	private applyColorVisual(color: string): void {
 		const nodes = this.getTransformerNode()?.nodes() ?? []
 		nodes.forEach((node: any) => {
-			if (this.board.colorTarget() === 'fill') node.fill(color)
-			else node.stroke(color)
+			if (this.board.colorTarget() === 'fill' && this.board.colorTarget() === 'stroke')
+				node.fill(color)
+			node.stroke(color)
 		})
 		this.getStage().getLayers()[0].batchDraw()
 	}
@@ -205,7 +209,9 @@ export class CanvasBoardComponent implements AfterViewInit {
 						  tool === 'CIRCLE' ||
 						  tool === 'ARROW' ||
 						  tool === 'START' ||
-						  tool === 'POLYGON'
+						  tool === 'POLYGON' ||
+						  tool === 'LINE' ||
+						  'PENCIL'
 						? 'crosshair'
 						: 'default'
 	}
@@ -302,6 +308,32 @@ export class CanvasBoardComponent implements AfterViewInit {
 				strokeWidth: 5,
 				dash: [5, 5],
 			})
+		} else if (tool === 'PENCIL') {
+			this.previewShape.set({
+				name: 'preview',
+				type: tool,
+				x: 0,
+				y: 0,
+				points: [pos.x, pos.y], // arranca con un solo punto
+				stroke: this.board.activeColor(),
+				strokeWidth: 5,
+				lineCap: 'round',
+				lineJoin: 'round',
+				tension: 0.5, // suaviza la curva entre puntos, dale 0 si prefieres líneas rectas entre segmentos
+			})
+		} else if (tool === 'LINE') {
+			this.previewShape.set({
+				name: 'preview',
+				type: tool,
+				x: 0,
+				y: 0,
+				points: [pos.x, pos.y, pos.x, pos.y],
+				stroke: this.board.activeColor(),
+				strokeWidth: 5,
+				lineCap: 'round',
+				lineJoin: 'round',
+				dash: [5, 5], // solo para el preview, se limpia en addFinalShape
+			})
 		} else {
 			this.previewShape.set({
 				name: 'preview',
@@ -384,6 +416,16 @@ export class CanvasBoardComponent implements AfterViewInit {
 				...s,
 				radius: r,
 			}))
+		} else if (tool === 'PENCIL') {
+			this.previewShape.update((s) => ({
+				...s,
+				points: [...s.points, pos.x, pos.y], // concatena
+			}))
+		} else if (tool === 'LINE') {
+			this.previewShape.update((s) => ({
+				...s,
+				points: newPoints,
+			}))
 		}
 	}
 
@@ -427,15 +469,21 @@ export class CanvasBoardComponent implements AfterViewInit {
 		const finalPreview = this.previewShape()
 		//dibuja el preview, si es menos a 5 no lo dibuja evitando accidentes de click y solo pintando lo necesario
 		if (finalPreview) {
+			const isPencilOrLine =
+				(finalPreview.type === 'PENCIL' ||
+					finalPreview.type === 'LINE' ||
+					finalPreview.type === 'ARROW') &&
+				finalPreview.points
+
+			const hasEnoughLength = isPencilOrLine
+				? finalPreview.points.length >= 4 // al menos un punto inicial + uno más
+				: false
+
 			if (
 				Math.abs(finalPreview.width) > 5 ||
 				finalPreview.radius > 5 ||
 				finalPreview.outerRadius > 5 ||
-				(finalPreview.points &&
-					Math.hypot(
-						finalPreview.points[2] - finalPreview.points[0],
-						finalPreview.points[3] - finalPreview.points[1],
-					) > 5)
+				hasEnoughLength
 			) {
 				this.addFinalShape(finalPreview)
 			}
@@ -445,10 +493,53 @@ export class CanvasBoardComponent implements AfterViewInit {
 		this.isDrawing = false
 		this.previewShape.set(null)
 	}
+
+	//atajados del tecaldo
 	@HostListener('window:keydown', ['$event'])
 	handleKeyDown(event: KeyboardEvent): void {
 		const tag = (event.target as HTMLElement).tagName
-		if (tag === 'TEXTAREA' || tag === 'INPUT') return //  ignora si estás escribiendo
+		if (tag === 'TEXTAREA' || tag === 'INPUT') return
+
+		// atajos de herramientas
+		if (event.key === 'r' || event.key === 'R') {
+			this.board.setTool('RECT')
+			return
+		}
+		if (event.key === 'c' || event.key === 'C') {
+			this.board.setTool('CIRCLE')
+			return
+		}
+		if (event.key === 't' || event.key === 'T') {
+			this.board.setTool('TEXT')
+			return
+		}
+		if (event.key === 'a' || event.key === 'A') {
+			this.board.setTool('ARROW')
+			return
+		}
+		if (event.key === 'o' || event.key === 'O') {
+			this.board.setTool('POLYGON')
+			return
+		}
+		if (event.key === 's' || event.key === 'S') {
+			this.board.setTool('START')
+			return
+		}
+		if (event.key === 'f' || event.key === 'F') {
+			this.board.setTool('LINE')
+			return
+		}
+		if (event.key === 'P' || event.key === 'P') {
+			this.board.setTool('PENCIL')
+			return
+		}
+		if (event.code === 'Space' && !this.isSpacePanning) {
+			event.preventDefault() // evita que la página haga scroll
+			this.isSpacePanning = true
+			this.previousTool = this.board.activeTool()
+			this.board.setTool('HAND')
+			return
+		}
 
 		if (event.key !== 'Delete' && event.key !== 'Backspace') return
 
@@ -458,6 +549,53 @@ export class CanvasBoardComponent implements AfterViewInit {
 		names.forEach((name) => this.board.removeShape(name))
 		this.getTransformerNode()?.nodes([])
 		this.board.clearSelection()
+	}
+
+	@HostListener('window:keyup', ['$event'])
+	handleKeyUp(event: KeyboardEvent): void {
+		if (event.code === 'Space' && this.isSpacePanning) {
+			this.isSpacePanning = false
+			if (this.previousTool) {
+				this.board.setTool(this.previousTool as any)
+				this.previousTool = null
+			}
+		}
+	}
+
+	// zoom
+	@HostListener('wheel', ['$event'])
+	handleWheel(event: WheelEvent): void {
+		event.preventDefault() // evita el scroll de la página
+
+		const stage = this.getStage()
+		if (!stage) return
+
+		const scaleBy = 1.05 // con mouse normal, 1.01 casi no se nota porque cada "click" de la rueda dispara un solo evento (a diferencia de trackpad que dispara muchos seguidos)
+		const oldScale = stage.scaleX()
+		const pointer = stage.getPointerPosition()
+		if (!pointer) return
+
+		const mousePointTo = {
+			x: (pointer.x - stage.x()) / oldScale,
+			y: (pointer.y - stage.y()) / oldScale,
+		}
+
+		let direction = event.deltaY > 0 ? 1 : -1
+		if (event.ctrlKey) direction = -direction // trackpad con pinch manda ctrlKey=true
+
+		const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy
+
+		// límites para que no se pueda hacer zoom infinito ni desaparecer el canvas
+		const clampedScale = Math.max(0.1, Math.min(newScale, 5))
+
+		stage.scale({ x: clampedScale, y: clampedScale })
+
+		const newPos = {
+			x: pointer.x - mousePointTo.x * clampedScale,
+			y: pointer.y - mousePointTo.y * clampedScale,
+		}
+		stage.position(newPos)
+		stage.batchDraw()
 	}
 	//cuando se preciona el canvas,este metodo deselecciona lo que se aya seleccionado
 	handleStageClick(event: any): void {
@@ -640,6 +778,7 @@ export class CanvasBoardComponent implements AfterViewInit {
 			...preview, //copia el tamaño del preview
 			name: `shape-${crypto.randomUUID()}`, //se le asigna un identificador util para el socket
 			fill: this.board.activeColor(), // se le asigan un color del picker seleccionado
+			stroke: this.board.activeColor(),
 			dash: [], // se le quita los puntitos del preview
 			draggable: false, //empieza estatica
 		}

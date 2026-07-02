@@ -59,10 +59,21 @@
 		</hlm-dropdown-menu-group>
 		<hlm-dropdown-menu-separator />
 		<hlm-dropdown-menu-group>
-			<button hlmDropdownMenuItem variant="destructive" (click)="deleteBoard.emit(board.id)">
+			<button
+				hlmDropdownMenuItem
+				variant="destructive"
+				(click)="$event.stopPropagation(); deleteModalState.set('open')"
+			>
 				<ng-icon name="lucideTrash2" />
 				Eliminar
 			</button>
 		</hlm-dropdown-menu-group>
 	</hlm-dropdown-menu>
 </ng-template>
+<app-delete-modal
+	[state]="deleteModalState()"
+	(stateChanged)="deleteModalState.set($event)"
+	(confirm)="confirmDelete()"
+	title="¿Eliminar pizarra?"
+	description="Esta acción no se puede deshacer. Se eliminará permanentemente esta pizarra."
+/>

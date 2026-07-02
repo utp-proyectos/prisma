@@ -1,4 +1,4 @@
-import { Component, inject, model, signal } from '@angular/core'
+import { Component, inject, input, model, signal } from '@angular/core'
 import { NgIcon, provideIcons } from '@ng-icons/core'
 import { lucideSquareMousePointer } from '@ng-icons/lucide'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
@@ -12,7 +12,7 @@ import { disabled, form, required, FormField, FormRoot } from '@angular/forms/si
 import { BoardRequest } from '../../models/board-request'
 import { BoardApiService } from '../../service/board-api.service'
 import { firstValueFrom } from 'rxjs'
-import { Router } from '@angular/router'
+import { ActivatedRoute, Router } from '@angular/router'
 
 @Component({
 	selector: 'app-board-create-dialog',
@@ -36,15 +36,13 @@ import { Router } from '@angular/router'
 	templateUrl: './board-create-dialog.html',
 })
 export class BoardCreateDialog {
-	//inyecciones de Dependencias
 	createBoardModalState = inject(CreateBoardModalState)
 	private boardApiService = inject(BoardApiService)
 	private router = inject(Router)
 
-	// constantes
-	private projectId = 'test-project-1' // temporal
+	projectId = input.required<string>()
+	teamId = input.required<string>()
 
-	// signals
 	boardModel = signal<BoardRequest>({
 		name: '',
 		isPrivate: false,
@@ -52,7 +50,6 @@ export class BoardCreateDialog {
 		folderId: null,
 	})
 
-	// configuración y Acción del Formulario (Signals Forms)
 	boardForm = form(
 		this.boardModel,
 		(schemaPath) => {
@@ -68,13 +65,13 @@ export class BoardCreateDialog {
 						description: this.boardModel().description,
 						folderId: this.createBoardModalState.folderId(),
 					}
-					const board = await firstValueFrom(this.boardApiService.createBoard(this.projectId, dto))
-					console.log('board creado')
-					this.router.navigate(['/board', board.id])
 
+					const board = await firstValueFrom(
+						this.boardApiService.createBoard(this.projectId(), this.teamId(), dto),
+					)
+
+					this.router.navigate(['/board', board.id])
 					this.createBoardModalState.close()
-					this.boardForm.name().reset('')
-					this.boardForm.description().reset('')
 				},
 			},
 		},

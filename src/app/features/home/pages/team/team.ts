@@ -153,6 +153,9 @@ export class Team implements OnDestroy {
 
 			if (id && !this.teamIdstate.teamId()) {
 				this.teamIdstate.teamId.set(id)
+
+				localStorage.setItem('teamId', id) // agrega esta línea
+				console.log('teamId guardado en localStorage:', id)
 			}
 		})
 

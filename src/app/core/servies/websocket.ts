@@ -2,7 +2,7 @@ import { inject, Service } from '@angular/core'
 import { IMessage, RxStomp } from '@stomp/rx-stomp'
 import SockJS from 'sockjs-client'
 import { AuthService } from './auth.serive'
-import { Observable } from 'rxjs'
+import { Observable, tap } from 'rxjs'
 import { config } from '../config'
 
 @Service()
@@ -22,10 +22,16 @@ export class Websocket {
 		this.stomp.activate()
 	}
 
-	watch(topic: string): Observable<IMessage> {
-		return this.stomp.watch(topic)
-	}
+	// watch(topic: string): Observable<IMessage> {
+	// 	console.log('suscribiendo a:', topic)
 
+	// 	return this.stomp.watch(topic)
+	// }
+	watch(topic: string): Observable<IMessage> {
+		return this.stomp
+			.watch(topic)
+			.pipe(tap((msg) => console.log('mensaje llegó al topic:', topic, msg)))
+	}
 	publish(destination: string, body: object): void {
 		this.stomp.publish({
 			destination,

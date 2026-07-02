@@ -27,10 +27,10 @@
 						</hlm-select-group>
 					</hlm-select-content>
 				</hlm-select>
-				<button hlmBtn (click)="createBoardModalState.open(folder()?.isPrivate ?? false, folderId)">
-					<ng-icon name="lucidePlus"></ng-icon>
-					Nueva pizarra
-				</button>
+				<button
+					hlmBtn
+					(click)="createBoardModalState.open(folder()?.isPrivate ?? false, folderId())"
+				></button>
 			</div>
 		</div>
 	</div>
