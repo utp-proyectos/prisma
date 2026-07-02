@@ -1,4 +1,4 @@
-import { ApiReponse } from '@/core/models/api-response.model'
+import { ApiResponse } from '@/core/models/api-response.model'
 import { HttpClient } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
 import { map, Observable } from 'rxjs'
@@ -16,7 +16,7 @@ export class ApiCalendarEventRepository extends CalendarEventRepository {
 		endDate: Date,
 	): Observable<CalendarEvent[]> {
 		return this.http
-			.get<ApiReponse<CalendarItemResponse[]>>(`/projects/${projectId}/calendar`, {
+			.get<ApiResponse<CalendarItemResponse[]>>(`/projects/${projectId}/calendar`, {
 				params: {
 					startDate: toDateOnly(startDate),
 					endDate: toDateOnly(endDate),
@@ -36,7 +36,7 @@ export class ApiCalendarEventRepository extends CalendarEventRepository {
 		const request = eventToRequest(event)
 
 		return this.http
-			.post<ApiReponse<CalendarItemResponse>>(
+			.post<ApiResponse<CalendarItemResponse>>(
 				`/projects/${projectId}/calendar/events`,
 				request,
 			)
@@ -51,7 +51,7 @@ export class ApiCalendarEventRepository extends CalendarEventRepository {
 		const request = eventToRequest(event)
 
 		return this.http
-			.put<ApiReponse<CalendarItemResponse>>(
+			.put<ApiResponse<CalendarItemResponse>>(
 				`/projects/${projectId}/calendar/events/${eventId}`,
 				request,
 			)
@@ -65,7 +65,7 @@ export class ApiCalendarEventRepository extends CalendarEventRepository {
 		const eventId = getBackendEventId(event)
 
 		return this.http
-			.delete<ApiReponse<void>>(`/projects/${projectId}/calendar/events/${eventId}`)
+			.delete<ApiResponse<void>>(`/projects/${projectId}/calendar/events/${eventId}`)
 			.pipe(map(() => void 0))
 	}
 }
