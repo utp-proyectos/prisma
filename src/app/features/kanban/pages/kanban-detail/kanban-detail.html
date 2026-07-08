@@ -17,7 +17,7 @@
 
 			<div hlmTabsContent="hitos" class="animate-in fade-in duration-200 mt-5">
 
-				@if (!selectedMilestone()) {
+				@if (!milestoneState.milestoneDetail()) {
 				<div class="flex flex-col gap-4">
 					<div class="flex items-center justify-between mt-4">
 						<hlm-input-group class="w-70">
@@ -70,7 +70,7 @@
 
 										<ng-template #menu>
 											<hlm-dropdown-menu>
-												<button hlmDropdownMenuItem (click)="viewMilestoneDetail(milestone)">Ver detalle</button>
+												<button hlmDropdownMenuItem (click)="milestoneState.select(milestone.id)">Ver detalle</button>
 												<button hlmDropdownMenuItem>Editar</button>
 												<hlm-dropdown-menu-separator />
 												<button hlmDropdownMenuItem variant="destructive">Eliminar</button>
@@ -94,7 +94,7 @@
 				<div class="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
 
 					<button hlmBtn variant="link" size="sm" class="w-fit p-0 flex items-center gap-2 mt-3"
-						(click)="closeDetail()">
+						(click)="milestoneState.select( null )">
 						<ng-icon name="lucideArrowLeft" />
 						Regresar a hitos
 					</button>
@@ -107,13 +107,14 @@
 					} @else {
 					<div class="flex items-center justify-between gap-4 mt-2">
 						<div class="flex items-center gap-3">
-							<h4 class="text-2xl font-bold text-white">{{ selectedMilestone()?.title }}</h4>
+							<h4 class="text-2xl font-bold text-white">{{ milestoneState.milestoneDetail()?.title }}</h4>
 							<span
 								class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-								{{ selectedMilestone()?.state }}
+								{{ milestoneState.milestoneDetail()?.state }}
 							</span>
 							<span class="text-zinc-400">
-								Finaliza en {{ selectedMilestone()?.deadline }} - {{ selectedMilestone()?.progress }}% completado
+								Finaliza en {{ milestoneState.milestoneDetail()?.deadline }} - {{
+								milestoneState.milestoneDetail()?.progress }}% completado
 							</span>
 						</div>
 
@@ -141,7 +142,7 @@
 								</tr>
 							</thead>
 							<tbody hlmTableBody>
-								@for (task of selectedMilestone()?.tasks; track task.id) {
+								@for (task of milestoneState.milestoneDetail()?.tasks; track task.id) {
 								<tr hlmTableRow>
 									<td hlmTableCell class="font-medium text-zinc-200">{{ task.title }}</td>
 									<td hlmTableCell>

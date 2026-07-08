@@ -109,8 +109,6 @@ export class KanbanLayout implements OnDestroy {
 			submission: {
 				action: async (data) => {
 					try {
-						console.log('kanban', data().value())
-
 						this.kanbanApi.createKanban({
 							projectId: this.projectId()!,
 							...data().value(),
