@@ -14,6 +14,8 @@ import {
 	lucideArrowLeft,
 	lucideUsers,
 	lucideCalendar,
+	lucideEdit,
+	lucideTrash,
 } from '@ng-icons/lucide'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmInputImports } from '@spartan-ng/helm/input'
@@ -48,6 +50,9 @@ import { KanbanRealtime } from '../../service/kanban-realtime'
 import { ColumnTaskState } from '../../service/column-task/column-task-state'
 import { ColumnTaskFacade } from '../../service/column-task/column-task-facade'
 import { MilestoneModalState } from '../../service/milestone/milestone-modal-state'
+import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
+import { toast } from '@spartan-ng/brain/sonner'
+import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComponent'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -76,6 +81,7 @@ import { MilestoneModalState } from '../../service/milestone/milestone-modal-sta
 		TaskModal,
 		MilestoneModalComponent,
 		ColumnKanbanModalComponent,
+		DeleteModalComponent,
 	],
 	providers: [
 		CreateTaskModalState,
@@ -100,6 +106,8 @@ import { MilestoneModalState } from '../../service/milestone/milestone-modal-sta
 			lucideArrowLeft,
 			lucideUsers,
 			lucideCalendar,
+			lucideEdit,
+			lucideTrash,
 		}),
 	],
 	templateUrl: './kanban-detail.html',
@@ -134,7 +142,6 @@ export class KanbanDetail implements OnDestroy {
 	protected readonly onlyMyTasks = signal(false)
 
 	// Modales
-	// createMilestoneModal = signal<BrnDialogState>('closed')
 	createColumnKanbanModal = signal<BrnDialogState>('closed')
 
 	// ESTADOS, CONEXIONES Y FACADES
@@ -148,9 +155,38 @@ export class KanbanDetail implements OnDestroy {
 	teamApi = inject(TeamApi)
 
 	// ------------ MILESTONES
+
+	// Modal de crear y editar hitos
 	milestoneModalState = inject(MilestoneModalState)
 	milestoneModal = this.milestoneModalState.dialogState
 
+	// Modal de eliminar hitos
+	deleteMilestoneModalState = signal<'open' | 'closed'>('closed')
+	milestoneToDelete = signal<MilestoneSummaryResponse | null>(null)
+
+	onDeleteMilestoneClick(milestone: MilestoneSummaryResponse) {
+		this.milestoneToDelete.set(milestone)
+		this.deleteMilestoneModalState.set('open')
+	}
+
+	confirmDeleteMilestone() {
+		const milestone = this.milestoneToDelete()
+		if (!milestone) return
+
+		this.kanbanApi.deleteMilestone({
+			milestoneId: milestone.id,
+		})
+		toast.success('Hito eliminado')
+
+		this.closeDeleteMilestoneModal()
+	}
+
+	closeDeleteMilestoneModal() {
+		this.deleteMilestoneModalState.set('closed')
+		this.milestoneToDelete.set(null)
+	}
+
+	// Milestone seleccionado
 	milestones = this.milestoneState.milestones
 	selectedMilestoneId = this.milestoneState.selectedMilestoneId
 

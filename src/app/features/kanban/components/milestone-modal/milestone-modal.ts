@@ -9,7 +9,6 @@ import { disabled, form, FormField, FormRoot, minLength, required } from '@angul
 import { KanbanApi } from '../../service/kanban-api'
 import { toast } from '@spartan-ng/brain/sonner'
 import { MilestoneModalState } from '../../service/milestone/milestone-modal-state'
-import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
 
 @Component({
 	selector: 'app-milestone-modal',
@@ -37,7 +36,7 @@ export class MilestoneModalComponent {
 	// Estado del modal milestone
 	readonly milestoneModalState = inject(MilestoneModalState)
 
-	milestoneModel = signal<Omit<CreateMilestoneRequest, 'kanbanId' | 'projectId' | 'teamId'>>({
+	milestoneModel = signal<Omit<CreateMilestoneRequest, 'kanbanId'>>({
 		title: '',
 		deadline: '',
 	})

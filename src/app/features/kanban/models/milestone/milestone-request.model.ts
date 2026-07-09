@@ -9,3 +9,7 @@ export interface UpdateMilestoneRequest {
 	title: string
 	deadline: string
 }
+
+export interface DeleteMilestoneRequest {
+	milestoneId: string
+}

@@ -9,6 +9,7 @@ import { WsResponse } from '@/core/models/ws-response'
 import { KanbanDetailResponse } from '../models/kanban-detail-response.model'
 import {
 	CreateMilestoneRequest,
+	DeleteMilestoneRequest,
 	UpdateMilestoneRequest,
 } from '../models/milestone/milestone-request.model'
 import { MilestoneSummaryResponse } from '../models/milestone/milestone-summary-response.model'
@@ -66,6 +67,10 @@ export class KanbanApi {
 
 	updateMilestone(milestone: UpdateMilestoneRequest) {
 		this.ws.publish(`/app/milestone.update`, milestone)
+	}
+
+	deleteMilestone(milestone: DeleteMilestoneRequest) {
+		this.ws.publish(`/app/milestone.delete`, milestone)
 	}
 
 	getMilestones(

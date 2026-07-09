@@ -36,6 +36,10 @@ export class KanbanRealtime {
 				case 'UPDATE':
 					this.milestoneState.updateMilestone(event.payload)
 					break
+
+				case 'DELETE':
+					this.milestoneState.removeMilestone(event.payload)
+					break
 			}
 		})
 	}

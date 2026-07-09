@@ -31,9 +31,10 @@
 			<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
 			<span>Editar</span>
 		</button>
+		<hlm-dropdown-menu-separator />
 		<button hlmDropdownMenuItem class="text-destructive hover:text-destructive"
 			(click)="deleteRequested.emit(rawQuery())">
-			<ng-icon name="lucideTrash" class="mr-2 h-4 w-4" />
+			<ng-icon name="lucideTrash" class="mr-2 h-4 w-4 text-danger" />
 			<span>Eliminar</span>
 		</button>
 	</hlm-dropdown-menu>

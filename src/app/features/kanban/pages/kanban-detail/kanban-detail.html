@@ -70,10 +70,19 @@
 
 										<ng-template #menu>
 											<hlm-dropdown-menu>
-												<button hlmDropdownMenuItem (click)="milestoneState.select(milestone.id)">Ver detalle</button>
-												<button hlmDropdownMenuItem (click)="milestoneModalState.openForEdit(milestone)">Editar</button>
+												<button hlmDropdownMenuItem (click)="milestoneState.select(milestone.id)">
+													<ng-icon name="lucideInfo" class="mr-2 h-4 w-4" />
+													<span>Ver detalle</span>
+												</button>
+												<button hlmDropdownMenuItem (click)="milestoneModalState.openForEdit(milestone)">
+													<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
+													<span>Editar</span>
+												</button>
 												<hlm-dropdown-menu-separator />
-												<button hlmDropdownMenuItem variant="destructive">Eliminar</button>
+												<button hlmDropdownMenuItem variant="destructive" (click)="onDeleteMilestoneClick(milestone)">
+													<ng-icon name="lucideTrash" class="mr-2 h-4 w-4 text-danger" />
+													<span>Eliminar</span>
+												</button>
 											</hlm-dropdown-menu>
 										</ng-template>
 									</td>
@@ -286,10 +295,15 @@
 
 	<app-milestone-modal [kanbanId]="kanbanId()" [projectId]="projectId()" [teamId]="teamId()"></app-milestone-modal>
 
-	<app-column-kanban-modal [state]="createColumnKanbanModal()" [kanbanId]="kanbanId()" [projectId]="projectId()"
-		[teamId]="teamId()" (closed)="createColumnKanbanModal.set('closed')"></app-column-kanban-modal>
+	<app-delete-modal [state]="deleteMilestoneModalState()"
+		[title]="'¿Eliminar el hito ' + (milestoneToDelete()?.title || '') + '?'"
+		description="Esta acción eliminará de forma permanente el hito y todas sus tareas asociadas."
+		(stateChanged)="deleteMilestoneModalState.set($event)" (confirm)="confirmDeleteMilestone()" />
 
 	<app-task-modal [state]="createTaskModal()" [columns]="columns()" [milestones]="milestones()"
 		[workspaceMembers]="workspaceMembers()" [task]="selectedTask()" [kanbanId]="kanbanId()" [projectId]="projectId()"
 		[teamId]="teamId()" (closed)="createTaskModalState.close(); selectedTask.set(null)">
 	</app-task-modal>
+
+	<app-column-kanban-modal [state]="createColumnKanbanModal()" [kanbanId]="kanbanId()" [projectId]="projectId()"
+		[teamId]="teamId()" (closed)="createColumnKanbanModal.set('closed')"></app-column-kanban-modal>

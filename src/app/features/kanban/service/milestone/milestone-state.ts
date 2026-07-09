@@ -32,6 +32,10 @@ export class MilestoneState {
 		this.milestones.update((list) => list.map((m) => (m.id === milestone.id ? milestone : m)))
 	}
 
+	removeMilestone(milestone: MilestoneSummaryResponse) {
+		this.milestones.update((list) => list.filter((m) => m.id !== milestone.id))
+	}
+
 	select(id: string | null) {
 		this.selectedMilestoneId.set(id)
 	}
