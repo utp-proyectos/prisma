@@ -29,6 +29,8 @@ import { toast } from '@spartan-ng/brain/sonner'
 import { Subscription } from 'rxjs'
 import { KanbanResponse } from '../models/kanban-response.model'
 import { AuthService } from '@/core/servies/auth.serive'
+import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComponent'
+import { TeamApi } from '@/features/home/services/team-api'
 
 @Component({
 	selector: 'app-kanban-layout',
@@ -47,9 +49,11 @@ import { AuthService } from '@/core/servies/auth.serive'
 		HlmSwitch,
 		FormField,
 		FormRoot,
+		DeleteModalComponent,
 	],
 	providers: [
 		KanbanApi,
+		TeamApi,
 		KanbanModalState,
 		AuthService,
 		provideIcons({
@@ -71,8 +75,22 @@ export class KanbanLayout implements OnDestroy {
 	projectId = input.required<string>()
 
 	kanbanApi = inject(KanbanApi)
+	teamApi = inject(TeamApi)
 	kanbans = signal<KanbanResponse[]>([])
+
+	//---------- Sidebar
 	kanbansResource = this.kanbanApi.kanbansResource(this.projectId)
+	projectsResource = this.teamApi.projectsResource(this.teamId)
+
+	projectName = computed(() => {
+		const resource = this.projectsResource.value()
+		const projects = resource?.data || []
+		const currentProjectId = this.projectId()
+
+		const currentProject = projects.find((p) => p.id === currentProjectId)
+		console.log('currentProject', currentProject)
+		return currentProject ? currentProject.name : 'Cargando proyecto...'
+	})
 
 	readonly kanbanItems = computed<SidebarItemProps[]>(() => {
 		const kanbans = this.kanbans()
@@ -96,7 +114,7 @@ export class KanbanLayout implements OnDestroy {
 		]
 	})
 
-	//---------- Modal tablero
+	//---------- Modal CREAR y EDITAR tablero
 	kanbanModalState = inject(KanbanModalState)
 	createKanbanModal = this.kanbanModalState.dialogState
 
@@ -158,6 +176,30 @@ export class KanbanLayout implements OnDestroy {
 		this.kanbanForm().reset({ name: '', privateSwitch: false })
 	}
 
+	//---------- Eliminar tablero
+	deleteModalState = signal<'open' | 'closed'>('closed')
+	kanbanToDelete = signal<KanbanResponse | null>(null)
+
+	onDeleteKanbanClick(kanban: KanbanResponse) {
+		this.kanbanToDelete.set(kanban)
+		this.deleteModalState.set('open')
+	}
+
+	confirmDeleteKanban() {
+		const kanban = this.kanbanToDelete()
+		if (!kanban) return
+
+		this.kanbanApi.deleteKanban(kanban.id)
+		toast.success('Tablero eliminado')
+
+		this.closeDeleteModal()
+	}
+
+	closeDeleteModal() {
+		this.deleteModalState.set('closed')
+		this.kanbanToDelete.set(null)
+	}
+
 	constructor() {
 		effect(() => {
 			if (!this.kanbansResource.hasValue()) return
@@ -188,6 +230,7 @@ export class KanbanLayout implements OnDestroy {
 
 						case 'DELETE':
 							this.kanbans.update((list) => list.filter((k) => k.id !== event.payload.id))
+							this.kanbansResource.reload()
 							break
 					}
 				})

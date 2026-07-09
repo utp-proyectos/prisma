@@ -2,10 +2,11 @@
 
 	<app-sidebar>
 		<sidebar-header>
-			<nav-header icon="lucideTriangle" title="Proyecto 1"></nav-header>
+			<nav-header icon="lucideTriangle" [title]="projectName()"></nav-header>
 		</sidebar-header>
 
-		<sidebar-content [items]="kanbanItems()" (editRequested)="onEditKanbanClick($event)">
+		<sidebar-content [items]="kanbanItems()" (editRequested)="onEditKanbanClick($event)"
+			(deleteRequested)="onDeleteKanbanClick($event)">
 			<ng-container append>
 				<button hlmBtn class="w-full mt-2 mb-4" (click)="openCreateModal()">
 					<ng-icon name="lucidePlus"></ng-icon>
@@ -67,3 +68,7 @@
 		</hlm-dialog-footer>
 	</hlm-dialog-content>
 </hlm-dialog>
+
+<app-delete-modal [state]="deleteModalState()" [title]="'¿Eliminar el tablero ' + (kanbanToDelete()?.name || '') + '?'"
+	description="Esta acción eliminará de forma permanente el tablero y todas sus columnas de tareas asociadas."
+	(stateChanged)="deleteModalState.set($event)" (confirm)="confirmDeleteKanban()" />
