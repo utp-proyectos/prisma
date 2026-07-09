@@ -69,6 +69,18 @@ export class ColumnTaskState {
 		})
 	}
 
+	findTask(taskId: string): TaskDetailResponse | null {
+		for (const column of this.columns()) {
+			const task = column.tasks.find((t) => t.id === taskId)
+
+			if (task) {
+				return structuredClone(task)
+			}
+		}
+
+		return null
+	}
+
 	// Actualización optimista de tareas
 	moveTaskOptimistic(event: CdkDragDrop<TaskDetailResponse[]>) {
 		const previousContainerData = event.previousContainer.data

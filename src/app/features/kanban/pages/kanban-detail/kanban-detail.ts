@@ -16,6 +16,8 @@ import {
 	lucideCalendar,
 	lucideEdit,
 	lucideTrash,
+	lucideWrench,
+	lucideUser,
 } from '@ng-icons/lucide'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmInputImports } from '@spartan-ng/helm/input'
@@ -53,6 +55,9 @@ import { MilestoneModalState } from '../../service/milestone/milestone-modal-sta
 import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
 import { toast } from '@spartan-ng/brain/sonner'
 import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComponent'
+import { HlmAvatar, HlmAvatarGroup } from '@spartan-ng/helm/avatar'
+import { HlmBadge } from '@spartan-ng/helm/badge'
+import { getAssignmentInitials } from '../../utils/string.utils'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -82,6 +87,9 @@ import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComp
 		MilestoneModalComponent,
 		ColumnKanbanModalComponent,
 		DeleteModalComponent,
+		HlmAvatar,
+		HlmAvatarGroup,
+		HlmBadge,
 	],
 	providers: [
 		CreateTaskModalState,
@@ -104,10 +112,12 @@ import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComp
 			lucideFlag,
 			lucideInfo,
 			lucideArrowLeft,
+			lucideUser,
 			lucideUsers,
 			lucideCalendar,
 			lucideEdit,
 			lucideTrash,
+			lucideWrench,
 		}),
 	],
 	templateUrl: './kanban-detail.html',
@@ -154,6 +164,15 @@ export class KanbanDetail implements OnDestroy {
 	kanbanApi = inject(KanbanApi)
 	teamApi = inject(TeamApi)
 
+	// ------------ NOMBRE DEL TABLERO
+	readonly kanbanDetailResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
+
+	readonly kanbanName = computed(() => {
+		const resource = this.kanbanDetailResource.value()
+
+		return resource?.data?.name || 'Cargando tablero...'
+	})
+
 	// ------------ MILESTONES
 
 	// Modal de crear y editar hitos
@@ -193,6 +212,9 @@ export class KanbanDetail implements OnDestroy {
 	milestoneDetailRes = this.kanbanApi.milestoneDetailResource(
 		this.milestoneState.selectedMilestoneId,
 	)
+
+	// formato de avatar
+	readonly getInitials = getAssignmentInitials
 
 	// ------------ COLUMNS y TASKS
 	columns = this.columnTaskState.columns

@@ -2,7 +2,7 @@
 	<div>
 		<h3 class="flex items-center gap-2 text-xl font-medium">
 			<ng-icon name="lucidePanelLeft"></ng-icon>
-			<span>Tablero 1</span>
+			<span> {{ kanbanName() }} </span>
 		</h3>
 
 		<hlm-separator />
@@ -137,32 +137,106 @@
 						<table hlmTable>
 							<thead hlmTableHeader>
 								<tr hlmTableRow>
-									<th hlmTableHead>Nombre</th>
+									<th hlmTableHead class="w-70"><span>Nombre</span></th>
+									<th hlmTableHead>
+										<div class="flex items-center gap-1.5"><ng-icon name="lucideWrench" /><span>Modalidad</span></div>
+									</th>
 									<th hlmTableHead>
 										<div class="flex items-center gap-1.5"><ng-icon name="lucideUser" /><span>Asignados</span></div>
 									</th>
 									<th hlmTableHead>
 										<div class="flex items-center gap-1.5"><ng-icon name="lucideFlag" /><span>Prioridad</span></div>
 									</th>
-									<!-- <th hlmTableHead>
+									<th hlmTableHead>
 										<div class="flex items-center gap-1.5"><ng-icon name="lucideClock" /><span>Estado</span></div>
-									</th> -->
+									</th>
 									<th hlmTableHead class="text-right">Acción</th>
 								</tr>
 							</thead>
 							<tbody hlmTableBody>
 								@for (task of milestoneState.milestoneDetail()?.tasks; track task.id) {
 								<tr hlmTableRow>
-									<td hlmTableCell class="font-medium text-zinc-200">{{ task.title }}</td>
-									<td hlmTableCell>
-										<div
-											class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
-											<ng-icon name="lucideUser" class="text-xs text-zinc-400" />
+									<td hlmTableCell class="py-2.5 max-w-0 w-50 md:w-100">
+										<div class="flex flex-col w-full min-w-0 gap-0.5">
+
+											<span class="font-medium text-zinc-200 text-sm block w-full truncate">
+												{{ task.title }}
+											</span>
+
+											@if (task.description) {
+											<span class="text-xs text-zinc-500 block w-full truncate">
+												{{ task.description }}
+											</span>
+											} @else {
+											<span class="text-xs text-zinc-600 italic select-none block w-full truncate">
+												Sin descripción
+											</span>
+											}
 										</div>
 									</td>
-									<td hlmTableCell><span class="text-zinc-400">{{ task.priority }}</span></td>
 
-									<!-- <td hlmTableCell><span class="text-emerald-400">{{ task. || 'Pendiente' }}</span></td> -->
+									<td hlmTableCell class="text-zinc-400">
+										@if (task.groupTask) {
+										<div class="flex items-center gap-1.5">
+											<ng-icon name="lucideUsers" />
+											<span>Grupal</span>
+										</div>
+										} @else {
+										<div class="flex items-center gap-1.5">
+											<ng-icon name="lucideUser" />
+											<span>Individual</span>
+										</div>
+										}
+									</td>
+
+									<td hlmTableCell>
+										<div class="flex items-center -space-x-2 isolate">
+
+											@for (assignment of task.assignments.slice(0, 3); track assignment.id) {
+											<hlm-avatar-group class="grayscale">
+												<hlm-avatar variant="small">
+													<span hlmAvatarFallback>
+														{{ getInitials(assignment) }}
+													</span>
+												</hlm-avatar>
+											</hlm-avatar-group>
+											}
+
+											@if (task.assignments.length > 3) {
+											<div
+												class="w-6 h-6 rounded-full bg-zinc-700 border-2 border-zinc-900 flex items-center justify-center text-[10px] font-semibold text-zinc-200 z-10 select-none">
+												+{{ task.assignments.length - 3 }}
+											</div>
+											}
+
+											@if (task.assignments.length === 0) {
+											<span class="text-xs text-zinc-500 italic pl-2">Sin asignar</span>
+											}
+
+										</div>
+									</td>
+									<td hlmTableCell>
+										@if(task.priority === 'BAJA') {
+										<span hlmBadge class="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300">Baja</span>
+										}
+										@if(task.priority === 'MEDIA') {
+										<span hlmBadge
+											class="bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300">Media</span>
+										}
+										@if(task.priority === 'ALTA') {
+										<span hlmBadge class="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">Alta</span>
+										}
+									</td>
+
+									<td hlmTableCell>
+										@if (task.completed){
+										<span hlmBadge
+											class="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">Completado</span>
+										} @else {
+										<span hlmBadge
+											class="bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300">Pendiente</span>
+										}
+									</td>
 
 									<td hlmTableCell class="text-right">
 										<button hlmBtn variant="ghost" size="icon-sm">

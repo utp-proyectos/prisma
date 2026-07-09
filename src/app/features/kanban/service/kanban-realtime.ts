@@ -66,7 +66,13 @@ export class KanbanRealtime {
 					break
 
 				case 'UPDATE':
+					const previousTask = this.columnTaskState.findTask(event.payload.id)
+
 					this.columnTaskState.updateTask(event.payload)
+
+					if (previousTask) {
+						this.milestoneState.updateTask(previousTask, event.payload)
+					}
 					break
 			}
 		})
