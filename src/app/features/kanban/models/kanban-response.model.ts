@@ -1,7 +1,7 @@
 export interface KanbanResponse {
 	id: string
 	name: string
-	isPrivate: boolean
+	privateSwitch: boolean
 	projectId: string
 	creatorId: string
 }

@@ -10,7 +10,7 @@ import {
 } from '@ng-icons/lucide'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmFieldImports } from '@spartan-ng/helm/field'
-import { CreateKanbanModalState } from '../service/create-kanban-modal-state'
+import { KanbanModalState } from '../service/kanban-modal-state'
 import { HlmDialogImports } from '@spartan-ng/helm/dialog'
 import { HlmInputImports } from '@spartan-ng/helm/input'
 import { HlmSwitch } from '@spartan-ng/helm/switch'
@@ -28,6 +28,7 @@ import { disabled, form, FormField, FormRoot, minLength, required } from '@angul
 import { toast } from '@spartan-ng/brain/sonner'
 import { Subscription } from 'rxjs'
 import { KanbanResponse } from '../models/kanban-response.model'
+import { AuthService } from '@/core/servies/auth.serive'
 
 @Component({
 	selector: 'app-kanban-layout',
@@ -49,7 +50,8 @@ import { KanbanResponse } from '../models/kanban-response.model'
 	],
 	providers: [
 		KanbanApi,
-		CreateKanbanModalState,
+		KanbanModalState,
+		AuthService,
 		provideIcons({
 			lucideTriangle,
 			lucidePanelLeft,
@@ -61,17 +63,14 @@ import { KanbanResponse } from '../models/kanban-response.model'
 	templateUrl: './kanban-layout.html',
 })
 export class KanbanLayout implements OnDestroy {
-	createKanbanModalState = inject(CreateKanbanModalState)
-	createKanbanModal = computed(() => this.createKanbanModalState.createKanbanModal())
-
 	//---------- Para ver los tableros de bd
 	private kanbanSub?: Subscription
 
+	// Input para el ws
 	teamId = input.required<string>()
 	projectId = input.required<string>()
 
 	kanbanApi = inject(KanbanApi)
-
 	kanbans = signal<KanbanResponse[]>([])
 	kanbansResource = this.kanbanApi.kanbansResource(this.projectId)
 
@@ -83,16 +82,24 @@ export class KanbanLayout implements OnDestroy {
 				icon: 'lucideLayoutDashboard',
 				title: 'Tablero general',
 				to: `/team/${this.teamId()}/project/${this.projectId()}/kanban/general`,
+				canAction: false,
+				privateAction: false,
 			},
 			...kanbans.map((kanban) => ({
 				icon: 'lucidePanelLeft',
 				title: kanban.name,
 				to: `/team/${this.teamId()}/project/${this.projectId()}/kanban/${kanban.id}`,
+				canAction: true,
+				rawQuery: kanban,
+				privateAction: kanban.privateSwitch || false,
 			})),
 		]
 	})
 
-	//---------- Modal crear tablero
+	//---------- Modal tablero
+	kanbanModalState = inject(KanbanModalState)
+	createKanbanModal = this.kanbanModalState.dialogState
+
 	kanbanModel = signal<Omit<CreateKanbanRequest, 'projectId'>>({
 		name: '',
 		privateSwitch: false,
@@ -108,20 +115,48 @@ export class KanbanLayout implements OnDestroy {
 		{
 			submission: {
 				action: async (data) => {
-					try {
+					const values = data().value()
+					const currentKanban = this.kanbanModalState.kanban()
+
+					if (this.kanbanModalState.isEditMode()) {
+						this.kanbanApi.updateKanban({
+							kanbanId: currentKanban!.id,
+							name: values.name,
+							privateSwitch: values.privateSwitch,
+						})
+						toast.success('Tablero modificado')
+					} else {
 						this.kanbanApi.createKanban({
 							projectId: this.projectId()!,
-							...data().value(),
+							...values,
 						})
-						this.createKanbanModalState.close()
 						toast.success('Tablero creado')
-					} catch (error) {
-						toast.error('Error al crear el tablero')
 					}
+					this.kanbanModalState.close()
 				},
 			},
 		},
 	)
+
+	openCreateModal() {
+		this.kanbanForm().reset({ name: '', privateSwitch: false })
+		this.kanbanModalState.openForCreate()
+	}
+
+	onEditKanbanClick(kanban: KanbanResponse) {
+		console.log('kanban', kanban)
+
+		this.kanbanForm().reset({
+			name: kanban.name,
+			privateSwitch: kanban.privateSwitch || false,
+		})
+		this.kanbanModalState.openForEdit(kanban)
+	}
+
+	handleModalClosed() {
+		this.kanbanModalState.close()
+		this.kanbanForm().reset({ name: '', privateSwitch: false })
+	}
 
 	constructor() {
 		effect(() => {
@@ -140,12 +175,15 @@ export class KanbanLayout implements OnDestroy {
 					switch (event.action) {
 						case 'CREATE':
 							this.kanbans.update((list) => [event.payload, ...list])
+							this.kanbansResource.reload()
 							break
 
 						case 'UPDATE':
 							this.kanbans.update((list) =>
 								list.map((k) => (k.id === event.payload.id ? event.payload : k)),
 							)
+
+							this.kanbansResource.reload()
 							break
 
 						case 'DELETE':
@@ -158,10 +196,5 @@ export class KanbanLayout implements OnDestroy {
 
 	ngOnDestroy() {
 		this.kanbanSub?.unsubscribe()
-	}
-
-	closeCreateKanbanModal() {
-		this.createKanbanModalState.close()
-		this.kanbanForm().reset({ name: '', privateSwitch: false })
 	}
 }

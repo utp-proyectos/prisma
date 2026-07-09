@@ -7,7 +7,7 @@ import { HlmInputImports } from '@spartan-ng/helm/input'
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator'
-import { CreateKanbanModalState } from '../../service/create-kanban-modal-state'
+import { KanbanModalState } from '../../service/kanban-modal-state'
 
 @Component({
 	selector: 'app-main-kanban',
@@ -25,5 +25,5 @@ import { CreateKanbanModalState } from '../../service/create-kanban-modal-state'
 	styles: ``,
 })
 export class MainKanban {
-	createKanbanModalState = inject(CreateKanbanModalState)
+	kanbanModalState = inject(KanbanModalState)
 }

@@ -1,8 +1,10 @@
 <ng-content select="[append]"></ng-content>
 
 @for (item of items(); track item.title) {
-	<sidebar-item [icon]="item.icon" [title]="item.title" [to]="item.to" [exact]="item.exact">
-	</sidebar-item>
+<sidebar-item [icon]="item.icon" [title]="item.title" [to]="item.to" [exact]="item.exact"
+	[canAction]="item.canAction || false" [rawQuery]="item.rawQuery" (editRequested)="editRequested.emit($event)"
+	(deleteRequested)="deleteRequested.emit($event)" [privateAction]="item.privateAction || false">
+</sidebar-item>
 }
 
 <ng-content></ng-content>

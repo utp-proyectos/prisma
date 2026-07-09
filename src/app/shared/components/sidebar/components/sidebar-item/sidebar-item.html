@@ -1,12 +1,40 @@
-<a
-	[routerLink]="to()"
-	[class]="sidebarItemClasses()"
-	class="p-2 h-8 flex gap-2 items-center rounded-md hover:bg-muted cursor-pointer"
+<a [routerLink]="to()" [class]="sidebarItemClasses()"
+	class="group relative p-2 h-8 flex gap-2 items-center rounded-md hover:bg-muted cursor-pointer pr-10"
 	routerLinkActive="text-primary-foreground bg-primary hover:bg-primary! font-medium"
-	[routerLinkActiveOptions]="{ exact: exact() || false }"
->
-	<ng-icon [name]="icon()" class="text-[16px]" />
+	[routerLinkActiveOptions]="{ exact: exact() || false }">
+
+	<ng-icon [name]="icon()" class="text-[16px] shrink-0" />
+
 	@if (!isCollapsed()) {
-		<span class="text-sm">{{ title() }}</span>
+	<span class="text-sm truncate flex-1 pr-1">{{ title() }}</span>
+
+	<div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+
+		@if (privateAction()) {
+		<ng-icon name="lucideLock" class="text-xs text-muted-foreground group-hover:text-inherit transition-colors" />
+		}
+
+		@if (canAction()) {
+		<button hlmBtn variant="ghost"
+			class="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 transition-opacity text-inherit hover:bg-black/10 dark:hover:bg-white/10 flex items-center justify-center rounded"
+			[hlmDropdownMenuTrigger]="itemMenu" align="end" (click)="$event.stopPropagation(); $event.preventDefault()">
+			<ng-icon name="lucideMoreVertical" class="text-sm" />
+		</button>
+		}
+	</div>
 	}
 </a>
+
+<ng-template #itemMenu>
+	<hlm-dropdown-menu class="w-32">
+		<button hlmDropdownMenuItem (click)="editRequested.emit(rawQuery())">
+			<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
+			<span>Editar</span>
+		</button>
+		<button hlmDropdownMenuItem class="text-destructive hover:text-destructive"
+			(click)="deleteRequested.emit(rawQuery())">
+			<ng-icon name="lucideTrash" class="mr-2 h-4 w-4" />
+			<span>Eliminar</span>
+		</button>
+	</hlm-dropdown-menu>
+</ng-template>

@@ -71,18 +71,40 @@ export class ColumnTaskState {
 
 	// Actualización optimista de tareas
 	moveTaskOptimistic(event: CdkDragDrop<TaskDetailResponse[]>) {
+		const previousContainerData = event.previousContainer.data
+		const containerData = event.container.data
+
 		if (event.previousContainer === event.container) {
-			moveItemInArray(event.container.data, event.previousIndex, event.currentIndex)
+			// Movimiento en la misma columna
+			moveItemInArray(containerData, event.previousIndex, event.currentIndex)
 		} else {
+			// Movimiento entre columnas diferentes (incluyendo la fija)
 			transferArrayItem(
-				event.previousContainer.data,
-				event.container.data,
+				previousContainerData,
+				containerData,
 				event.previousIndex,
 				event.currentIndex,
 			)
 		}
 
-		return event.container.data.map((task, index) => ({
+		// Actualizamos los datos de las tareas en TODAS las columnas afectadas
+		// (tanto el origen como el destino si son distintas)
+		const sourceColumnId = event.previousContainer.id
+		const targetColumnId = event.container.id
+
+		this.columns.update((columns) =>
+			columns.map((col) => {
+				if (col.id === sourceColumnId) {
+					return { ...col, tasks: [...previousContainerData] }
+				}
+				if (col.id === targetColumnId) {
+					return { ...col, tasks: [...containerData] }
+				}
+				return col
+			}),
+		)
+
+		return containerData.map((task, index) => ({
 			id: task.id,
 			position: index,
 		}))

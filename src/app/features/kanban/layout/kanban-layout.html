@@ -5,9 +5,9 @@
 			<nav-header icon="lucideTriangle" title="Proyecto 1"></nav-header>
 		</sidebar-header>
 
-		<sidebar-content [items]="kanbanItems()">
+		<sidebar-content [items]="kanbanItems()" (editRequested)="onEditKanbanClick($event)">
 			<ng-container append>
-				<button hlmBtn class="w-full mt-2 mb-4" (click)="createKanbanModalState.open()">
+				<button hlmBtn class="w-full mt-2 mb-4" (click)="openCreateModal()">
 					<ng-icon name="lucidePlus"></ng-icon>
 					Crear tablero
 				</button>
@@ -26,14 +26,17 @@
 	</div>
 </div>
 
-<hlm-dialog [state]="createKanbanModal()" (closed)="closeCreateKanbanModal()">
+<hlm-dialog [state]="createKanbanModal()" (closed)="handleModalClosed()">
 	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
 		<hlm-dialog-header>
-			<h3 hlmDialogTitle>Crear Tablero</h3>
-			<p hlmDialogDescription>Crea un tablero kanban y empieza a organizar tus tareas</p>
+			<h3 hlmDialogTitle>
+				{{ kanbanModalState.isEditMode() ? 'Editar Tablero' : 'Crear Tablero' }} </h3>
+			<p hlmDialogDescription>
+				{{ kanbanModalState.isEditMode() ? 'Modifica las opciones de tu tablero' :
+				'Crea un tablero kanban y empieza a organizar tus tareas' }}
 		</hlm-dialog-header>
 
-		<form [formRoot]="kanbanForm" id="create-kanban-form">
+		<form [formRoot]="kanbanForm" id="kanban-form">
 			<hlm-field-group>
 				<hlm-field>
 					<label hlmFieldLabel for="name">Nombre</label>
@@ -58,7 +61,9 @@
 		</form>
 		<hlm-dialog-footer>
 			<button hlmBtn variant="outline" hlmDialogClose>Cancelar</button>
-			<button hlmBtn form="create-kanban-form" type="submit" [disabled]="kanbanForm().submitting()">Crear</button>
+			<button hlmBtn form="kanban-form" type="submit" [disabled]="kanbanForm().submitting()">
+				{{ kanbanModalState.isEditMode() ? 'Guardar' : 'Crear' }}
+			</button>
 		</hlm-dialog-footer>
 	</hlm-dialog-content>
 </hlm-dialog>
