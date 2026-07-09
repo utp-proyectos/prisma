@@ -4,11 +4,12 @@ import { HlmInputImports } from '@spartan-ng/helm/input'
 import { HlmFieldImports } from '@spartan-ng/helm/field'
 import { HlmDialogImports } from '@spartan-ng/helm/dialog'
 import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker'
-import { BrnDialogState } from '@spartan-ng/brain/dialog'
 import { CreateMilestoneRequest } from '../../models/milestone/milestone-request.model'
 import { disabled, form, FormField, FormRoot, minLength, required } from '@angular/forms/signals'
 import { KanbanApi } from '../../service/kanban-api'
 import { toast } from '@spartan-ng/brain/sonner'
+import { MilestoneModalState } from '../../service/milestone/milestone-modal-state'
+import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
 
 @Component({
 	selector: 'app-milestone-modal',
@@ -17,8 +18,8 @@ import { toast } from '@spartan-ng/brain/sonner'
 		HlmButtonImports,
 		HlmInputImports,
 		HlmFieldImports,
-		HlmDialogImports,
 		HlmDatePickerImports,
+		HlmDialogImports,
 		FormField,
 		FormRoot,
 	],
@@ -26,15 +27,15 @@ import { toast } from '@spartan-ng/brain/sonner'
 	templateUrl: './milestone-modal.html',
 })
 export class MilestoneModalComponent {
-	readonly state = input.required<BrnDialogState | null>()
-	readonly closed = output<void>()
-
 	// Input para el ws
-	teamId = input.required<string>()
-	projectId = input.required<string>()
-	kanbanId = input.required<string>()
+	readonly teamId = input.required<string>()
+	readonly projectId = input.required<string>()
+	readonly kanbanId = input.required<string>()
 
 	kanbanApi = inject(KanbanApi)
+
+	// Estado del modal milestone
+	readonly milestoneModalState = inject(MilestoneModalState)
 
 	milestoneModel = signal<Omit<CreateMilestoneRequest, 'kanbanId' | 'projectId' | 'teamId'>>({
 		title: '',
@@ -63,20 +64,23 @@ export class MilestoneModalComponent {
 		{
 			submission: {
 				action: async (data) => {
-					try {
-						this.kanbanApi.createMilestone({
-							kanbanId: this.kanbanId(),
-							projectId: this.projectId(),
-							teamId: this.teamId(),
-							...data().value(),
+					const values = data().value()
+					const currentMilestone = this.milestoneModalState.milestone()
+
+					if (this.milestoneModalState.isEditMode()) {
+						this.kanbanApi.updateMilestone({
+							milestoneId: currentMilestone!.id,
+							...values,
 						})
-
+						toast.success('Hito modificado')
+					} else {
+						this.kanbanApi.createMilestone({
+							kanbanId: this.kanbanId()!,
+							...values,
+						})
 						toast.success('Hito creado')
-
-						this.closeCreateMilestoneModal()
-					} catch {
-						toast.error('Error al crear el hito')
 					}
+					this.milestoneModalState.close()
 				},
 			},
 		},
@@ -84,13 +88,23 @@ export class MilestoneModalComponent {
 
 	constructor() {
 		effect(() => {
-			if (this.state() === 'closed') {
-				this.milestoneForm().reset({ title: '', deadline: '' })
+			if (!this.milestoneModalState.dialogState()) return
+
+			if (this.milestoneModalState.isEditMode()) {
+				const milestone = this.milestoneModalState.milestone()
+
+				if (!milestone) return
+
+				this.milestoneForm().reset({
+					title: milestone.title,
+					deadline: milestone.deadline,
+				})
+			} else {
+				this.milestoneForm().reset({
+					title: '',
+					deadline: '',
+				})
 			}
 		})
-	}
-
-	closeCreateMilestoneModal() {
-		this.closed.emit()
 	}
 }

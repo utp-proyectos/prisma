@@ -27,7 +27,7 @@
 							</hlm-input-group-addon>
 						</hlm-input-group>
 
-						<button hlmBtn (click)="createMilestoneModal.set('open')">
+						<button hlmBtn (click)="milestoneModalState.openForCreate()">
 							<ng-icon name="lucidePlus"></ng-icon>
 							Crear hito
 						</button>
@@ -71,7 +71,7 @@
 										<ng-template #menu>
 											<hlm-dropdown-menu>
 												<button hlmDropdownMenuItem (click)="milestoneState.select(milestone.id)">Ver detalle</button>
-												<button hlmDropdownMenuItem>Editar</button>
+												<button hlmDropdownMenuItem (click)="milestoneModalState.openForEdit(milestone)">Editar</button>
 												<hlm-dropdown-menu-separator />
 												<button hlmDropdownMenuItem variant="destructive">Eliminar</button>
 											</hlm-dropdown-menu>
@@ -284,9 +284,7 @@
 
 	</div>
 
-	<app-milestone-modal [state]="createMilestoneModal() " [kanbanId]="kanbanId()" [projectId]="projectId()"
-		[teamId]="teamId()" (closed)="createMilestoneModal.set('closed')"></app-milestone-modal>
-
+	<app-milestone-modal [kanbanId]="kanbanId()" [projectId]="projectId()" [teamId]="teamId()"></app-milestone-modal>
 
 	<app-column-kanban-modal [state]="createColumnKanbanModal()" [kanbanId]="kanbanId()" [projectId]="projectId()"
 		[teamId]="teamId()" (closed)="createColumnKanbanModal.set('closed')"></app-column-kanban-modal>

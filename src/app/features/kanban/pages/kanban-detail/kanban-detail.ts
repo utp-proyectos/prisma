@@ -32,13 +32,7 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog'
 import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
 
-import {
-	CdkDrag,
-	CdkDropList,
-	CdkDragDrop,
-	moveItemInArray,
-	transferArrayItem,
-} from '@angular/cdk/drag-drop'
+import { CdkDrag, CdkDropList, CdkDragDrop } from '@angular/cdk/drag-drop'
 import { TaskCardComponent } from '@/shared/components/sidebar/components/task-card/task-card'
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
 import { TaskModal } from '../../components/task-modal/task-modal'
@@ -53,6 +47,7 @@ import { MilestoneState } from '../../service/milestone/milestone-state'
 import { KanbanRealtime } from '../../service/kanban-realtime'
 import { ColumnTaskState } from '../../service/column-task/column-task-state'
 import { ColumnTaskFacade } from '../../service/column-task/column-task-facade'
+import { MilestoneModalState } from '../../service/milestone/milestone-modal-state'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -90,6 +85,7 @@ import { ColumnTaskFacade } from '../../service/column-task/column-task-facade'
 		KanbanRealtime,
 		ColumnTaskState,
 		ColumnTaskFacade,
+		MilestoneModalState,
 		provideIcons({
 			lucidePlus,
 			lucideSearch,
@@ -138,7 +134,7 @@ export class KanbanDetail implements OnDestroy {
 	protected readonly onlyMyTasks = signal(false)
 
 	// Modales
-	createMilestoneModal = signal<BrnDialogState>('closed')
+	// createMilestoneModal = signal<BrnDialogState>('closed')
 	createColumnKanbanModal = signal<BrnDialogState>('closed')
 
 	// ESTADOS, CONEXIONES Y FACADES
@@ -152,6 +148,9 @@ export class KanbanDetail implements OnDestroy {
 	teamApi = inject(TeamApi)
 
 	// ------------ MILESTONES
+	milestoneModalState = inject(MilestoneModalState)
+	milestoneModal = this.milestoneModalState.dialogState
+
 	milestones = this.milestoneState.milestones
 	selectedMilestoneId = this.milestoneState.selectedMilestoneId
 

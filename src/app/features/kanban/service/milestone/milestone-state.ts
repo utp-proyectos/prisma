@@ -28,6 +28,10 @@ export class MilestoneState {
 		this.milestones.update((list) => [milestone, ...list])
 	}
 
+	updateMilestone(milestone: MilestoneSummaryResponse) {
+		this.milestones.update((list) => list.map((m) => (m.id === milestone.id ? milestone : m)))
+	}
+
 	select(id: string | null) {
 		this.selectedMilestoneId.set(id)
 	}

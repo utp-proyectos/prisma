@@ -116,7 +116,7 @@ export class KanbanLayout implements OnDestroy {
 
 	//---------- Modal CREAR y EDITAR tablero
 	kanbanModalState = inject(KanbanModalState)
-	createKanbanModal = this.kanbanModalState.dialogState
+	kanbanModal = this.kanbanModalState.dialogState
 
 	kanbanModel = signal<Omit<CreateKanbanRequest, 'projectId'>>({
 		name: '',
@@ -156,26 +156,6 @@ export class KanbanLayout implements OnDestroy {
 		},
 	)
 
-	openCreateModal() {
-		this.kanbanForm().reset({ name: '', privateSwitch: false })
-		this.kanbanModalState.openForCreate()
-	}
-
-	onEditKanbanClick(kanban: KanbanResponse) {
-		console.log('kanban', kanban)
-
-		this.kanbanForm().reset({
-			name: kanban.name,
-			privateSwitch: kanban.privateSwitch || false,
-		})
-		this.kanbanModalState.openForEdit(kanban)
-	}
-
-	handleModalClosed() {
-		this.kanbanModalState.close()
-		this.kanbanForm().reset({ name: '', privateSwitch: false })
-	}
-
 	//---------- Eliminar tablero
 	deleteModalState = signal<'open' | 'closed'>('closed')
 	kanbanToDelete = signal<KanbanResponse | null>(null)
@@ -204,6 +184,26 @@ export class KanbanLayout implements OnDestroy {
 		effect(() => {
 			if (!this.kanbansResource.hasValue()) return
 			this.kanbans.set(this.kanbansResource.value().data)
+		})
+
+		effect(() => {
+			if (!this.kanbanModalState.dialogState()) return
+
+			if (this.kanbanModalState.isEditMode()) {
+				const kanban = this.kanbanModalState.kanban()
+
+				if (!kanban) return
+
+				this.kanbanForm().reset({
+					name: kanban.name,
+					privateSwitch: kanban.privateSwitch || false,
+				})
+			} else {
+				this.kanbanForm().reset({
+					name: '',
+					privateSwitch: false,
+				})
+			}
 		})
 
 		effect(() => {

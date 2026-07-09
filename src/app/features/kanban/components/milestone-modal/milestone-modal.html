@@ -1,11 +1,12 @@
-<hlm-dialog [state]="state()" (closed)="closed.emit()">
+<hlm-dialog [state]="milestoneModalState.dialogState()" (closed)="milestoneModalState.close()">
 	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
 		<hlm-dialog-header>
-			<h3 hlmDialogTitle>Crear Hito</h3>
-			<p hlmDialogDescription>Empieza creando u hito para englobar tus tareas</p>
+			<h3 hlmDialogTitle> {{ milestoneModalState.isEditMode() ? 'Editar Hito' : 'Crear Hito' }} </h3>
+			<p hlmDialogDescription> {{ milestoneModalState.isEditMode() ? 'Modifica los detalles del hito'
+				: 'Crea tus hitos para englobar tus tareas' }}</p>
 		</hlm-dialog-header>
 
-		<form [formRoot]="milestoneForm" id="create-milestone-form">
+		<form [formRoot]="milestoneForm" id="milestone-form">
 			<hlm-field-group>
 
 				<hlm-field>
@@ -39,8 +40,8 @@
 
 		<hlm-dialog-footer>
 			<button hlmBtn variant="outline" hlmDialogClose>Cancelar</button>
-			<button hlmBtn form="create-milestone-form" type="submit" [disabled]="milestoneForm().submitting()">
-				Crear
+			<button hlmBtn form="milestone-form" type="submit" [disabled]="milestoneForm().submitting()">
+				{{ milestoneModalState.isEditMode() ? 'Guardar' : 'Crear' }}
 			</button>
 		</hlm-dialog-footer>
 	</hlm-dialog-content>

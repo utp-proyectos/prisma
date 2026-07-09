@@ -5,10 +5,10 @@
 			<nav-header icon="lucideTriangle" [title]="projectName()"></nav-header>
 		</sidebar-header>
 
-		<sidebar-content [items]="kanbanItems()" (editRequested)="onEditKanbanClick($event)"
+		<sidebar-content [items]="kanbanItems()" (editRequested)="kanbanModalState.openForEdit($event)"
 			(deleteRequested)="onDeleteKanbanClick($event)">
 			<ng-container append>
-				<button hlmBtn class="w-full mt-2 mb-4" (click)="openCreateModal()">
+				<button hlmBtn class="w-full mt-2 mb-4" (click)="kanbanModalState.openForCreate()">
 					<ng-icon name="lucidePlus"></ng-icon>
 					Crear tablero
 				</button>
@@ -27,7 +27,7 @@
 	</div>
 </div>
 
-<hlm-dialog [state]="createKanbanModal()" (closed)="handleModalClosed()">
+<hlm-dialog [state]="kanbanModal()" (closed)="kanbanModalState.close()">
 	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
 		<hlm-dialog-header>
 			<h3 hlmDialogTitle>

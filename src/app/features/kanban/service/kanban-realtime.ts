@@ -32,6 +32,10 @@ export class KanbanRealtime {
 				case 'CREATE':
 					this.milestoneState.addMilestone(event.payload)
 					break
+
+				case 'UPDATE':
+					this.milestoneState.updateMilestone(event.payload)
+					break
 			}
 		})
 	}

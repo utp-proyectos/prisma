@@ -7,7 +7,10 @@ import { CreateKanbanRequest, UpdateKanbanRequest } from '../models/kanban-reque
 import { map, Observable } from 'rxjs'
 import { WsResponse } from '@/core/models/ws-response'
 import { KanbanDetailResponse } from '../models/kanban-detail-response.model'
-import { CreateMilestoneRequest } from '../models/milestone/milestone-request.model'
+import {
+	CreateMilestoneRequest,
+	UpdateMilestoneRequest,
+} from '../models/milestone/milestone-request.model'
 import { MilestoneSummaryResponse } from '../models/milestone/milestone-summary-response.model'
 import { CreateColumnKanbanRequest } from '../models/column-kanban/column-kanban-request.model'
 import { ColumnKanbanDetailResponse } from '../models/column-kanban/column-kanban-detail-response.model'
@@ -59,6 +62,10 @@ export class KanbanApi {
 
 	createMilestone(milestone: CreateMilestoneRequest) {
 		this.ws.publish(`/app/milestone.create`, milestone)
+	}
+
+	updateMilestone(milestone: UpdateMilestoneRequest) {
+		this.ws.publish(`/app/milestone.update`, milestone)
 	}
 
 	getMilestones(
