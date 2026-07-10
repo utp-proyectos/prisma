@@ -23,6 +23,7 @@ import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-ka
 import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
 import { TeamMemberResponse } from '@/features/home/models/team-member-response'
 import { UpdateTaskRequest } from '../../models/task/task-request.model'
+import { TaskModalState } from '../../service/task/task-modal-state'
 
 type DateType = 'none' | 'manual' | 'milestone'
 
@@ -58,9 +59,6 @@ type DateType = 'none' | 'manual' | 'milestone'
 })
 export class TaskModal {
 	//Informacion del padre
-	readonly state = input.required<BrnDialogState | null>()
-	readonly closed = output<void>()
-	readonly task = input<TaskDetailResponse | null>(null)
 	readonly columns = input.required<ColumnKanbanDetailResponse[]>()
 	readonly milestones = input.required<MilestoneSummaryResponse[]>()
 	readonly workspaceMembers = input.required<TeamMemberResponse[]>()
@@ -70,6 +68,8 @@ export class TaskModal {
 
 	// Conexion bd
 	kanbanApi = inject(KanbanApi)
+	taskModalState = inject(TaskModalState)
+	readonly task = this.taskModalState.task
 
 	// Señal para guardar la tarea que se va a editar
 	readonly title = signal('')

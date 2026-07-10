@@ -39,6 +39,7 @@ export class KanbanRealtime {
 
 				case 'DELETE':
 					this.milestoneState.removeMilestone(event.payload)
+					this.columnTaskState.disassociateMilestoneFromTasks(event.payload.id)
 					break
 			}
 		})
@@ -63,16 +64,20 @@ export class KanbanRealtime {
 			switch (event.action) {
 				case 'CREATE':
 					this.columnTaskState.addTask(event.payload)
+					this.milestoneState.addTask(event.payload)
 					break
 
 				case 'UPDATE':
-					const previousTask = this.columnTaskState.findTask(event.payload.id)
+					const oldTask = this.columnTaskState.findTask(event.payload.id)
+					if (!oldTask) return
 
-					this.columnTaskState.updateTask(event.payload)
+					this.columnTaskState.replaceTask(oldTask, event.payload)
+					this.milestoneState.replaceTask(oldTask, event.payload)
+					break
 
-					if (previousTask) {
-						this.milestoneState.updateTask(previousTask, event.payload)
-					}
+				case 'DELETE':
+					this.columnTaskState.removeTask(event.payload)
+					this.milestoneState.removeTask(event.payload)
 					break
 			}
 		})

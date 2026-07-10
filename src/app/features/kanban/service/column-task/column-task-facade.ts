@@ -4,6 +4,7 @@ import { KanbanApi } from '../kanban-api'
 import { CdkDragDrop } from '@angular/cdk/drag-drop'
 import { TaskDetailResponse } from '../../models/task/task-detail-response.model'
 import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
+import { MilestoneDetailResponse } from '../../models/milestone/milestone-detail-response.model'
 
 @Injectable()
 export class ColumnTaskFacade {
@@ -52,6 +53,26 @@ export class ColumnTaskFacade {
 			groupTask: false,
 			milestoneId: '',
 			columnId: column.id,
+			...params,
+		})
+	}
+
+	createTaskFromMilestone(
+		milestone: MilestoneDetailResponse,
+		params: { teamId: string; projectId: string; kanbanId: string },
+	) {
+		const firstColumn = this.columnTaskState.movableColumns()[0]
+
+		if (!firstColumn) return
+
+		this.kanbanApi.createTask({
+			title: 'Nueva tarea',
+			description: '',
+			priority: 'BAJA',
+			groupTask: false,
+			deadline: milestone.deadline,
+			milestoneId: milestone.id,
+			columnId: firstColumn.id,
 			...params,
 		})
 	}

@@ -127,7 +127,7 @@
 							</span>
 						</div>
 
-						<button hlmBtn (click)="createTaskModalState.open()">
+						<button hlmBtn (click)="openCreateTaskFromMilestone()">
 							<ng-icon name="lucidePlus" class="mr-2" />
 							Crear tarea
 						</button>
@@ -239,9 +239,23 @@
 									</td>
 
 									<td hlmTableCell class="text-right">
-										<button hlmBtn variant="ghost" size="icon-sm">
+										<button hlmBtn variant="ghost" size="icon-sm" [hlmDropdownMenuTrigger]="menuDetail" align="end">
 											<ng-icon name="lucideMoreHorizontal" />
 										</button>
+
+										<ng-template #menuDetail>
+											<hlm-dropdown-menu>
+												<button hlmDropdownMenuItem (click)="openEditTask(task)">
+													<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
+													<span>Editar</span>
+												</button>
+												<hlm-dropdown-menu-separator />
+												<button hlmDropdownMenuItem variant="destructive" (click)="onDeleteTaskClick(task)">
+													<ng-icon name="lucideTrash" class="mr-2 h-4 w-4 text-danger" />
+													<span>Eliminar</span>
+												</button>
+											</hlm-dropdown-menu>
+										</ng-template>
 									</td>
 								</tr>
 								} @empty {
@@ -374,10 +388,14 @@
 		description="Esta acción eliminará de forma permanente el hito y todas sus tareas asociadas."
 		(stateChanged)="deleteMilestoneModalState.set($event)" (confirm)="confirmDeleteMilestone()" />
 
-	<app-task-modal [state]="createTaskModal()" [columns]="columns()" [milestones]="milestones()"
-		[workspaceMembers]="workspaceMembers()" [task]="selectedTask()" [kanbanId]="kanbanId()" [projectId]="projectId()"
-		[teamId]="teamId()" (closed)="createTaskModalState.close(); selectedTask.set(null)">
+	<app-task-modal [columns]="columns()" [milestones]="milestones()" [workspaceMembers]="workspaceMembers()"
+		[kanbanId]="kanbanId()" [projectId]="projectId()" [teamId]="teamId()">
 	</app-task-modal>
+
+	<app-delete-modal [state]="deleteTaskModalState()"
+		[title]="'¿Eliminar la tarea ' + (taskToDelete()?.title || '') + '?'"
+		description="Esta acción eliminará de forma permanente la tarea y todas sus asignaciones."
+		(stateChanged)="deleteTaskModalState.set($event)" (confirm)="confirmDeleteTask()" />
 
 	<app-column-kanban-modal [state]="createColumnKanbanModal()" [kanbanId]="kanbanId()" [projectId]="projectId()"
 		[teamId]="teamId()" (closed)="createColumnKanbanModal.set('closed')"></app-column-kanban-modal>

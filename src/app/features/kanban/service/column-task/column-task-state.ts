@@ -23,62 +23,67 @@ export class ColumnTaskState {
 		this.columns.set(columns)
 	}
 
+	findTask(taskId: string): TaskDetailResponse | undefined {
+		for (const column of this.columns()) {
+			const task = column.tasks.find((t) => t.id === taskId)
+			if (task) return task
+		}
+		return undefined
+	}
+
 	addTask(task: TaskDetailResponse) {
-		this.columns.update((columns) =>
-			columns.map((column) =>
-				column.id === task.columnId
-					? {
-							...column,
-							tasks: [...column.tasks, task],
-						}
-					: column,
-			),
+		this.columns.update((cols) =>
+			cols.map((c) => {
+				if (c.id !== task.columnId) return c
+				return { ...c, tasks: [...c.tasks, task] }
+			}),
 		)
 	}
 
-	updateTask(task: TaskDetailResponse) {
-		this.columns.update((columns) => {
-			const previousColumn = columns.find((column) => column.tasks.some((t) => t.id === task.id))
-
-			if (previousColumn?.id === task.columnId) {
-				return columns.map((column) => {
-					if (column.id !== task.columnId) return column
-
-					return {
-						...column,
-						tasks: column.tasks.map((t) => (t.id === task.id ? task : t)),
-					}
-				})
-			}
-
-			return columns.map((column) => {
-				const tasksWithout = column.tasks.filter((t) => t.id !== task.id)
-
-				if (column.id === task.columnId) {
-					return {
-						...column,
-						tasks: [...tasksWithout, task],
-					}
+	replaceTask(oldTask: TaskDetailResponse, newTask: TaskDetailResponse) {
+		this.columns.update((cols) =>
+			cols.map((c) => {
+				if (c.id === oldTask.columnId && oldTask.columnId !== newTask.columnId) {
+					return { ...c, tasks: c.tasks.filter((t) => t.id !== oldTask.id) }
 				}
 
-				return {
-					...column,
-					tasks: tasksWithout,
+				if (c.id === newTask.columnId) {
+					const exists = c.tasks.some((t) => t.id === newTask.id)
+					return {
+						...c,
+						tasks: exists
+							? c.tasks.map((t) => (t.id === newTask.id ? newTask : t))
+							: [...c.tasks, newTask],
+					}
 				}
-			})
-		})
+				return c
+			}),
+		)
 	}
 
-	findTask(taskId: string): TaskDetailResponse | null {
-		for (const column of this.columns()) {
-			const task = column.tasks.find((t) => t.id === taskId)
+	removeTask(task: TaskDetailResponse) {
+		this.columns.update((cols) =>
+			cols.map((c) => {
+				if (c.id !== task.columnId) return c
+				return { ...c, tasks: c.tasks.filter((t) => t.id !== task.id) }
+			}),
+		)
+	}
 
-			if (task) {
-				return structuredClone(task)
-			}
-		}
-
-		return null
+	disassociateMilestoneFromTasks(milestoneId: string) {
+		this.columns.update((columns) =>
+			columns.map((column) => ({
+				...column,
+				tasks: column.tasks.map((task) => {
+					if (task.milestoneId !== milestoneId) return task
+					return {
+						...task,
+						milestoneId: null,
+						deadline: null,
+					}
+				}),
+			})),
+		)
 	}
 
 	// Actualización optimista de tareas

@@ -40,7 +40,7 @@ import { CdkDrag, CdkDropList, CdkDragDrop } from '@angular/cdk/drag-drop'
 import { TaskCardComponent } from '@/shared/components/sidebar/components/task-card/task-card'
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
 import { TaskModal } from '../../components/task-modal/task-modal'
-import { CreateTaskModalState } from '../../service/create-task-modal-state'
+import { TaskModalState } from '../../service/task/task-modal-state'
 import { MilestoneModalComponent } from '../../components/milestone-modal/milestone-modal'
 import { KanbanApi } from '../../service/kanban-api'
 import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
@@ -92,7 +92,7 @@ import { getAssignmentInitials } from '../../utils/string.utils'
 		HlmBadge,
 	],
 	providers: [
-		CreateTaskModalState,
+		TaskModalState,
 		KanbanApi,
 		TeamApi,
 		MilestoneState,
@@ -238,14 +238,6 @@ export class KanbanDetail implements OnDestroy {
 		})
 	}
 
-	openCreateTask(column: ColumnKanbanDetailResponse) {
-		this.columnTaskFacade.createTask(column, {
-			teamId: this.teamId(),
-			projectId: this.projectId(),
-			kanbanId: this.kanbanId(),
-		})
-	}
-
 	protected changeTab(tabName: string): void {
 		this.activeTab.set(tabName)
 		if (tabName !== 'hitos') {
@@ -261,17 +253,62 @@ export class KanbanDetail implements OnDestroy {
 	})
 	kanbanResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
 
-	// Señal para guardar la tarea que se va a editar
-	protected readonly selectedTask = signal<TaskDetailResponse | null>(null)
-
-	// Estado del modal de la tarea
-	createTaskModalState = inject(CreateTaskModalState)
-	protected readonly createTaskModal = computed(() => this.createTaskModalState.createTaskModal())
+	// --- MODAL DE LA TAREA
+	taskModalState = inject(TaskModalState)
+	taskModal = this.taskModalState.dialogState
 
 	// Método para abrir el modal con la información cargada
+	openCreateTask(column: ColumnKanbanDetailResponse) {
+		this.columnTaskFacade.createTask(column, {
+			teamId: this.teamId(),
+			projectId: this.projectId(),
+			kanbanId: this.kanbanId(),
+		})
+	}
+
+	openCreateTaskFromMilestone() {
+		const milestone = this.milestoneState.milestoneDetail()
+
+		if (!milestone) return
+
+		this.columnTaskFacade.createTaskFromMilestone(milestone, {
+			teamId: this.teamId(),
+			projectId: this.projectId(),
+			kanbanId: this.kanbanId(),
+		})
+	}
+
 	protected openEditTask(task: TaskDetailResponse): void {
-		this.selectedTask.set(task)
-		this.createTaskModalState.open()
+		this.taskModalState.openForEdit(task)
+	}
+
+	// MODAL DE ELIMINACIÓN TAREAS
+	deleteTaskModalState = signal<'open' | 'closed'>('closed')
+	taskToDelete = signal<TaskDetailResponse | null>(null)
+
+	onDeleteTaskClick(task: TaskDetailResponse) {
+		this.taskToDelete.set(task)
+		this.deleteTaskModalState.set('open')
+	}
+
+	confirmDeleteTask() {
+		const task = this.taskToDelete()
+		if (!task) return
+
+		this.kanbanApi.deleteTask({
+			id: task.id,
+			kanbanId: this.kanbanId(),
+			projectId: this.projectId(),
+			teamId: this.teamId(),
+		})
+		toast.success('Tarea eliminada')
+
+		this.closeDeleteTaskModal()
+	}
+
+	closeDeleteTaskModal() {
+		this.deleteTaskModalState.set('closed')
+		this.taskToDelete.set(null)
 	}
 
 	constructor() {

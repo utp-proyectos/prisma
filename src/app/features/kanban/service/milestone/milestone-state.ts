@@ -11,9 +11,7 @@ export class MilestoneState {
 
 	readonly selectedMilestone = computed(() => {
 		const id = this.selectedMilestoneId()
-
 		if (!id) return null
-
 		return this.milestones().find((m) => m.id === id) ?? null
 	})
 
@@ -25,83 +23,146 @@ export class MilestoneState {
 		this.milestoneDetail.set(detail)
 	}
 
-	// Metodos del milestone
+	// --- METODOS PARA LOS HITOS ---
 	addMilestone(milestone: MilestoneSummaryResponse) {
-		this.milestones.update((list) => [milestone, ...list])
+		this.milestones.update((list) => {
+			if (list.some((m) => m.id === milestone.id)) return list
+			return [milestone, ...list]
+		})
 	}
 
 	updateMilestone(milestone: MilestoneSummaryResponse) {
-		this.milestones.update((list) => list.map((m) => (m.id === milestone.id ? milestone : m)))
+		this.milestones.update((list) =>
+			list.map((m) => {
+				if (m.id !== milestone.id) return m
+				return {
+					...m,
+					...milestone,
+					totalTasks: m.totalTasks,
+					completedTasks: m.completedTasks,
+					progress: m.progress,
+				}
+			}),
+		)
+
+		this.milestoneDetail.update((detail) => {
+			if (!detail || detail.id !== milestone.id) return detail
+			return {
+				...detail,
+				title: milestone.title,
+			}
+		})
 	}
 
 	removeMilestone(milestone: MilestoneSummaryResponse) {
 		this.milestones.update((list) => list.filter((m) => m.id !== milestone.id))
+
+		if (this.selectedMilestoneId() === milestone.id) {
+			this.select(null)
+		}
 	}
 
-	// Metodos del task
-	updateTask(oldTask: TaskDetailResponse, newTask: TaskDetailResponse) {
+	// --- MÉTODOS PÚBLICOS DE ENTRADA ---
+	addTask(task: TaskDetailResponse) {
+		this.addTaskToMilestone(task)
+	}
+
+	removeTask(task: TaskDetailResponse) {
+		this.removeTaskFromMilestone(task)
+	}
+
+	replaceTask(oldTask: TaskDetailResponse, newTask: TaskDetailResponse) {
+		// Escenario A: Cambió información interna pero sigue en el mismo hito
+		if (oldTask.milestoneId === newTask.milestoneId) {
+			this.replaceTaskInsideMilestone(oldTask, newTask)
+			return
+		}
+
+		// Escenario B: La tarea saltó de un hito a otro diferente
+		this.removeTaskFromMilestone(oldTask)
+		this.addTaskToMilestone(newTask)
+	}
+
+	// --- OPERACIONES PRIVADAS ATÓMICAS ---
+	private buildMetrics(
+		milestone: MilestoneSummaryResponse,
+		total: number,
+		completed: number,
+	): MilestoneSummaryResponse {
+		return {
+			...milestone,
+			totalTasks: total,
+			completedTasks: completed,
+			progress: total === 0 ? 0 : Math.round((completed * 100) / total),
+		}
+	}
+
+	private addTaskToMilestone(task: TaskDetailResponse) {
+		if (!task.milestoneId) return
+
 		this.milestoneDetail.update((detail) => {
-			if (!detail) return detail
-
-			if (detail.id === newTask.milestoneId) {
-				return {
-					...detail,
-					tasks: detail.tasks?.map((t) => (t.id === newTask.id ? newTask : t)),
-				}
+			if (!detail || detail.id !== task.milestoneId) return detail
+			return {
+				...detail,
+				tasks: [...(detail.tasks || []), task],
 			}
-
-			if (detail.id === oldTask.milestoneId) {
-				return {
-					...detail,
-					tasks: detail.tasks?.filter((t) => t.id !== newTask.id),
-				}
-			}
-
-			return detail
 		})
 
-		this.milestones.update((milestones) => {
-			return milestones.map((milestone) => {
-				let total = milestone.totalTasks
-				let completed = milestone.completedTasks
+		this.milestones.update((list) =>
+			list.map((m) => {
+				if (m.id !== task.milestoneId) return m
 
-				// ---------- salió del milestone ----------
-				if (milestone.id === oldTask.milestoneId) {
-					total--
+				return this.buildMetrics(m, m.totalTasks + 1, m.completedTasks + (task.completed ? 1 : 0))
+			}),
+		)
+	}
 
-					if (oldTask.completed) {
-						completed--
-					}
-				}
+	private removeTaskFromMilestone(task: TaskDetailResponse) {
+		if (!task.milestoneId) return
 
-				// ---------- entró al milestone ----------
-				if (milestone.id === newTask.milestoneId) {
-					total++
-
-					if (newTask.completed) {
-						completed++
-					}
-				}
-
-				// ---------- mismo milestone pero cambió estado ----------
-				if (oldTask.milestoneId === newTask.milestoneId && milestone.id === newTask.milestoneId) {
-					if (!oldTask.completed && newTask.completed) {
-						completed++
-					}
-
-					if (oldTask.completed && !newTask.completed) {
-						completed--
-					}
-				}
-
-				return {
-					...milestone,
-					totalTasks: total,
-					completedTasks: completed,
-					progress: total === 0 ? 0 : Math.round((completed * 100) / total),
-				}
-			})
+		this.milestoneDetail.update((detail) => {
+			if (!detail || detail.id !== task.milestoneId) return detail
+			return {
+				...detail,
+				tasks: detail.tasks?.filter((t) => t.id !== task.id),
+			}
 		})
+
+		this.milestones.update((list) =>
+			list.map((m) => {
+				if (m.id !== task.milestoneId) return m
+
+				return this.buildMetrics(
+					m,
+					Math.max(0, m.totalTasks - 1),
+					Math.max(0, m.completedTasks - (task.completed ? 1 : 0)),
+				)
+			}),
+		)
+	}
+
+	private replaceTaskInsideMilestone(oldTask: TaskDetailResponse, newTask: TaskDetailResponse) {
+		if (!newTask.milestoneId) return
+
+		this.milestoneDetail.update((detail) => {
+			if (!detail || detail.id !== newTask.milestoneId) return detail
+			return {
+				...detail,
+				tasks: detail.tasks?.map((t) => (t.id === newTask.id ? newTask : t)),
+			}
+		})
+
+		if (oldTask.completed !== newTask.completed) {
+			this.milestones.update((list) =>
+				list.map((m) => {
+					if (m.id !== newTask.milestoneId) return m
+
+					const diff = newTask.completed ? 1 : -1
+
+					return this.buildMetrics(m, m.totalTasks, Math.max(0, m.completedTasks + diff))
+				}),
+			)
+		}
 	}
 
 	select(id: string | null) {

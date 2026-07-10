@@ -6,12 +6,12 @@ export interface TaskDetailResponse {
 	title: string
 	description: string
 	position: number
-	deadline: string
+	deadline: string | null
 	priority: 'ALTA' | 'MEDIA' | 'BAJA'
 	completed: boolean
 	groupTask: boolean
 	columnId: string
-	milestoneId: string
+	milestoneId: string | null
 	assignments: TaskAssignmentDetailResponse[]
 	checklist: ChecklistDetailResponse[]
 }

@@ -15,7 +15,11 @@ import {
 import { MilestoneSummaryResponse } from '../models/milestone/milestone-summary-response.model'
 import { CreateColumnKanbanRequest } from '../models/column-kanban/column-kanban-request.model'
 import { ColumnKanbanDetailResponse } from '../models/column-kanban/column-kanban-detail-response.model'
-import { CreateTaskRequest, UpdateTaskRequest } from '../models/task/task-request.model'
+import {
+	CreateTaskRequest,
+	DeleteTaskRequest,
+	UpdateTaskRequest,
+} from '../models/task/task-request.model'
 import { TaskDetailResponse } from '../models/task/task-detail-response.model'
 import { ReorderColumnsRequest, ReorderTasksRequest } from '../models/reorder.model'
 import { MilestoneDetailResponse } from '../models/milestone/milestone-detail-response.model'
@@ -106,6 +110,10 @@ export class KanbanApi {
 
 	updateTask(task: UpdateTaskRequest) {
 		this.ws.publish(`/app/task.update`, task)
+	}
+
+	deleteTask(task: DeleteTaskRequest) {
+		this.ws.publish(`/app/task.delete`, task)
 	}
 
 	getTasks(
