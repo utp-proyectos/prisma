@@ -37,8 +37,7 @@ import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
 
 import { CdkDrag, CdkDropList, CdkDragDrop } from '@angular/cdk/drag-drop'
-import { TaskCardComponent } from '@/shared/components/sidebar/components/task-card/task-card'
-import { BrnDialogState } from '@spartan-ng/brain/dialog'
+import { TaskCardComponent } from '@/shared/components/task-card/task-card'
 import { TaskModal } from '../../components/task-modal/task-modal'
 import { TaskModalState } from '../../service/column-task/task-modal-state'
 import { MilestoneModalComponent } from '../../components/milestone-modal/milestone-modal'
@@ -55,10 +54,11 @@ import { MilestoneModalState } from '../../service/milestone/milestone-modal-sta
 import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
 import { toast } from '@spartan-ng/brain/sonner'
 import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComponent'
-import { HlmAvatar, HlmAvatarGroup } from '@spartan-ng/helm/avatar'
+import { HlmAvatar, HlmAvatarGroup, HlmAvatarGroupCount } from '@spartan-ng/helm/avatar'
 import { HlmBadge } from '@spartan-ng/helm/badge'
 import { getAssignmentInitials } from '../../utils/string.utils'
 import { ColumnModalState } from '../../service/column-task/column-modal-state'
+import { AuthService } from '@/core/servies/auth.serive'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -91,6 +91,7 @@ import { ColumnModalState } from '../../service/column-task/column-modal-state'
 		HlmAvatar,
 		HlmAvatarGroup,
 		HlmBadge,
+		HlmAvatarGroupCount,
 	],
 	providers: [
 		TaskModalState,
@@ -151,12 +152,19 @@ export class KanbanDetail implements OnDestroy {
 
 	// Tabs
 	protected readonly activeTab = signal<string>('hitos')
-	protected readonly onlyMyTasks = signal(false)
+
+	protected changeTab(tabName: string): void {
+		this.activeTab.set(tabName)
+		if (tabName !== 'hitos') {
+			this.selectedMilestoneId.set(null)
+		}
+	}
 
 	// ESTADOS, CONEXIONES Y FACADES
 	milestoneState = inject(MilestoneState)
 	columnTaskState = inject(ColumnTaskState)
 	columnTaskFacade = inject(ColumnTaskFacade)
+	authService = inject(AuthService)
 	realtime = inject(KanbanRealtime)
 
 	// CONEXION BD
@@ -237,20 +245,82 @@ export class KanbanDetail implements OnDestroy {
 		})
 	}
 
-	protected changeTab(tabName: string): void {
-		this.activeTab.set(tabName)
-		if (tabName !== 'hitos') {
-			this.selectedMilestoneId.set(null)
-		}
-	}
-
 	teamDetailResource = this.teamApi.teamDetailResource(this.teamId)
 
+	// Metodo para cargar los miembros del team
 	workspaceMembers = computed(() => {
 		if (!this.teamDetailResource.hasValue()) return []
 		return this.teamDetailResource.value()!.data.members || []
 	})
 	kanbanResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
+
+	// Filtros de tareas
+	readonly taskSearch = signal('')
+	protected readonly onlyMyTasks = signal(false)
+
+	private matchesFilters(task: TaskDetailResponse): boolean {
+		const search = this.taskSearch().trim().toLowerCase()
+
+		// -------- Filtro por buscador
+		if (search) {
+			const title = task.title.toLowerCase()
+			const description = (task.description ?? '').toLowerCase()
+			const priority = task.priority.toLowerCase()
+
+			const members =
+				task.assignments?.map((a) => `${a.name} ${a.lastName}`.toLowerCase()).join(' ') ?? ''
+
+			const matchSearch =
+				title.includes(search) ||
+				description.includes(search) ||
+				priority.includes(search) ||
+				members.includes(search)
+
+			if (!matchSearch) {
+				return false
+			}
+		}
+
+		// -------- Filtro "Mis tareas"
+		if (this.onlyMyTasks()) {
+			const myId = this.authService.currentUser()?.id
+
+			const assigned = task.assignments?.some((a) => a.userId === myId)
+
+			if (!assigned) {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	readonly filteredMovableColumns = computed(() =>
+		this.movableColumns().map((column) => ({
+			...column,
+			tasks: column.tasks.filter((task) => this.matchesFilters(task)),
+		})),
+	)
+
+	readonly filteredCompletedColumn = computed(() => {
+		const completed = this.completedColumn()
+
+		if (!completed) return null
+
+		return {
+			...completed,
+			tasks: completed.tasks.filter((task) => this.matchesFilters(task)),
+		}
+	})
+
+	// Buscador de hitos
+	readonly milestoneSearch = signal('')
+
+	readonly filteredMilestones = computed(() => {
+		const search = this.milestoneSearch().trim().toLowerCase()
+		if (!search) return this.milestones()
+		return this.milestones().filter((milestone) => milestone.title.toLowerCase().includes(search))
+	})
 
 	// --- MODAL DE LA TAREA
 	taskModalState = inject(TaskModalState)
@@ -281,35 +351,6 @@ export class KanbanDetail implements OnDestroy {
 		this.taskModalState.openForEdit(task)
 	}
 
-	// MODAL DE ELIMINACIÓN TAREAS
-	deleteTaskModalState = signal<'open' | 'closed'>('closed')
-	taskToDelete = signal<TaskDetailResponse | null>(null)
-
-	onDeleteTaskClick(task: TaskDetailResponse) {
-		this.taskToDelete.set(task)
-		this.deleteTaskModalState.set('open')
-	}
-
-	confirmDeleteTask() {
-		const task = this.taskToDelete()
-		if (!task) return
-
-		this.kanbanApi.deleteTask({
-			id: task.id,
-			kanbanId: this.kanbanId(),
-			projectId: this.projectId(),
-			teamId: this.teamId(),
-		})
-		toast.success('Tarea eliminada')
-
-		this.closeDeleteTaskModal()
-	}
-
-	closeDeleteTaskModal() {
-		this.deleteTaskModalState.set('closed')
-		this.taskToDelete.set(null)
-	}
-
 	// MODALES DE COLUMNAS
 	columnModalState = inject(ColumnModalState)
 	columnModal = this.columnModalState.dialogState
@@ -338,6 +379,35 @@ export class KanbanDetail implements OnDestroy {
 	closeDeleteColumnModal() {
 		this.deleteColumnModalState.set('closed')
 		this.columnToDelete.set(null)
+	}
+
+	// MODAL DE ELIMINACIÓN TAREAS
+	deleteTaskModalState = signal<'open' | 'closed'>('closed')
+	taskToDelete = signal<TaskDetailResponse | null>(null)
+
+	onDeleteTaskClick(task: TaskDetailResponse) {
+		this.taskToDelete.set(task)
+		this.deleteTaskModalState.set('open')
+	}
+
+	confirmDeleteTask() {
+		const task = this.taskToDelete()
+		if (!task) return
+
+		this.kanbanApi.deleteTask({
+			id: task.id,
+			kanbanId: this.kanbanId(),
+			projectId: this.projectId(),
+			teamId: this.teamId(),
+		})
+		toast.success('Tarea eliminada')
+
+		this.closeDeleteTaskModal()
+	}
+
+	closeDeleteTaskModal() {
+		this.deleteTaskModalState.set('closed')
+		this.taskToDelete.set(null)
 	}
 
 	constructor() {

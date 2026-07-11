@@ -21,7 +21,8 @@
 				<div class="flex flex-col gap-4">
 					<div class="flex items-center justify-between mt-4">
 						<hlm-input-group class="w-70">
-							<input hlmInputGroupInput placeholder="Buscar..." />
+							<input hlmInputGroupInput placeholder="Buscar..." value="buscar" [value]="milestoneSearch()"
+								(input)="milestoneSearch.set($any($event.target).value)" />
 							<hlm-input-group-addon>
 								<ng-icon name="lucideSearch" />
 							</hlm-input-group-addon>
@@ -37,7 +38,7 @@
 						<table hlmTable>
 							<thead hlmTableHeader>
 								<tr hlmTableRow>
-									<th hlmTableHead>Nombre</th>
+									<th hlmTableHead class="w-70">Nombre</th>
 									<th hlmTableHead>
 										<div class="flex items-center gap-1.5"><ng-icon name="lucideCalendarDays" /><span>Fecha
 												límite</span></div>
@@ -56,9 +57,13 @@
 								</tr>
 							</thead>
 							<tbody hlmTableBody>
-								@for (milestone of milestones(); track milestone.id) {
+								@for (milestone of filteredMilestones(); track milestone.id) {
 								<tr hlmTableRow>
-									<td hlmTableCell class="font-medium">{{ milestone.title }}</td>
+									<td hlmTableCell class="font-medium max-w-0 w-64">
+										<span class="block w-full truncate text-zinc-200" [title]="milestone.title">
+											{{ milestone.title }}
+										</span>
+									</td>
 									<td hlmTableCell>{{ milestone.deadline }}</td>
 									<td hlmTableCell>{{ milestone.progress }}%</td>
 									<td hlmTableCell>{{ milestone.totalTasks }} tareas - {{ milestone.completedTasks }} completadas</td>
@@ -194,19 +199,15 @@
 
 											@for (assignment of task.assignments.slice(0, 3); track assignment.id) {
 											<hlm-avatar-group class="grayscale">
-												<hlm-avatar variant="small">
+												<hlm-avatar>
 													<span hlmAvatarFallback>
 														{{ getInitials(assignment) }}
 													</span>
 												</hlm-avatar>
+												@if (task.assignments.length > 3) {
+												<hlm-avatar-group-count> + {{ task.assignments.length - 3 }} </hlm-avatar-group-count>
+												}
 											</hlm-avatar-group>
-											}
-
-											@if (task.assignments.length > 3) {
-											<div
-												class="w-6 h-6 rounded-full bg-zinc-700 border-2 border-zinc-900 flex items-center justify-center text-[10px] font-semibold text-zinc-200 z-10 select-none">
-												+{{ task.assignments.length - 3 }}
-											</div>
 											}
 
 											@if (task.assignments.length === 0) {
@@ -276,7 +277,15 @@
 
 			<div hlmTabsContent="kanban" class="animate-in fade-in duration-200 flex flex-col gap-4 w-full min-w-0">
 
-				<div class="flex justify-center w-full mt-2 mb-2">
+				<div class="flex items-center justify-between mt-4">
+					<hlm-input-group class="w-100">
+						<input hlmInputGroupInput placeholder="Buscar por título, descripción, prioridad o miembro..."
+							[value]="taskSearch()" (input)="taskSearch.set($any($event.target).value)" />
+						<hlm-input-group-addon>
+							<ng-icon name="lucideSearch" />
+						</hlm-input-group-addon>
+					</hlm-input-group>
+
 					<hlm-field orientation="horizontal" class="flex items-center gap-3 border px-3 py-1.5 rounded-lg w-fit">
 						<hlm-field-content>
 							<label hlmFieldLabel for="two-factor">Ver mis tareas</label>
@@ -292,7 +301,7 @@
 					<div scrollViewport cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="dropColumn($event)"
 						class="flex items-start gap-4 pb-4 min-w-max">
 
-						@for(column of movableColumns(); track column.id) {
+						@for(column of filteredMovableColumns(); track column.id) {
 
 						<div cdkDrag
 							class="flex flex-col gap-3 bg-primary-foreground border border-border rounded-xl p-3 w-72 shrink-0 max-h-[70vh]"
@@ -337,8 +346,9 @@
 
 									@for(task of column.tasks; track task.id) {
 
-									<div cdkDrag [cdkDragData]="task">
-										<app-task-card [task]="task" (opened)="openEditTask($event)" />
+									<div cdkDrag [cdkDragData]="task" class="w-65">
+										<app-task-card [task]="task" (opened)="openEditTask($event)"
+											(delete)="onDeleteTaskClick($event)"></app-task-card>
 									</div>
 									}
 
@@ -364,7 +374,7 @@
 
 						</div>
 
-						@if(completedColumn(); as completed) {
+						@if(filteredCompletedColumn(); as completed) {
 
 						<div
 							class="flex flex-col gap-3 bg-primary-foreground border border-green-500/30 rounded-xl p-3 w-72 shrink-0 max-h-[70vh]">
@@ -387,8 +397,9 @@
 
 									@for(task of completed.tasks; track task.id) {
 
-									<div cdkDrag>
-										<app-task-card [task]="task" (opened)="openEditTask($event)" />
+									<div cdkDrag class="w-65">
+										<app-task-card [task]="task" (opened)="openEditTask($event)"
+											(delete)="onDeleteTaskClick($event)"></app-task-card>
 									</div>
 									}
 								</div>

@@ -1,0 +1,72 @@
+<div hlmCard
+	class="w-full bg-secondary border border-zinc-800 p-3 rounded-lg cursor-grab active:cursor-grabbing transition-colors duration-200 hover:border-primary/60 hover:bg-zinc-800/60"
+	(click)="onCardClick($event)">
+
+	<div class="flex items-center justify-between gap-2">
+
+		<div class="flex-1 min-w-0">
+			<h4 class="font-medium text-primary text-sm truncate">
+				{{ task().title }}
+			</h4>
+		</div>
+
+		<button hlmBtn variant="ghost" size="icon-sm" class="h-8 w-8 text-muted-foreground" [hlmDropdownMenuTrigger]="menu">
+			<ng-icon name="lucideMoreHorizontal" />
+		</button>
+
+		<ng-template #menu>
+			<hlm-dropdown-menu>
+				<button hlmDropdownMenuItem (click)="taskModalState.openForEdit(task())">
+					<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
+					<span>Editar</span>
+				</button>
+				<hlm-dropdown-menu-separator />
+				<button hlmDropdownMenuItem variant="destructive" (click)="onDeleteClick($event)">
+					<ng-icon name="lucideTrash" class="mr-2 h-4 w-4 text-danger" />
+					<span>Eliminar</span>
+				</button>
+			</hlm-dropdown-menu>
+		</ng-template>
+
+	</div>
+
+	<div class="flex flex-col gap-2 text-muted-foreground">
+
+		<div class="flex items-center gap-3">
+			<ng-icon name="lucideUsers" />
+
+			<div class="flex items-center -space-x-2 isolate">
+				@for (assignment of task().assignments.slice(0, 3); track assignment.id) {
+				<hlm-avatar-group class="grayscale">
+					<hlm-avatar>
+						<span hlmAvatarFallback>
+							{{ getInitials(assignment) }}
+						</span>
+					</hlm-avatar>
+					@if (task().assignments.length > 3) {
+					<hlm-avatar-group-count> + {{ task().assignments.length - 3 }} </hlm-avatar-group-count>
+					}
+				</hlm-avatar-group>
+				}
+			</div>
+
+			@if (task().assignments.length === 0) {
+			<span class="text-zinc-500">Sin asignar</span>
+			}
+		</div>
+
+		<div class="flex items-center gap-3">
+			<ng-icon name="lucideCalendar" />
+			<span>{{ task().deadline || '-' }}</span>
+		</div>
+
+		<div class="flex items-center gap-3">
+			<ng-icon name="lucideFlag" />
+
+			<span [class.text-red-500]="task().priority === 'ALTA'" [class.text-yellow-500]="task().priority === 'MEDIA'"
+				[class.text-green-500]="task().priority === 'BAJA'">
+				{{ task().priority }}
+			</span>
+		</div>
+	</div>
+</div>
