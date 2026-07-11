@@ -91,6 +91,16 @@ export class KanbanApi {
 			.pipe(map((res) => JSON.parse(res.body) as WsResponse<MilestoneSummaryResponse>))
 	}
 
+	getMilestoneDetail(
+		teamId: string,
+		projectId: string,
+		kanbanId: string,
+	): Observable<WsResponse<MilestoneDetailResponse>> {
+		return this.ws
+			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/milestones/detail`)
+			.pipe(map((res) => JSON.parse(res.body) as WsResponse<MilestoneDetailResponse>))
+	}
+
 	// COLUMNS
 	createColumn(columnKanban: CreateColumnKanbanRequest) {
 		this.ws.publish(`/app/columnKanban.create`, columnKanban)
@@ -159,12 +169,10 @@ export class KanbanApi {
 	}
 
 	reorderColumns(payload: ReorderColumnsRequest) {
-		console.log('payload', payload)
 		this.ws.publish('/app/columnKanban.reorder', payload)
 	}
 
 	reorderTasks(payload: ReorderTasksRequest) {
-		console.log('payload', payload)
 		this.ws.publish('/app/task.reorder', payload)
 	}
 }

@@ -1,10 +1,9 @@
 import { inject, Injectable } from '@angular/core'
 import { ColumnTaskState } from './column-task-state'
 import { KanbanApi } from '../kanban-api'
-import { CdkDragDrop } from '@angular/cdk/drag-drop'
+import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
 import { TaskDetailResponse } from '../../models/task/task-detail-response.model'
 import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
-import { MilestoneDetailResponse } from '../../models/milestone/milestone-detail-response.model'
 
 @Injectable()
 export class ColumnTaskFacade {
@@ -13,31 +12,72 @@ export class ColumnTaskFacade {
 
 	dropTask(
 		event: CdkDragDrop<TaskDetailResponse[]>,
-		params: { teamId: string; projectId: string; kanbanId: string },
+		ctx: { teamId: string; projectId: string; kanbanId: string },
 	) {
-		// 1. UI Optimista + Obtener el DTO directamente de la columna destino
-		const targetTasks = this.columnTaskState.moveTaskOptimistic(event)
+		const columnsClone = structuredClone(this.columnTaskState.columns())
 
-		// 2. Llamar a la API
+		const sourceCol = columnsClone.find((c) => c.id === event.previousContainer.id)
+		const targetCol = columnsClone.find((c) => c.id === event.container.id)
+
+		if (!sourceCol || !targetCol) return
+
+		if (event.previousContainer === event.container) {
+			moveItemInArray(targetCol.tasks, event.previousIndex, event.currentIndex)
+		} else {
+			transferArrayItem(sourceCol.tasks, targetCol.tasks, event.previousIndex, event.currentIndex)
+
+			const movedTask = targetCol.tasks[event.currentIndex]
+			if (movedTask) {
+				movedTask.columnId = targetCol.id
+				movedTask.completed = targetCol.fixed || false
+			}
+		}
+
+		this.columnTaskState.setColumns(columnsClone)
+
+		const targetTasksPayload = targetCol.tasks.map((task, index) => ({
+			id: task.id,
+			position: index,
+		}))
+
+		const movedTask = targetCol.tasks[event.currentIndex]
+		if (!movedTask) return
+
 		this.kanbanApi.reorderTasks({
-			...params,
-			taskId: event.item.data.id,
-			targetColumnId: event.container.id,
-			targetTasks: targetTasks,
+			taskId: movedTask.id,
+			targetColumnId: targetCol.id,
+			targetTasks: targetTasksPayload,
+			kanbanId: ctx.kanbanId,
+			projectId: ctx.projectId,
+			teamId: ctx.teamId,
 		})
 	}
 
 	dropColumn(
 		event: CdkDragDrop<ColumnKanbanDetailResponse[]>,
-		params: { teamId: string; projectId: string; kanbanId: string },
+		ctx: { teamId: string; projectId: string; kanbanId: string },
 	) {
-		// 1. UI Optimista + Obtener el DTO
-		const reorderedColumns = this.columnTaskState.moveColumnOptimistic(event)
+		const columns = this.columnTaskState.columns()
+		const movable = columns.filter((c) => !c.fixed)
+		const fixed = columns.find((c) => c.fixed)
 
-		// 2. Llamar a la API
+		// Reordenamos solo las movibles
+		moveItemInArray(movable, event.previousIndex, event.currentIndex)
+
+		// Re-ensamblamos manteniendo la fija al final
+		const newOrder = fixed ? [...movable, fixed] : [...movable]
+		this.columnTaskState.setColumns(newOrder)
+
+		const payload = movable.map((col, index) => ({
+			id: col.id,
+			position: index,
+		}))
+
 		this.kanbanApi.reorderColumns({
-			...params,
-			columns: reorderedColumns,
+			columns: payload,
+			kanbanId: ctx.kanbanId,
+			projectId: ctx.projectId,
+			teamId: ctx.teamId,
 		})
 	}
 
@@ -53,26 +93,6 @@ export class ColumnTaskFacade {
 			groupTask: false,
 			milestoneId: '',
 			columnId: column.id,
-			...params,
-		})
-	}
-
-	createTaskFromMilestone(
-		milestone: MilestoneDetailResponse,
-		params: { teamId: string; projectId: string; kanbanId: string },
-	) {
-		const firstColumn = this.columnTaskState.movableColumns()[0]
-
-		if (!firstColumn) return
-
-		this.kanbanApi.createTask({
-			title: 'Nueva tarea',
-			description: '',
-			priority: 'BAJA',
-			groupTask: false,
-			deadline: milestone.deadline,
-			milestoneId: milestone.id,
-			columnId: firstColumn.id,
 			...params,
 		})
 	}

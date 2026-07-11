@@ -11,6 +11,7 @@ export class KanbanRealtime {
 	private readonly columnTaskState = inject(ColumnTaskState)
 
 	private milestoneSub?: Subscription
+	private milestoneDetailSub?: Subscription
 	private columnSub?: Subscription
 	private taskSub?: Subscription
 	private columnReorderSub?: Subscription
@@ -18,6 +19,7 @@ export class KanbanRealtime {
 
 	connect(teamId: string, projectId: string, kanbanId: string) {
 		this.connectMilestones(teamId, projectId, kanbanId)
+		this.connectMilestoneDetail(teamId, projectId, kanbanId)
 		this.connectColumns(teamId, projectId, kanbanId)
 		this.connectTasks(teamId, projectId, kanbanId)
 		this.connectColumnReorder(teamId, projectId, kanbanId)
@@ -45,6 +47,24 @@ export class KanbanRealtime {
 		})
 	}
 
+	private connectMilestoneDetail(teamId: string, projectId: string, kanbanId: string) {
+		this.milestoneDetailSub?.unsubscribe()
+
+		this.milestoneDetailSub = this.api
+			.getMilestoneDetail(teamId, projectId, kanbanId)
+			.subscribe((event) => {
+				if (event.action !== 'UPDATE') return
+
+				const selected = this.milestoneState.selectedMilestoneId()
+
+				if (!selected) return
+
+				if (selected !== event.payload.id) return
+
+				this.milestoneState.setDetail(event.payload)
+			})
+	}
+
 	connectColumns(teamId: string, projectId: string, kanbanId: string) {
 		this.columnSub?.unsubscribe()
 
@@ -60,7 +80,6 @@ export class KanbanRealtime {
 
 				case 'DELETE':
 					this.columnTaskState.removeColumn(event.payload)
-					this.milestoneState.removeTasksFromColumn(event.payload.tasks)
 					break
 			}
 		})
@@ -73,7 +92,6 @@ export class KanbanRealtime {
 			switch (event.action) {
 				case 'CREATE':
 					this.columnTaskState.addTask(event.payload)
-					this.milestoneState.addTask(event.payload)
 					break
 
 				case 'UPDATE':
@@ -81,12 +99,10 @@ export class KanbanRealtime {
 					if (!oldTask) return
 
 					this.columnTaskState.replaceTask(oldTask, event.payload)
-					this.milestoneState.replaceTask(oldTask, event.payload)
 					break
 
 				case 'DELETE':
 					this.columnTaskState.removeTask(event.payload)
-					this.milestoneState.removeTask(event.payload)
 					break
 			}
 		})
@@ -118,6 +134,7 @@ export class KanbanRealtime {
 
 	disconnect() {
 		this.milestoneSub?.unsubscribe()
+		this.milestoneDetailSub?.unsubscribe()
 		this.columnSub?.unsubscribe()
 		this.taskSub?.unsubscribe()
 		this.columnReorderSub?.unsubscribe()

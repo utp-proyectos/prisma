@@ -84,7 +84,7 @@
 													<span>Editar</span>
 												</button>
 												<hlm-dropdown-menu-separator />
-												<button hlmDropdownMenuItem variant="destructive" (click)="onDeleteMilestoneClick(milestone)">
+												<button hlmDropdownMenuItem variant="destructive" (click)="milestoneDeleteCtrl.open(milestone)">
 													<ng-icon name="lucideTrash" class="mr-2 h-4 w-4 text-danger" />
 													<span>Eliminar</span>
 												</button>
@@ -251,7 +251,7 @@
 													<span>Editar</span>
 												</button>
 												<hlm-dropdown-menu-separator />
-												<button hlmDropdownMenuItem variant="destructive" (click)="onDeleteTaskClick(task)">
+												<button hlmDropdownMenuItem variant="destructive" (click)="taskDeleteCtrl.open(task)">
 													<ng-icon name="lucideTrash" class="mr-2 h-4 w-4 text-danger" />
 													<span>Eliminar</span>
 												</button>
@@ -280,7 +280,7 @@
 				<div class="flex items-center justify-between mt-4">
 					<hlm-input-group class="w-100">
 						<input hlmInputGroupInput placeholder="Buscar por título, descripción, prioridad o miembro..."
-							[value]="taskSearch()" (input)="taskSearch.set($any($event.target).value)" />
+							[value]="filterService.taskSearch()" (input)="filterService.taskSearch.set($any($event.target).value)" />
 						<hlm-input-group-addon>
 							<ng-icon name="lucideSearch" />
 						</hlm-input-group-addon>
@@ -293,7 +293,8 @@
 								Solo podrás ver tus tareas
 							</hlm-field-description>
 						</hlm-field-content>
-						<hlm-switch class="ml-2" [checked]="onlyMyTasks()" (checkedChange)="onlyMyTasks.set($event)" />
+						<hlm-switch class="ml-2" [checked]="filterService.onlyMyTasks()"
+							(checkedChange)="filterService.onlyMyTasks.set($event)" />
 					</hlm-field>
 				</div>
 
@@ -301,38 +302,42 @@
 					<div scrollViewport cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="dropColumn($event)"
 						class="flex items-start gap-4 pb-4 min-w-max">
 
-						@for(column of filteredMovableColumns(); track column.id) {
+						@for(column of displayColumns(); track column.id) {
 
-						<div cdkDrag
-							class="flex flex-col gap-3 bg-primary-foreground border border-border rounded-xl p-3 w-72 shrink-0 max-h-[70vh]"
-							[cdkDragData]="column">
+						<div cdkDrag [cdkDragDisabled]="column.fixed"
+							class="flex flex-col gap-3 bg-primary-foreground border rounded-xl p-3 w-72 shrink-0 max-h-[70vh]"
+							[class.border-green-500/30]="column.fixed" [class.border-border]="!column.fixed">
 
+							<!-- HEADER -->
 							<div class="flex items-center justify-between w-full px-1" cdkDragHandle>
-								<span class="font-semibold text-muted-foreground select-none truncate max-w-[80%]">
+
+								<span class="font-semibold select-none truncate max-w-[80%]" [class.text-green-500]="column.fixed"
+									[class.text-muted-foreground]="!column.fixed">
+
 									{{ column.title }}
+
 								</span>
 
-								<button hlmBtn variant="ghost" size="icon-sm" class="h-8 w-8 text-muted-foreground"
-									[hlmDropdownMenuTrigger]="columnMenu">
-									<ng-icon name="lucideMoreHorizontal" class="h-4 w-4" />
+								@if(!column.fixed){
+
+								<button hlmBtn variant="ghost" size="icon-sm" [hlmDropdownMenuTrigger]="columnMenu">
+									<ng-icon name="lucideMoreHorizontal" />
 								</button>
 
-								<ng-template #columnMenu>
-									<hlm-dropdown-menu>
-										<button hlmDropdownMenuItem (click)="columnModalState.openForEdit(column)">
-											<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
-											<span>Editar</span>
-										</button>
-										<hlm-dropdown-menu-separator />
-										<button hlmDropdownMenuItem variant="destructive" (click)="onDeleteColumnClick(column)">
-											<ng-icon name="lucideTrash" class="mr-2 h-4 w-4 text-danger" />
-											<span>Eliminar</span>
-										</button>
-									</hlm-dropdown-menu>
+								<ng-template #columnMenu> <hlm-dropdown-menu> <button hlmDropdownMenuItem
+											(click)="columnModalState.openForEdit(column)"> <ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
+											<span>Editar</span> </button> <hlm-dropdown-menu-separator /> <button hlmDropdownMenuItem
+											variant="destructive" (click)="columnDeleteCtrl.open(column)"> <ng-icon name="lucideTrash"
+												class="mr-2 h-4 w-4 text-danger" /> <span>Eliminar</span> </button> </hlm-dropdown-menu>
 								</ng-template>
+
+								}
+
 							</div>
 
+							<!-- SCROLL -->
 							<ng-scrollbar hlm appearance="compact" class="flex-1">
+
 								<div scrollViewport cdkDropList [id]="column.id" [cdkDropListData]="column.tasks"
 									[cdkDropListConnectedTo]="connectedLists()" (cdkDropListDropped)="dropTask($event)"
 									class="flex flex-col gap-3">
@@ -346,66 +351,37 @@
 
 									@for(task of column.tasks; track task.id) {
 
+									@if(filterService.matches(task)) {
 									<div cdkDrag [cdkDragData]="task" class="w-65">
 										<app-task-card [task]="task" (opened)="openEditTask($event)"
-											(delete)="onDeleteTaskClick($event)"></app-task-card>
+											(delete)="taskDeleteCtrl.open(task)"></app-task-card>
 									</div>
+									}
+
 									}
 
 								</div>
 							</ng-scrollbar>
 
+							<!-- BOTÓN -->
+							@if(!column.fixed){
 
 							<button hlmBtn class="w-full mt-auto" (click)="openCreateTask(column)">
 								<ng-icon name="lucidePlus" />
 								Crear tarea
 							</button>
+							}
 
 						</div>
-
 						}
 
 						<div class="w-72 shrink-0">
-
 							<button hlmBtn class="w-full" (click)="columnModalState.openForCreate()">
 								<ng-icon name="lucidePlus" />
 								Nueva columna
 							</button>
-
 						</div>
 
-						@if(filteredCompletedColumn(); as completed) {
-
-						<div
-							class="flex flex-col gap-3 bg-primary-foreground border border-green-500/30 rounded-xl p-3 w-72 shrink-0 max-h-[70vh]">
-
-							<span class="font-semibold text-green-500 px-1">
-								{{ completed.title }}
-							</span>
-
-							<ng-scrollbar hlm appearance="compact" class="flex-1">
-								<div scrollViewport cdkDropList [id]="completed.id" [cdkDropListData]="completed.tasks"
-									[cdkDropListConnectedTo]="connectedLists()" (cdkDropListDropped)="dropTask($event)"
-									class="flex flex-col gap-3">
-
-									@if(completed.tasks.length === 0) {
-									<div
-										class="border border-dashed border-border rounded-lg p-4 text-center text-muted-foreground text-sm">
-										Arrastra una tarea aquí
-									</div>
-									}
-
-									@for(task of completed.tasks; track task.id) {
-
-									<div cdkDrag class="w-65">
-										<app-task-card [task]="task" (opened)="openEditTask($event)"
-											(delete)="onDeleteTaskClick($event)"></app-task-card>
-									</div>
-									}
-								</div>
-							</ng-scrollbar>
-						</div>
-						}
 					</div>
 				</ng-scrollbar>
 			</div>
@@ -415,24 +391,21 @@
 
 	<app-milestone-modal [kanbanId]="kanbanId()" [projectId]="projectId()" [teamId]="teamId()"></app-milestone-modal>
 
-	<app-delete-modal [state]="deleteMilestoneModalState()"
-		[title]="'¿Eliminar el hito ' + (milestoneToDelete()?.title || '') + '?'"
-		description="Esta acción eliminará de forma permanente el hito y todas sus tareas asociadas."
-		(stateChanged)="deleteMilestoneModalState.set($event)" (confirm)="confirmDeleteMilestone()" />
+	<app-delete-modal [state]="milestoneDeleteCtrl.state()"
+		[title]="'¿Eliminar el hito ' + (milestoneDeleteCtrl.item()?.title || '') + '?'"
+		(stateChanged)="$event === 'closed' ? milestoneDeleteCtrl.close() : null" (confirm)="confirmDeleteMilestone()" />
 
 	<app-task-modal [columns]="columns()" [milestones]="milestones()" [workspaceMembers]="workspaceMembers()"
 		[kanbanId]="kanbanId()" [projectId]="projectId()" [teamId]="teamId()">
 	</app-task-modal>
 
-	<app-delete-modal [state]="deleteTaskModalState()"
-		[title]="'¿Eliminar la tarea ' + (taskToDelete()?.title || '') + '?'"
-		description="Esta acción eliminará de forma permanente la tarea y todas sus asignaciones."
-		(stateChanged)="deleteTaskModalState.set($event)" (confirm)="confirmDeleteTask()" />
+	<app-delete-modal [state]="taskDeleteCtrl.state()"
+		[title]="'¿Eliminar la tarea ' + (taskDeleteCtrl.item()?.title || '') + '?'"
+		(stateChanged)="$event === 'closed' ? taskDeleteCtrl.close() : null" (confirm)="confirmDeleteTask()" />
 
 	<app-column-kanban-modal [kanbanId]="kanbanId()" [projectId]="projectId()"
 		[teamId]="teamId()"></app-column-kanban-modal>
 
-	<app-delete-modal [state]="deleteColumnModalState()"
-		[title]="'¿Eliminar la columna ' + (columnToDelete()?.title || '') + '?'"
-		description="Esta acción eliminará de forma permanente la columna y todas sus tareas asociadas."
-		(stateChanged)="deleteColumnModalState.set($event)" (confirm)="confirmDeleteColumn()" />
+	<app-delete-modal [state]="columnDeleteCtrl.state()"
+		[title]="'¿Eliminar la columna ' + (columnDeleteCtrl.item()?.title || '') + '?'"
+		(stateChanged)="$event === 'closed' ? columnDeleteCtrl.close() : null" (confirm)="confirmDeleteColumn()" />

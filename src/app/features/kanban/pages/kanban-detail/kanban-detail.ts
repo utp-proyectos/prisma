@@ -58,7 +58,8 @@ import { HlmAvatar, HlmAvatarGroup, HlmAvatarGroupCount } from '@spartan-ng/helm
 import { HlmBadge } from '@spartan-ng/helm/badge'
 import { getAssignmentInitials } from '../../utils/string.utils'
 import { ColumnModalState } from '../../service/column-task/column-modal-state'
-import { AuthService } from '@/core/servies/auth.serive'
+import { TaskFilterService } from '../../service/column-task/task-filter-service'
+import { DeleteDialogState } from '@/shared/components/delete/DeleteDialogState'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -103,6 +104,7 @@ import { AuthService } from '@/core/servies/auth.serive'
 		ColumnTaskFacade,
 		MilestoneModalState,
 		ColumnModalState,
+		TaskFilterService,
 		provideIcons({
 			lucidePlus,
 			lucideSearch,
@@ -145,12 +147,21 @@ import { AuthService } from '@/core/servies/auth.serive'
 	`,
 })
 export class KanbanDetail implements OnDestroy {
-	// Input para el ws
+	// Input obligatorios
 	teamId = input.required<string>()
 	projectId = input.required<string>()
 	kanbanId = input.required<string>()
 
-	// Tabs
+	// Inyecciones de control y estado
+	readonly filterService = inject(TaskFilterService)
+	readonly columnTaskState = inject(ColumnTaskState)
+	readonly columnTaskFacade = inject(ColumnTaskFacade)
+	readonly milestoneState = inject(MilestoneState)
+	readonly realtime = inject(KanbanRealtime)
+	readonly kanbanApi = inject(KanbanApi)
+	readonly teamApi = inject(TeamApi)
+
+	// Tabs de navegación
 	protected readonly activeTab = signal<string>('hitos')
 
 	protected changeTab(tabName: string): void {
@@ -160,74 +171,70 @@ export class KanbanDetail implements OnDestroy {
 		}
 	}
 
-	// ESTADOS, CONEXIONES Y FACADES
-	milestoneState = inject(MilestoneState)
-	columnTaskState = inject(ColumnTaskState)
-	columnTaskFacade = inject(ColumnTaskFacade)
-	authService = inject(AuthService)
-	realtime = inject(KanbanRealtime)
+	// Formato de avatar
+	protected readonly getInitials = getAssignmentInitials
 
-	// CONEXION BD
-	kanbanApi = inject(KanbanApi)
-	teamApi = inject(TeamApi)
+	// Modales de creacion / edicion
+	protected readonly milestoneModalState = inject(MilestoneModalState)
+	milestoneModal = this.milestoneModalState.dialogState
 
-	// ------------ NOMBRE DEL TABLERO
-	readonly kanbanDetailResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
+	protected readonly taskModalState = inject(TaskModalState)
+	taskModal = this.taskModalState.dialogState
 
+	protected readonly columnModalState = inject(ColumnModalState)
+	columnModal = this.columnModalState.dialogState
+
+	// Modales de eliminación
+	protected readonly milestoneDeleteCtrl = new DeleteDialogState<MilestoneSummaryResponse>()
+	protected readonly columnDeleteCtrl = new DeleteDialogState<ColumnKanbanDetailResponse>()
+	protected readonly taskDeleteCtrl = new DeleteDialogState<TaskDetailResponse>()
+
+	// Recursos Api y computados
+	private readonly kanbanDetailResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
+	private readonly teamDetailResource = this.teamApi.teamDetailResource(this.teamId)
+	protected readonly milestoneDetailRes = this.kanbanApi.milestoneDetailResource(
+		this.milestoneState.selectedMilestoneId,
+	)
+
+	// Nombre del tablero
 	readonly kanbanName = computed(() => {
 		const resource = this.kanbanDetailResource.value()
 
 		return resource?.data?.name || 'Cargando tablero...'
 	})
 
-	// ------------ MILESTONES
+	// Metodo para cargar los miembros del team
+	workspaceMembers = computed(() => {
+		if (!this.teamDetailResource.hasValue()) return []
+		return this.teamDetailResource.value()!.data.members || []
+	})
 
-	// Modal de crear y editar hitos
-	milestoneModalState = inject(MilestoneModalState)
-	milestoneModal = this.milestoneModalState.dialogState
+	kanbanResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
 
-	// Modal de eliminar hitos
-	deleteMilestoneModalState = signal<'open' | 'closed'>('closed')
-	milestoneToDelete = signal<MilestoneSummaryResponse | null>(null)
+	// Buscador de hitos
+	readonly milestoneSearch = signal('')
 
-	onDeleteMilestoneClick(milestone: MilestoneSummaryResponse) {
-		this.milestoneToDelete.set(milestone)
-		this.deleteMilestoneModalState.set('open')
-	}
+	readonly filteredMilestones = computed(() => {
+		const search = this.milestoneSearch().trim().toLowerCase()
+		if (!search) return this.milestones()
+		return this.milestones().filter((milestone) => milestone.title.toLowerCase().includes(search))
+	})
 
-	confirmDeleteMilestone() {
-		const milestone = this.milestoneToDelete()
-		if (!milestone) return
-
-		this.kanbanApi.deleteMilestone({
-			milestoneId: milestone.id,
-		})
-		toast.success('Hito eliminado')
-
-		this.closeDeleteMilestoneModal()
-	}
-
-	closeDeleteMilestoneModal() {
-		this.deleteMilestoneModalState.set('closed')
-		this.milestoneToDelete.set(null)
-	}
-
-	// Milestone seleccionado
+	// Shortcuts directos a los states primarios
 	milestones = this.milestoneState.milestones
 	selectedMilestoneId = this.milestoneState.selectedMilestoneId
-
-	milestoneDetailRes = this.kanbanApi.milestoneDetailResource(
-		this.milestoneState.selectedMilestoneId,
-	)
-
-	// formato de avatar
-	readonly getInitials = getAssignmentInitials
-
-	// ------------ COLUMNS y TASKS
 	columns = this.columnTaskState.columns
-	movableColumns = this.columnTaskState.movableColumns
-	completedColumn = this.columnTaskState.completedColumn
 	connectedLists = this.columnTaskState.connectedLists
+
+	// Arbol de renderizado
+	readonly displayColumns = computed(() => {
+		const columns = this.columnTaskState.columns()
+
+		const fixed = columns.find((c) => c.fixed)
+		const movable = columns.filter((c) => !c.fixed)
+
+		return fixed ? [...movable, fixed] : [...movable]
+	})
 
 	protected dropTask(event: CdkDragDrop<TaskDetailResponse[]>) {
 		this.columnTaskFacade.dropTask(event, {
@@ -245,86 +252,7 @@ export class KanbanDetail implements OnDestroy {
 		})
 	}
 
-	teamDetailResource = this.teamApi.teamDetailResource(this.teamId)
-
-	// Metodo para cargar los miembros del team
-	workspaceMembers = computed(() => {
-		if (!this.teamDetailResource.hasValue()) return []
-		return this.teamDetailResource.value()!.data.members || []
-	})
-	kanbanResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
-
-	// Filtros de tareas
-	readonly taskSearch = signal('')
-	protected readonly onlyMyTasks = signal(false)
-
-	private matchesFilters(task: TaskDetailResponse): boolean {
-		const search = this.taskSearch().trim().toLowerCase()
-
-		// -------- Filtro por buscador
-		if (search) {
-			const title = task.title.toLowerCase()
-			const description = (task.description ?? '').toLowerCase()
-			const priority = task.priority.toLowerCase()
-
-			const members =
-				task.assignments?.map((a) => `${a.name} ${a.lastName}`.toLowerCase()).join(' ') ?? ''
-
-			const matchSearch =
-				title.includes(search) ||
-				description.includes(search) ||
-				priority.includes(search) ||
-				members.includes(search)
-
-			if (!matchSearch) {
-				return false
-			}
-		}
-
-		// -------- Filtro "Mis tareas"
-		if (this.onlyMyTasks()) {
-			const myId = this.authService.currentUser()?.id
-
-			const assigned = task.assignments?.some((a) => a.userId === myId)
-
-			if (!assigned) {
-				return false
-			}
-		}
-
-		return true
-	}
-
-	readonly filteredMovableColumns = computed(() =>
-		this.movableColumns().map((column) => ({
-			...column,
-			tasks: column.tasks.filter((task) => this.matchesFilters(task)),
-		})),
-	)
-
-	readonly filteredCompletedColumn = computed(() => {
-		const completed = this.completedColumn()
-
-		if (!completed) return null
-
-		return {
-			...completed,
-			tasks: completed.tasks.filter((task) => this.matchesFilters(task)),
-		}
-	})
-
-	// Buscador de hitos
-	readonly milestoneSearch = signal('')
-
-	readonly filteredMilestones = computed(() => {
-		const search = this.milestoneSearch().trim().toLowerCase()
-		if (!search) return this.milestones()
-		return this.milestones().filter((milestone) => milestone.title.toLowerCase().includes(search))
-	})
-
 	// --- MODAL DE LA TAREA
-	taskModalState = inject(TaskModalState)
-	taskModal = this.taskModalState.dialogState
 
 	// Método para abrir el modal con la información cargada
 	openCreateTask(column: ColumnKanbanDetailResponse) {
@@ -335,12 +263,21 @@ export class KanbanDetail implements OnDestroy {
 		})
 	}
 
-	openCreateTaskFromMilestone() {
+	protected openCreateTaskFromMilestone() {
 		const milestone = this.milestoneState.milestoneDetail()
-
 		if (!milestone) return
 
-		this.columnTaskFacade.createTaskFromMilestone(milestone, {
+		const firstColumn = this.displayColumns().find((c) => !c.fixed)
+		if (!firstColumn) return
+
+		this.kanbanApi.createTask({
+			title: 'Nueva tarea',
+			description: '',
+			priority: 'BAJA',
+			groupTask: false,
+			deadline: milestone.deadline,
+			milestoneId: milestone.id,
+			columnId: firstColumn.id,
 			teamId: this.teamId(),
 			projectId: this.projectId(),
 			kanbanId: this.kanbanId(),
@@ -351,63 +288,39 @@ export class KanbanDetail implements OnDestroy {
 		this.taskModalState.openForEdit(task)
 	}
 
-	// MODALES DE COLUMNAS
-	columnModalState = inject(ColumnModalState)
-	columnModal = this.columnModalState.dialogState
+	// MODAL DE ELIMINACIÓN HITOS
+	protected confirmDeleteMilestone() {
+		const m = this.milestoneDeleteCtrl.item()
+		if (m) {
+			this.kanbanApi.deleteMilestone({ milestoneId: m.id })
+			toast.success('Hito eliminado')
+			this.milestoneDeleteCtrl.close()
+		}
+	}
 
 	// MODAL DE ELIMINACIÓN COLUMNA
-	deleteColumnModalState = signal<'open' | 'closed'>('closed')
-	columnToDelete = signal<ColumnKanbanDetailResponse | null>(null)
-
-	onDeleteColumnClick(column: ColumnKanbanDetailResponse) {
-		this.columnToDelete.set(column)
-		this.deleteColumnModalState.set('open')
-	}
-
-	confirmDeleteColumn() {
-		const column = this.columnToDelete()
-		if (!column) return
-
-		this.kanbanApi.deleteColumn({
-			columnId: column.id,
-		})
-		toast.success('Columna eliminada')
-
-		this.closeDeleteColumnModal()
-	}
-
-	closeDeleteColumnModal() {
-		this.deleteColumnModalState.set('closed')
-		this.columnToDelete.set(null)
+	protected confirmDeleteColumn() {
+		const c = this.columnDeleteCtrl.item()
+		if (c) {
+			this.kanbanApi.deleteColumn({ columnId: c.id })
+			toast.success('Columna eliminada')
+			this.columnDeleteCtrl.close()
+		}
 	}
 
 	// MODAL DE ELIMINACIÓN TAREAS
-	deleteTaskModalState = signal<'open' | 'closed'>('closed')
-	taskToDelete = signal<TaskDetailResponse | null>(null)
-
-	onDeleteTaskClick(task: TaskDetailResponse) {
-		this.taskToDelete.set(task)
-		this.deleteTaskModalState.set('open')
-	}
-
-	confirmDeleteTask() {
-		const task = this.taskToDelete()
-		if (!task) return
-
-		this.kanbanApi.deleteTask({
-			id: task.id,
-			kanbanId: this.kanbanId(),
-			projectId: this.projectId(),
-			teamId: this.teamId(),
-		})
-		toast.success('Tarea eliminada')
-
-		this.closeDeleteTaskModal()
-	}
-
-	closeDeleteTaskModal() {
-		this.deleteTaskModalState.set('closed')
-		this.taskToDelete.set(null)
+	protected confirmDeleteTask() {
+		const t = this.taskDeleteCtrl.item()
+		if (t) {
+			this.kanbanApi.deleteTask({
+				id: t.id,
+				kanbanId: this.kanbanId(),
+				projectId: this.projectId(),
+				teamId: this.teamId(),
+			})
+			toast.success('Tarea eliminada')
+			this.taskDeleteCtrl.close()
+		}
 	}
 
 	constructor() {
