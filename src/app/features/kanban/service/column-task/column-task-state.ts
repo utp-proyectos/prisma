@@ -19,6 +19,14 @@ export class ColumnTaskState {
 		this.columns.update((list) => [...list, column])
 	}
 
+	replaceColumn(column: ColumnKanbanDetailResponse) {
+		this.columns.update((list) => list.map((c) => (c.id === column.id ? column : c)))
+	}
+
+	removeColumn(column: ColumnKanbanDetailResponse) {
+		this.columns.update((list) => list.filter((c) => c.id !== column.id))
+	}
+
 	replaceColumns(columns: ColumnKanbanDetailResponse[]) {
 		this.columns.set(columns)
 	}

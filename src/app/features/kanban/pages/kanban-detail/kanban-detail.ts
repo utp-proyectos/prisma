@@ -40,7 +40,7 @@ import { CdkDrag, CdkDropList, CdkDragDrop } from '@angular/cdk/drag-drop'
 import { TaskCardComponent } from '@/shared/components/sidebar/components/task-card/task-card'
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
 import { TaskModal } from '../../components/task-modal/task-modal'
-import { TaskModalState } from '../../service/task/task-modal-state'
+import { TaskModalState } from '../../service/column-task/task-modal-state'
 import { MilestoneModalComponent } from '../../components/milestone-modal/milestone-modal'
 import { KanbanApi } from '../../service/kanban-api'
 import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
@@ -58,6 +58,7 @@ import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComp
 import { HlmAvatar, HlmAvatarGroup } from '@spartan-ng/helm/avatar'
 import { HlmBadge } from '@spartan-ng/helm/badge'
 import { getAssignmentInitials } from '../../utils/string.utils'
+import { ColumnModalState } from '../../service/column-task/column-modal-state'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -100,6 +101,7 @@ import { getAssignmentInitials } from '../../utils/string.utils'
 		ColumnTaskState,
 		ColumnTaskFacade,
 		MilestoneModalState,
+		ColumnModalState,
 		provideIcons({
 			lucidePlus,
 			lucideSearch,
@@ -150,9 +152,6 @@ export class KanbanDetail implements OnDestroy {
 	// Tabs
 	protected readonly activeTab = signal<string>('hitos')
 	protected readonly onlyMyTasks = signal(false)
-
-	// Modales
-	createColumnKanbanModal = signal<BrnDialogState>('closed')
 
 	// ESTADOS, CONEXIONES Y FACADES
 	milestoneState = inject(MilestoneState)
@@ -309,6 +308,36 @@ export class KanbanDetail implements OnDestroy {
 	closeDeleteTaskModal() {
 		this.deleteTaskModalState.set('closed')
 		this.taskToDelete.set(null)
+	}
+
+	// MODALES DE COLUMNAS
+	columnModalState = inject(ColumnModalState)
+	columnModal = this.columnModalState.dialogState
+
+	// MODAL DE ELIMINACIÓN COLUMNA
+	deleteColumnModalState = signal<'open' | 'closed'>('closed')
+	columnToDelete = signal<ColumnKanbanDetailResponse | null>(null)
+
+	onDeleteColumnClick(column: ColumnKanbanDetailResponse) {
+		this.columnToDelete.set(column)
+		this.deleteColumnModalState.set('open')
+	}
+
+	confirmDeleteColumn() {
+		const column = this.columnToDelete()
+		if (!column) return
+
+		this.kanbanApi.deleteColumn({
+			columnId: column.id,
+		})
+		toast.success('Columna eliminada')
+
+		this.closeDeleteColumnModal()
+	}
+
+	closeDeleteColumnModal() {
+		this.deleteColumnModalState.set('closed')
+		this.columnToDelete.set(null)
 	}
 
 	constructor() {

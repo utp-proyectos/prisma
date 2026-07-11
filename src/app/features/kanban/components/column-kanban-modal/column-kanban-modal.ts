@@ -8,6 +8,7 @@ import { disabled, form, FormField, FormRoot, minLength, required } from '@angul
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
 import { CreateColumnKanbanRequest } from '../../models/column-kanban/column-kanban-request.model'
 import { toast } from '@spartan-ng/brain/sonner'
+import { ColumnModalState } from '../../service/column-task/column-modal-state'
 
 @Component({
 	selector: 'app-column-kanban-modal',
@@ -24,9 +25,6 @@ import { toast } from '@spartan-ng/brain/sonner'
 	templateUrl: './column-kanban-modal.html',
 })
 export class ColumnKanbanModalComponent {
-	readonly state = input.required<BrnDialogState | null>()
-	readonly closed = output<void>()
-
 	// Input para el ws
 	teamId = input.required<string>()
 	projectId = input.required<string>()
@@ -34,7 +32,10 @@ export class ColumnKanbanModalComponent {
 
 	kanbanApi = inject(KanbanApi)
 
-	columnKanbanModel = signal<Omit<CreateColumnKanbanRequest, 'kanbanId' | 'projectId' | 'teamId'>>({
+	// Estado del modal columna
+	readonly columnKanbanModalState = inject(ColumnModalState)
+
+	columnKanbanModel = signal<Omit<CreateColumnKanbanRequest, 'kanbanId'>>({
 		title: '',
 	})
 
@@ -48,21 +49,23 @@ export class ColumnKanbanModalComponent {
 		{
 			submission: {
 				action: async (data) => {
-					console.log(data().value())
+					const values = data().value()
+					const currentColumn = this.columnKanbanModalState.column()
 
-					try {
+					if (this.columnKanbanModalState.isEditMode()) {
+						this.kanbanApi.updateColumn({
+							columnId: currentColumn!.id,
+							...values,
+						})
+						toast.success('Columna modificada')
+					} else {
 						this.kanbanApi.createColumn({
 							kanbanId: this.kanbanId(),
-							projectId: this.projectId(),
-							teamId: this.teamId(),
-							...data().value(),
+							...values,
 						})
-
-						this.closeCreateColumnKanbanModal()
 						toast.success('Columna creada')
-					} catch {
-						toast.error('Error al crear la columna')
 					}
+					this.columnKanbanModalState.close()
 				},
 			},
 		},
@@ -70,13 +73,21 @@ export class ColumnKanbanModalComponent {
 
 	constructor() {
 		effect(() => {
-			if (this.state() === 'closed') {
-				this.columnKanbanForm().reset({ title: '' })
+			if (!this.columnKanbanModalState.dialogState()) return
+
+			if (this.columnKanbanModalState.isEditMode()) {
+				const column = this.columnKanbanModalState.column()
+
+				if (!column) return
+
+				this.columnKanbanForm().reset({
+					title: column.title,
+				})
+			} else {
+				this.columnKanbanForm().reset({
+					title: '',
+				})
 			}
 		})
-	}
-
-	closeCreateColumnKanbanModal() {
-		this.closed.emit()
 	}
 }

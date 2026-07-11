@@ -23,7 +23,7 @@ import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-ka
 import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
 import { TeamMemberResponse } from '@/features/home/models/team-member-response'
 import { UpdateTaskRequest } from '../../models/task/task-request.model'
-import { TaskModalState } from '../../service/task/task-modal-state'
+import { TaskModalState } from '../../service/column-task/task-modal-state'
 
 type DateType = 'none' | 'manual' | 'milestone'
 

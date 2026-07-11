@@ -1,11 +1,12 @@
-<hlm-dialog [state]="state()" (closed)="closed.emit()">
+<hlm-dialog [state]="columnKanbanModalState.dialogState()" (closed)="columnKanbanModalState.close()">
 	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
 		<hlm-dialog-header>
-			<h3 hlmDialogTitle>Crear Columna</h3>
-			<p hlmDialogDescription>Empieza creando una nueva columna para organizar tus tareas</p>
+			<h3 hlmDialogTitle> {{ columnKanbanModalState.isEditMode() ? 'Editar Columna' : 'Crear Columna' }} </h3>
+			<p hlmDialogDescription> {{ columnKanbanModalState.isEditMode() ? 'Modifica el nombre de la columna' :
+				'Crea una nueva columna para organizar tus tareas' }}</p>
 		</hlm-dialog-header>
 
-		<form [formRoot]="columnKanbanForm" id="create-column-form">
+		<form [formRoot]="columnKanbanForm" id="column-form">
 			<hlm-field-group>
 
 				<hlm-field>
@@ -25,8 +26,8 @@
 
 		<hlm-dialog-footer>
 			<button hlmBtn variant="outline" hlmDialogClose>Cancelar</button>
-			<button hlmBtn form="create-column-form" type="submit" [disabled]="columnKanbanForm().submitting()">
-				Crear
+			<button hlmBtn form="column-form" type="submit" [disabled]="columnKanbanForm().submitting()">
+				{{ columnKanbanModalState.isEditMode() ? 'Guardar' : 'Crear' }}
 			</button>
 		</hlm-dialog-footer>
 	</hlm-dialog-content>

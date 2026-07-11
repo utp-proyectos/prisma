@@ -13,7 +13,11 @@ import {
 	UpdateMilestoneRequest,
 } from '../models/milestone/milestone-request.model'
 import { MilestoneSummaryResponse } from '../models/milestone/milestone-summary-response.model'
-import { CreateColumnKanbanRequest } from '../models/column-kanban/column-kanban-request.model'
+import {
+	CreateColumnKanbanRequest,
+	DeleteColumnKanbanRequest,
+	UpdateColumnKanbanRequest,
+} from '../models/column-kanban/column-kanban-request.model'
 import { ColumnKanbanDetailResponse } from '../models/column-kanban/column-kanban-detail-response.model'
 import {
 	CreateTaskRequest,
@@ -59,7 +63,7 @@ export class KanbanApi {
 			.pipe(map((res) => JSON.parse(res.body) as WsResponse<KanbanResponse>))
 	}
 
-	//Para milestones
+	// MILESTONES
 	milestoneDetailResource = (milestoneId: Signal<string | null>) =>
 		httpResource<ApiResponse<MilestoneDetailResponse>>(() =>
 			milestoneId() ? `/milestones/${milestoneId()}` : undefined,
@@ -87,10 +91,17 @@ export class KanbanApi {
 			.pipe(map((res) => JSON.parse(res.body) as WsResponse<MilestoneSummaryResponse>))
 	}
 
-	//Para columnas
+	// COLUMNS
 	createColumn(columnKanban: CreateColumnKanbanRequest) {
-		console.log('columnKanban', columnKanban)
 		this.ws.publish(`/app/columnKanban.create`, columnKanban)
+	}
+
+	updateColumn(columnKanban: UpdateColumnKanbanRequest) {
+		this.ws.publish(`/app/columnKanban.update`, columnKanban)
+	}
+
+	deleteColumn(columnKanban: DeleteColumnKanbanRequest) {
+		this.ws.publish(`/app/columnKanban.delete`, columnKanban)
 	}
 
 	getColumnsKanban(
@@ -103,7 +114,7 @@ export class KanbanApi {
 			.pipe(map((res) => JSON.parse(res.body) as WsResponse<ColumnKanbanDetailResponse>))
 	}
 
-	//Para tareas
+	// TASKS
 	createTask(task: CreateTaskRequest) {
 		this.ws.publish(`/app/task.create`, task)
 	}

@@ -298,9 +298,30 @@
 							class="flex flex-col gap-3 bg-primary-foreground border border-border rounded-xl p-3 w-72 shrink-0 max-h-[70vh]"
 							[cdkDragData]="column">
 
-							<span class="font-semibold text-muted-foreground px-1">
-								{{ column.title }}
-							</span>
+							<div class="flex items-center justify-between w-full px-1" cdkDragHandle>
+								<span class="font-semibold text-muted-foreground select-none truncate max-w-[80%]">
+									{{ column.title }}
+								</span>
+
+								<button hlmBtn variant="ghost" size="icon-sm" class="h-8 w-8 text-muted-foreground"
+									[hlmDropdownMenuTrigger]="columnMenu">
+									<ng-icon name="lucideMoreHorizontal" class="h-4 w-4" />
+								</button>
+
+								<ng-template #columnMenu>
+									<hlm-dropdown-menu>
+										<button hlmDropdownMenuItem (click)="columnModalState.openForEdit(column)">
+											<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
+											<span>Editar</span>
+										</button>
+										<hlm-dropdown-menu-separator />
+										<button hlmDropdownMenuItem variant="destructive" (click)="onDeleteColumnClick(column)">
+											<ng-icon name="lucideTrash" class="mr-2 h-4 w-4 text-danger" />
+											<span>Eliminar</span>
+										</button>
+									</hlm-dropdown-menu>
+								</ng-template>
+							</div>
 
 							<ng-scrollbar hlm appearance="compact" class="flex-1">
 								<div scrollViewport cdkDropList [id]="column.id" [cdkDropListData]="column.tasks"
@@ -336,7 +357,7 @@
 
 						<div class="w-72 shrink-0">
 
-							<button hlmBtn class="w-full" (click)="createColumnKanbanModal.set('open')">
+							<button hlmBtn class="w-full" (click)="columnModalState.openForCreate()">
 								<ng-icon name="lucidePlus" />
 								Nueva columna
 							</button>
@@ -397,5 +418,10 @@
 		description="Esta acción eliminará de forma permanente la tarea y todas sus asignaciones."
 		(stateChanged)="deleteTaskModalState.set($event)" (confirm)="confirmDeleteTask()" />
 
-	<app-column-kanban-modal [state]="createColumnKanbanModal()" [kanbanId]="kanbanId()" [projectId]="projectId()"
-		[teamId]="teamId()" (closed)="createColumnKanbanModal.set('closed')"></app-column-kanban-modal>
+	<app-column-kanban-modal [kanbanId]="kanbanId()" [projectId]="projectId()"
+		[teamId]="teamId()"></app-column-kanban-modal>
+
+	<app-delete-modal [state]="deleteColumnModalState()"
+		[title]="'¿Eliminar la columna ' + (columnToDelete()?.title || '') + '?'"
+		description="Esta acción eliminará de forma permanente la columna y todas sus tareas asociadas."
+		(stateChanged)="deleteColumnModalState.set($event)" (confirm)="confirmDeleteColumn()" />

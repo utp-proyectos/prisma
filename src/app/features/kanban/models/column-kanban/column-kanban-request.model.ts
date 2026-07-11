@@ -1,6 +1,13 @@
 export interface CreateColumnKanbanRequest {
 	title: string
 	kanbanId: string
-	projectId: string
-	teamId: string
+}
+
+export interface UpdateColumnKanbanRequest {
+	columnId: string
+	title: string
+}
+
+export interface DeleteColumnKanbanRequest {
+	columnId: String
 }

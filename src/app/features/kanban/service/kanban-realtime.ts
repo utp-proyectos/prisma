@@ -53,6 +53,15 @@ export class KanbanRealtime {
 				case 'CREATE':
 					this.columnTaskState.addColumn(event.payload)
 					break
+
+				case 'UPDATE':
+					this.columnTaskState.replaceColumn(event.payload)
+					break
+
+				case 'DELETE':
+					this.columnTaskState.removeColumn(event.payload)
+					this.milestoneState.removeTasksFromColumn(event.payload.tasks)
+					break
 			}
 		})
 	}

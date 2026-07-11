@@ -2,6 +2,7 @@ import { computed, Injectable, signal } from '@angular/core'
 import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
 import { MilestoneDetailResponse } from '../../models/milestone/milestone-detail-response.model'
 import { TaskDetailResponse } from '../../models/task/task-detail-response.model'
+import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
 
 @Injectable()
 export class MilestoneState {
@@ -69,6 +70,10 @@ export class MilestoneState {
 
 	removeTask(task: TaskDetailResponse) {
 		this.removeTaskFromMilestone(task)
+	}
+
+	removeTasksFromColumn(tasks: TaskDetailResponse[]) {
+		tasks.forEach((task) => this.removeTask(task))
 	}
 
 	replaceTask(oldTask: TaskDetailResponse, newTask: TaskDetailResponse) {
