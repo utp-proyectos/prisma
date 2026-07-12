@@ -73,12 +73,17 @@
 						<div class="rounded-xl border bg-card p-5 flex flex-col gap-5"
 							[class]="priorityConfig[checklist.priority].border">
 							<div class="flex items-center justify-between gap-4">
-								<div class="flex items-center gap-4 min-w-0">
-									<h5 class="font-semibold truncate">{{ checklist.title }}</h5>
-									<span class="text-sm text-muted-foreground">
+
+								<div class="flex flex-1 items-start gap-4 min-w-0 w-30">
+									<h5 class="flex-1 min-w-0 text-sm font-semibold wrap-break-word whitespace-pre-wrap">
+										{{ checklist.title }}
+									</h5>
+
+									<span class="shrink-0 text-sm text-muted-foreground">
 										{{progress.completed}} de {{progress.total}}
 									</span>
 								</div>
+
 								<div class="flex items-center gap-2">
 									<span hlmBadge [class]="priorityConfig[checklist.priority].class">
 										{{ priorityConfig[checklist.priority].label }}
@@ -129,13 +134,38 @@
 							<div class="flex flex-col gap-3">
 
 								@for(item of items; track item.id){
-								<label class="flex items-center gap-3 cursor-pointer">
-									<hlm-checkbox [checked]="item.completedItem" (checkedChange)="toggleChecklistItem(item)" />
+								<label class="flex justify-between items-start gap-3 cursor-pointer w-full py-1 group">
 
-									<span [class.line-through]="item.completedItem" [class.text-muted-foreground]="item.completedItem">
-										{{item.content}}
-									</span>
+									<div class="flex flex-1 min-w-0 items-start gap-3">
+										<hlm-checkbox class="mt-0.5" [checked]="item.completedItem"
+											(checkedChange)="toggleChecklistItem(item)" />
+
+										<span class="flex-1 min-w-0 wrap-break-word text-sm select-none w-30"
+											[class.line-through]="item.completedItem" [class.text-muted-foreground]="item.completedItem">
+											{{ item.content }}
+										</span>
+									</div>
+
+									<button hlmBtn variant="ghost" size="icon-sm"
+										class="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+										[hlmDropdownMenuTrigger]="checklistItemMenu">
+										<ng-icon name="lucideMoreHorizontal" />
+									</button>
 								</label>
+
+								<ng-template #checklistItemMenu>
+									<hlm-dropdown-menu>
+										<button hlmDropdownMenuItem (click)="checklistItemModalState.openForEdit(item)">
+											<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
+											<span>Editar</span>
+										</button>
+										<hlm-dropdown-menu-separator />
+										<button hlmDropdownMenuItem variant="destructive" (click)="checklistItemDeleteCtrl.open(item)">
+											<ng-icon name="lucideTrash" class="mr-2 h-4 w-4 text-danger" />
+											<span>Eliminar</span>
+										</button>
+									</hlm-dropdown-menu>
+								</ng-template>
 								}
 
 							</div>
@@ -334,3 +364,8 @@
 
 <app-checklist-item-modal [kanbanId]="kanbanId()" [projectId]="projectId()" [teamId]="teamId()">
 </app-checklist-item-modal>
+
+<app-delete-modal [state]="checklistItemDeleteCtrl.state()"
+	[title]="'¿Eliminar el elemento ' + (checklistItemDeleteCtrl.item()?.content || '') + '?'"
+	(stateChanged)="$event === 'closed' ? checklistItemDeleteCtrl.close() : null"
+	(confirm)="confirmDeleteChecklistItem()" />

@@ -394,6 +394,18 @@ export class TaskModal {
 		}
 	}
 
+	// MODAL DE ELIMINACIÓN CHECKLIST ITEM
+	readonly checklistItemDeleteCtrl = new DeleteDialogState<ChecklistItemResponse>()
+
+	protected confirmDeleteChecklistItem() {
+		const c = this.checklistItemDeleteCtrl.item()
+		if (c) {
+			this.kanbanApi.deleteChecklistItem({ checklistItemId: c.id })
+			toast.success('Checklist item eliminada')
+			this.checklistItemDeleteCtrl.close()
+		}
+	}
+
 	// Para el diseño de cartas
 	readonly radioCardClass = hlm(
 		'relative flex flex-col items-center justify-center rounded-lg border p-4 text-center',
