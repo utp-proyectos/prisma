@@ -1,9 +1,15 @@
 import { Component, computed, effect, inject, signal } from '@angular/core'
 import { NgIcon, provideIcons } from '@ng-icons/core'
-import { lucideCalendar, lucideCalendarX, lucideFlag, lucidePlus } from '@ng-icons/lucide'
+import {
+	lucideCalendar,
+	lucideCalendarX,
+	lucideEdit,
+	lucideFlag,
+	lucidePlus,
+	lucideTrash,
+} from '@ng-icons/lucide'
 
-import { input, output } from '@angular/core'
-import { BrnDialogState } from '@spartan-ng/brain/dialog'
+import { input } from '@angular/core'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmDialogImports } from '@spartan-ng/helm/dialog'
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu'
@@ -18,12 +24,26 @@ import { HlmSwitch } from '@spartan-ng/helm/switch'
 import { hlm } from '@spartan-ng/helm/utils'
 import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker'
 import { KanbanApi } from '../../service/kanban-api'
-import { TaskDetailResponse } from '../../models/task/task-detail-response.model'
 import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
 import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
 import { TeamMemberResponse } from '@/features/home/models/team-member-response'
 import { UpdateTaskRequest } from '../../models/task/task-request.model'
 import { TaskModalState } from '../../service/column-task/task-modal-state'
+import { getAssignmentInitials } from '../../utils/string.utils'
+import { ChecklistModalState } from '../../service/checklist/checklist-modal-state'
+import { ChecklistModalComponent } from '../checklist-modal/checklist-modal'
+import { HlmBadge } from '@spartan-ng/helm/badge'
+import { ChecklistState } from '../../service/checklist/checklist-state'
+import { ChecklistDetailResponse } from '../../models/checklist/checklist-detail-response.model'
+import { DeleteDialogState } from '@/shared/components/delete/DeleteDialogState'
+import { toast } from '@spartan-ng/brain/sonner'
+import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComponent'
+import { ChecklistItemModalComponent } from '../checklist-item-modal/checklist-item-modal'
+import { ChecklistItemModalState } from '../../service/checklist-item/checklist-item-modal-state'
+import { ChecklistItemState } from '../../service/checklist-item/checklist-item-state'
+import { HlmProgress, HlmProgressIndicator } from '@spartan-ng/helm/progress'
+import { HlmCheckbox } from '@spartan-ng/helm/checkbox'
+import { ChecklistItemResponse } from '../../models/checklist-item/checklist-item-response.model'
 
 type DateType = 'none' | 'manual' | 'milestone'
 
@@ -45,6 +65,13 @@ type DateType = 'none' | 'manual' | 'milestone'
 		HlmRadioGroup,
 		HlmDatePickerImports,
 		HlmRadio,
+		ChecklistModalComponent,
+		HlmBadge,
+		DeleteModalComponent,
+		ChecklistItemModalComponent,
+		HlmProgress,
+		HlmCheckbox,
+		HlmProgressIndicator,
 	],
 	providers: [
 		KanbanApi,
@@ -53,6 +80,8 @@ type DateType = 'none' | 'manual' | 'milestone'
 			lucideCalendarX,
 			lucideCalendar,
 			lucideFlag,
+			lucideEdit,
+			lucideTrash,
 		}),
 	],
 	templateUrl: './task-modal.html',
@@ -62,6 +91,7 @@ export class TaskModal {
 	readonly columns = input.required<ColumnKanbanDetailResponse[]>()
 	readonly milestones = input.required<MilestoneSummaryResponse[]>()
 	readonly workspaceMembers = input.required<TeamMemberResponse[]>()
+
 	teamId = input.required<string>()
 	projectId = input.required<string>()
 	kanbanId = input.required<string>()
@@ -70,6 +100,53 @@ export class TaskModal {
 	kanbanApi = inject(KanbanApi)
 	taskModalState = inject(TaskModalState)
 	readonly task = this.taskModalState.task
+	checklistModalState = inject(ChecklistModalState)
+	readonly checklistModal = this.checklistModalState.dialogState
+
+	checklistItemModalState = inject(ChecklistItemModalState)
+	readonly checklistItemModal = this.checklistItemModalState.dialogState
+
+	private readonly checklistState = inject(ChecklistState)
+	readonly checklists = computed(() => {
+		const task = this.task()
+
+		if (!task) return []
+
+		return this.checklistState.getByTask(task.id)
+	})
+
+	private readonly checklistItemState = inject(ChecklistItemState)
+
+	readonly getChecklistItems = (checklistId: string) =>
+		this.checklistItemState.getByChecklist(checklistId)
+
+	readonly checklistProgress = (id: string) => this.checklistItemState.progress(id)
+
+	toggleChecklistItem(item: ChecklistItemResponse) {
+		this.kanbanApi.updateChecklistItem({
+			checklistItemId: item.id,
+			content: item.content,
+			completedItem: !item.completedItem,
+		})
+	}
+
+	readonly priorityConfig = {
+		ALTA: {
+			label: 'Alta',
+			class: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300',
+			border: 'border-l-4 border-l-red-500',
+		},
+		MEDIA: {
+			label: 'Media',
+			class: 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300',
+			border: 'border-l-4 border-l-yellow-500',
+		},
+		BAJA: {
+			label: 'Baja',
+			class: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300',
+			border: 'border-l-4 border-l-green-500',
+		},
+	}
 
 	// Señal para guardar la tarea que se va a editar
 	readonly title = signal('')
@@ -93,29 +170,17 @@ export class TaskModal {
 
 		this.kanbanApi.updateTask({
 			id: task.id,
-
 			title: this.title(),
-
 			description: this.description(),
-
 			priority: this.priority(),
-
 			deadline: this.deadline(),
-
 			milestoneId: this.selectedMilestoneId(),
-
 			groupTask: this.isGroupTask(),
-
 			completed: this.isCompleted(),
-
 			columnId: this.selectedColumnId(),
-
 			kanbanId: this.kanbanId(),
-
 			projectId: this.projectId(),
-
 			teamId: this.teamId(),
-
 			assignedUserIds,
 
 			...changes,
@@ -289,24 +354,8 @@ export class TaskModal {
 		})
 	}
 
-	getInitials(member: TeamMemberResponse | null | undefined): string {
-		if (!member) return '??'
+	protected readonly getInitials = getAssignmentInitials
 
-		const firstNameChar = member.name && member.name.charAt(0) ? member.name.charAt(0) : ''
-		const lastNameChar =
-			member.lastName && member.lastName.charAt(0) ? member.lastName.charAt(0) : ''
-
-		const initials = `${firstNameChar}${lastNameChar}`.trim().toUpperCase()
-
-		if (!initials) {
-			if (member.username && member.username.charAt(0))
-				return member.username.charAt(0).toUpperCase()
-			if (member.email && member.email.charAt(0)) return member.email.charAt(0).toUpperCase()
-			return '??'
-		}
-
-		return initials
-	}
 	//--------- Selects de tableros y estados
 	protected readonly priorities = [
 		{ label: 'Baja', value: 'BAJA' },
@@ -326,7 +375,24 @@ export class TaskModal {
 
 	protected readonly priorityToString = (v: string) => this.selectToString(v, this.priorities)
 
-	//--------- Logica para la fecha
+	//--------- Abrir modal de checklist
+	openAddChecklist() {
+		const currentTask = this.task()
+		if (!currentTask) return
+		this.checklistModalState.openForCreate(currentTask.id)
+	}
+
+	// MODAL DE ELIMINACIÓN CHECKLIST
+	readonly checklistDeleteCtrl = new DeleteDialogState<ChecklistDetailResponse>()
+
+	protected confirmDeleteChecklist() {
+		const c = this.checklistDeleteCtrl.item()
+		if (c) {
+			this.kanbanApi.deleteChecklist({ checklistId: c.id })
+			toast.success('Checklist eliminada')
+			this.checklistDeleteCtrl.close()
+		}
+	}
 
 	// Para el diseño de cartas
 	readonly radioCardClass = hlm(

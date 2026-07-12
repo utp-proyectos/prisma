@@ -13,5 +13,5 @@ export interface TaskDetailResponse {
 	columnId: string
 	milestoneId: string | null
 	assignments: TaskAssignmentDetailResponse[]
-	checklist: ChecklistDetailResponse[]
+	checklists: ChecklistDetailResponse[]
 }

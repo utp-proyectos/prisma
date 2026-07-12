@@ -28,13 +28,21 @@ export class ColumnTaskState {
 		this.columns.set(columns)
 	}
 
-	findTask(taskId: string): TaskDetailResponse | undefined {
-		for (const column of this.columns()) {
-			const task = column.tasks.find((t) => t.id === taskId)
-			if (task) return task
-		}
-		return undefined
+	findTask(id: string) {
+		return this.taskIndex().get(id)
 	}
+
+	readonly taskIndex = computed(() => {
+		const map = new Map<string, TaskDetailResponse>()
+
+		for (const column of this.columns()) {
+			for (const task of column.tasks) {
+				map.set(task.id, task)
+			}
+		}
+
+		return map
+	})
 
 	addTask(task: TaskDetailResponse) {
 		this.columns.update((cols) =>

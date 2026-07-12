@@ -3,12 +3,16 @@ import { KanbanApi } from './kanban-api'
 import { MilestoneState } from './milestone/milestone-state'
 import { Subscription } from 'rxjs'
 import { ColumnTaskState } from './column-task/column-task-state'
+import { ChecklistState } from './checklist/checklist-state'
+import { ChecklistItemState } from './checklist-item/checklist-item-state'
 
 @Injectable()
 export class KanbanRealtime {
 	private readonly api = inject(KanbanApi)
 	private readonly milestoneState = inject(MilestoneState)
 	private readonly columnTaskState = inject(ColumnTaskState)
+	private readonly checklistState = inject(ChecklistState)
+	private readonly checklistItemState = inject(ChecklistItemState)
 
 	private milestoneSub?: Subscription
 	private milestoneDetailSub?: Subscription
@@ -16,6 +20,8 @@ export class KanbanRealtime {
 	private taskSub?: Subscription
 	private columnReorderSub?: Subscription
 	private taskReorderSub?: Subscription
+	private checklistSub?: Subscription
+	private checklistItemSub?: Subscription
 
 	connect(teamId: string, projectId: string, kanbanId: string) {
 		this.connectMilestones(teamId, projectId, kanbanId)
@@ -24,6 +30,8 @@ export class KanbanRealtime {
 		this.connectTasks(teamId, projectId, kanbanId)
 		this.connectColumnReorder(teamId, projectId, kanbanId)
 		this.connectTaskReorder(teamId, projectId, kanbanId)
+		this.connectChecklists(teamId, projectId, kanbanId)
+		this.connectChecklistItems(teamId, projectId, kanbanId)
 	}
 
 	connectMilestones(teamId: string, projectId: string, kanbanId: string) {
@@ -108,6 +116,48 @@ export class KanbanRealtime {
 		})
 	}
 
+	private connectChecklists(teamId: string, projectId: string, kanbanId: string) {
+		this.checklistSub?.unsubscribe()
+
+		this.checklistSub = this.api.getChecklists(teamId, projectId, kanbanId).subscribe((event) => {
+			switch (event.action) {
+				case 'CREATE':
+					this.checklistState.addChecklist(event.payload)
+					break
+
+				case 'UPDATE':
+					this.checklistState.updateChecklist(event.payload)
+					break
+
+				case 'DELETE':
+					this.checklistState.removeChecklist(event.payload.id, event.payload.taskId)
+					break
+			}
+		})
+	}
+
+	private connectChecklistItems(teamId: string, projectId: string, kanbanId: string) {
+		this.checklistItemSub?.unsubscribe()
+
+		this.checklistItemSub = this.api
+			.getChecklistItems(teamId, projectId, kanbanId)
+			.subscribe((event) => {
+				switch (event.action) {
+					case 'CREATE':
+						this.checklistItemState.addItem(event.payload)
+						break
+
+					case 'UPDATE':
+						this.checklistItemState.updateItem(event.payload)
+						break
+
+					case 'DELETE':
+						this.checklistItemState.removeItem(event.payload.id, event.payload.checklistId)
+						break
+				}
+			})
+	}
+
 	connectColumnReorder(teamId: string, projectId: string, kanbanId: string) {
 		this.columnReorderSub?.unsubscribe()
 
@@ -139,5 +189,6 @@ export class KanbanRealtime {
 		this.taskSub?.unsubscribe()
 		this.columnReorderSub?.unsubscribe()
 		this.taskReorderSub?.unsubscribe()
+		this.checklistSub?.unsubscribe()
 	}
 }

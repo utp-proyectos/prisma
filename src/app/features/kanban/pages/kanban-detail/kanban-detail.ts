@@ -60,6 +60,9 @@ import { getAssignmentInitials } from '../../utils/string.utils'
 import { ColumnModalState } from '../../service/column-task/column-modal-state'
 import { TaskFilterService } from '../../service/column-task/task-filter-service'
 import { DeleteDialogState } from '@/shared/components/delete/DeleteDialogState'
+import { ChecklistState } from '../../service/checklist/checklist-state'
+import { KanbanDetailResponse } from '../../models/kanban-detail-response.model'
+import { ChecklistItemState } from '../../service/checklist-item/checklist-item-state'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -105,6 +108,8 @@ import { DeleteDialogState } from '@/shared/components/delete/DeleteDialogState'
 		MilestoneModalState,
 		ColumnModalState,
 		TaskFilterService,
+		ChecklistState,
+		ChecklistItemState,
 		provideIcons({
 			lucidePlus,
 			lucideSearch,
@@ -157,6 +162,8 @@ export class KanbanDetail implements OnDestroy {
 	readonly columnTaskState = inject(ColumnTaskState)
 	readonly columnTaskFacade = inject(ColumnTaskFacade)
 	readonly milestoneState = inject(MilestoneState)
+	readonly checklistState = inject(ChecklistState)
+	readonly checklistItemState = inject(ChecklistItemState)
 	readonly realtime = inject(KanbanRealtime)
 	readonly kanbanApi = inject(KanbanApi)
 	readonly teamApi = inject(TeamApi)
@@ -323,14 +330,39 @@ export class KanbanDetail implements OnDestroy {
 		}
 	}
 
+	normalizeKanban(data: KanbanDetailResponse) {
+		const checklistItems = data.columns.flatMap((column) =>
+			column.tasks.flatMap((task) => task.checklists.flatMap((checklist) => checklist.items)),
+		)
+
+		const checklists = data.columns.flatMap((column) =>
+			column.tasks.flatMap((task) =>
+				task.checklists.map((checklist) => ({
+					...checklist,
+					items: [],
+				})),
+			),
+		)
+
+		const columns = data.columns.map((column) => ({
+			...column,
+			tasks: column.tasks.map((task) => ({
+				...task,
+				checklists: [],
+			})),
+		}))
+
+		this.columnTaskState.setColumns(columns)
+		this.checklistState.setChecklists(checklists)
+		this.checklistItemState.setItems(checklistItems)
+		this.milestoneState.setMilestones(data.milestones)
+	}
+
 	constructor() {
 		effect(() => {
 			if (!this.kanbanResource.hasValue()) return
 
-			const data = this.kanbanResource.value()!.data
-
-			this.milestoneState.setMilestones(data.milestones)
-			this.columnTaskState.setColumns(data.columns)
+			this.normalizeKanban(this.kanbanResource.value()!.data)
 		})
 
 		effect(() => {

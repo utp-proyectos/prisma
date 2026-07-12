@@ -27,6 +27,18 @@ import {
 import { TaskDetailResponse } from '../models/task/task-detail-response.model'
 import { ReorderColumnsRequest, ReorderTasksRequest } from '../models/reorder.model'
 import { MilestoneDetailResponse } from '../models/milestone/milestone-detail-response.model'
+import { ChecklistDetailResponse } from '../models/checklist/checklist-detail-response.model'
+import {
+	CreateChecklistRequest,
+	DeleteChecklistRequest,
+	UpdateChecklistRequest,
+} from '../models/checklist/checklist-request.model'
+import {
+	CreateChecklistItemRequest,
+	DeleteChecklistItemRequest,
+	UpdateChecklistItemRequest,
+} from '../models/checklist-item/checklist-item-request.model'
+import { ChecklistItemResponse } from '../models/checklist-item/checklist-item-response.model'
 
 @Injectable()
 export class KanbanApi {
@@ -145,6 +157,53 @@ export class KanbanApi {
 		return this.ws
 			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/tasks`)
 			.pipe(map((res) => JSON.parse(res.body) as WsResponse<TaskDetailResponse>))
+	}
+
+	// CHECKLIST
+	createChecklist(checklist: CreateChecklistRequest) {
+		this.ws.publish(`/app/checklist.create`, checklist)
+	}
+
+	updateChecklist(checklist: UpdateChecklistRequest) {
+		this.ws.publish(`/app/checklist.update`, checklist)
+	}
+
+	deleteChecklist(checklist: DeleteChecklistRequest) {
+		this.ws.publish(`/app/checklist.delete`, checklist)
+	}
+
+	getChecklists(
+		teamId: string,
+		projectId: string,
+		kanbanId: string,
+	): Observable<WsResponse<ChecklistDetailResponse>> {
+		return this.ws
+			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/checklists`)
+			.pipe(map((res) => JSON.parse(res.body) as WsResponse<ChecklistDetailResponse>))
+	}
+
+	// CHECKLIST ITEMS
+	createChecklistItem(item: CreateChecklistItemRequest) {
+		console.log('createChecklistItem', item)
+		this.ws.publish(`/app/checklistItem.create`, item)
+	}
+
+	updateChecklistItem(item: UpdateChecklistItemRequest) {
+		this.ws.publish(`/app/checklistItem.update`, item)
+	}
+
+	deleteChecklistItem(item: DeleteChecklistItemRequest) {
+		this.ws.publish(`/app/checklistItem.delete`, item)
+	}
+
+	getChecklistItems(
+		teamId: string,
+		projectId: string,
+		kanbanId: string,
+	): Observable<WsResponse<ChecklistItemResponse>> {
+		return this.ws
+			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/checklistItems`)
+			.pipe(map((res) => JSON.parse(res.body) as WsResponse<ChecklistItemResponse>))
 	}
 
 	// Metodos para reordenar columnas y tareas

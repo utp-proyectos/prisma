@@ -2,164 +2,203 @@
 	<hlm-dialog-content *hlmDialogPortal="let ctx" class="w-[95vw] max-w-[95vw] sm:max-w-5xl!">
 
 		<div class="no-scrollbar -mx-4 max-h-[75vh] overflow-y-auto px-4 mt-4">
-
-			<!-- COLUMNA IZQUIERDA -->
 			<div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 mt-4">
+
+				<!-- COLUMNA IZQUIERDA -->
 				<div class="flex flex-col gap-5">
 
 					<div>
 						@if (editingField() !== 'title') {
-
 						<h1
 							class="text-2xl text-primary font-semibold cursor-pointer rounded-md px-1 py-1 hover:bg-secondary/40 transition-colors"
 							(click)="startEditing('title')">
 							{{ title() }}
 						</h1>
-
 						} @else {
-
 						<hlm-field-group>
 							<hlm-field>
 								<input #titleInput hlmInput class="text-2xl font-semibold" [value]="title()">
 							</hlm-field>
-
 							<div class="flex gap-2">
-								<button hlmBtn size="sm" (click)="saveTitle(titleInput.value)">
-									Guardar
-								</button>
-
-								<button hlmBtn variant="ghost" size="sm" (click)="stopEditing()">
-									Cancelar
-								</button>
+								<button hlmBtn size="sm" (click)="saveTitle(titleInput.value)">Guardar</button>
+								<button hlmBtn variant="ghost" size="sm" (click)="stopEditing()">Cancelar</button>
 							</div>
 						</hlm-field-group>
-
 						}
 					</div>
 
 					<div>
-						<label hlmFieldLabel class="mb-2">
-							Descripción
-						</label>
-
+						<label hlmFieldLabel class="mb-2">Descripción</label>
 						@if (editingField() !== 'description') {
-
 						<div (click)="startEditing('description')"
 							class="min-h-25 rounded-md bg-secondary/30 hover:bg-secondary/60 p-3 cursor-pointer border border-transparent hover:border-border whitespace-pre-wrap transition-colors">
-
 							@if(description()) {
-
 							{{ description() }}
-
 							} @else {
-
-							<span class="italic text-muted-foreground">
-								Añadir una descripción más detallada...
-							</span>
-
+							<span class="italic text-muted-foreground">Añadir una descripción más detallada...</span>
 							}
-
 						</div>
-
 						} @else {
-
 						<hlm-field-group>
-
 							<hlm-field>
 								<textarea #descInput hlmInput class="min-h-25 resize-y" [value]="description()"></textarea>
 							</hlm-field>
-
 							<div class="flex gap-2">
-								<button hlmBtn size="sm" (click)="saveDescription(descInput.value)">
-									Guardar
-								</button>
-
-								<button hlmBtn variant="ghost" size="sm" (click)="stopEditing()">
-									Cancelar
-								</button>
+								<button hlmBtn size="sm" (click)="saveDescription(descInput.value)">Guardar</button>
+								<button hlmBtn variant="ghost" size="sm" (click)="stopEditing()">Cancelar</button>
 							</div>
-
 						</hlm-field-group>
-
 						}
 					</div>
 
+					<!-- Checklist -->
+					<div class="flex flex-col gap-4 mt-2 mb-2">
+						<div class="flex items-center justify-between">
+							<h4 class="font-medium">Checklist</h4>
+						</div>
 
-					<div class="flex flex-col gap-3">
-						<h4 class="font-medium"> Checklist </h4>
-						<button hlmBtn size="sm" class="self-start">
+						@if(checklists().length === 0){
+
+						<button hlmBtn class="self-start gap-2" (click)="openAddChecklist()">
 							<ng-icon name="lucidePlus" />
 							Agregar checklist
 						</button>
+
+						} @else {
+						@for(checklist of checklists(); track checklist.id){
+
+						@let items = getChecklistItems(checklist.id);
+						@let progress = checklistProgress(checklist.id);
+
+						<div class="rounded-xl border bg-card p-5 flex flex-col gap-5"
+							[class]="priorityConfig[checklist.priority].border">
+							<div class="flex items-center justify-between gap-4">
+								<div class="flex items-center gap-4 min-w-0">
+									<h5 class="font-semibold truncate">{{ checklist.title }}</h5>
+									<span class="text-sm text-muted-foreground">
+										{{progress.completed}} de {{progress.total}}
+									</span>
+								</div>
+								<div class="flex items-center gap-2">
+									<span hlmBadge [class]="priorityConfig[checklist.priority].class">
+										{{ priorityConfig[checklist.priority].label }}
+									</span>
+									<button hlmBtn variant="ghost" size="icon-sm" [hlmDropdownMenuTrigger]="checklistMenu">
+										<ng-icon name="lucideMoreHorizontal" />
+									</button>
+								</div>
+							</div>
+
+							<ng-template #checklistMenu>
+								<hlm-dropdown-menu>
+									<button hlmDropdownMenuItem (click)="checklistModalState.openForEdit(checklist)">
+										<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
+										<span>Editar</span>
+									</button>
+									<hlm-dropdown-menu-separator />
+									<button hlmDropdownMenuItem variant="destructive" (click)="checklistDeleteCtrl.open(checklist)">
+										<ng-icon name="lucideTrash" class="mr-2 h-4 w-4 text-danger" />
+										<span>Eliminar</span>
+									</button>
+								</hlm-dropdown-menu>
+							</ng-template>
+
+							<div class="flex flex-col gap-2">
+								<div class="flex justify-between text-xs text-muted-foreground">
+									<span>Progreso</span>
+									<span>{{progress.percentage}}%</span>
+								</div>
+
+								<hlm-progress [value]="progress.percentage">
+									<hlm-progress-indicator />
+								</hlm-progress>
+
+							</div>
+
+							<!-- Items -->
+							@if(items.length === 0){
+
+							<button hlmBtn variant="outline" class="self-start gap-2"
+								(click)="checklistItemModalState.openForCreate(checklist.id)">
+								<ng-icon name="lucidePlus" />
+								Agregar elemento
+							</button>
+
+							}@else{
+
+							<div class="flex flex-col gap-3">
+
+								@for(item of items; track item.id){
+								<label class="flex items-center gap-3 cursor-pointer">
+									<hlm-checkbox [checked]="item.completedItem" (checkedChange)="toggleChecklistItem(item)" />
+
+									<span [class.line-through]="item.completedItem" [class.text-muted-foreground]="item.completedItem">
+										{{item.content}}
+									</span>
+								</label>
+								}
+
+							</div>
+
+							<button hlmBtn variant="outline" class="self-start gap-2"
+								(click)="checklistItemModalState.openForCreate(checklist.id)">
+								<ng-icon name="lucidePlus" />
+								Agregar elemento
+							</button>
+
+							}
+						</div>
+						}
+
+						<button hlmBtn class="self-start gap-2" (click)="openAddChecklist()">
+							<ng-icon name="lucidePlus" />
+							Agregar checklist
+						</button>
+						}
 					</div>
+
 				</div>
 
 				<!-- COLUMNA DERECHA -->
 				<div class="flex flex-col gap-5">
 					<div>
-						<h4 class="font-medium mb-3">
-							Detalles
-						</h4>
+						<h4 class="font-medium mb-3">Detalles</h4>
 					</div>
 
 					<hlm-field-group>
 						<hlm-field orientation="horizontal" class="flex items-center gap-3 border px-4 py-2 rounded-lg">
 							<hlm-field-content>
 								<label hlmFieldLabel for="two-factor">Hacer grupal</label>
-								<hlm-field-description>
-									Podras ver el avance de los miembros
-								</hlm-field-description>
+								<hlm-field-description>Podras ver el avance de los miembros</hlm-field-description>
 							</hlm-field-content>
 							<hlm-switch [checked]="isGroupTask()" (checkedChange)="changeGroupTask($event)" />
 						</hlm-field>
 
 						<hlm-field>
-							<label hlmFieldLabel>
-								Asignados
-							</label>
-
+							<label hlmFieldLabel>Asignados</label>
 							<div class="flex items-center gap-2 flex-wrap">
-
-								<!-- Miembros -->
 								@for(member of visibleMembers(); track member.id){
-
 								<button hlmBtn variant="outline" size="icon-sm" [hlmDropdownMenuTrigger]="memberMenu">
 									{{ getInitials(member) }}
 								</button>
-
 								<ng-template #memberMenu>
 									<hlm-dropdown-menu>
-										<div class="px-2 py-1 text-sm font-medium">
-											{{ member.name }} {{ member.lastName }}
-										</div>
-
+										<div class="px-2 py-1 text-sm font-medium">{{ member.name }} {{ member.lastName }}</div>
 										<hlm-dropdown-menu-separator />
-
-										<button hlmDropdownMenuItem (click)="removeMember(member)">
-											Quitar de la tarea
-										</button>
-
+										<button hlmDropdownMenuItem (click)="removeMember(member)">Quitar de la tarea</button>
 									</hlm-dropdown-menu>
-
 								</ng-template>
-
 								}
 
-								<!-- +N -->
 								@if(hiddenMembers().length){
-
 								<button hlmBtn variant="secondary" size="icon-sm" [hlmDropdownMenuTrigger]="allMembersMenu">
 									+{{ hiddenMembers().length }}
 								</button>
-
 								}
 
 								<ng-template #allMembersMenu>
-
 									<hlm-dropdown-menu>
-
 										@for(member of hiddenMembers(); track member.id){
-
 										<button hlmDropdownMenuItem (click)="removeMember(member)">
 											<div class="flex items-center justify-between w-full">
 												<div class="flex items-center gap-3">
@@ -168,48 +207,34 @@
 													</div>
 													{{ member.name }} {{ member.lastName }}
 												</div>
-
 												<span class="text-destructive text-xs ml-2"> Quitar </span>
 											</div>
 										</button>
-
 										}
-
 									</hlm-dropdown-menu>
 								</ng-template>
 
-								<!-- Botón agregar -->
 								<button hlmBtn variant="outline" size="icon-sm" [hlmDropdownMenuTrigger]="assignMenu">
-
 									<ng-icon name="lucidePlus" />
-
 								</button>
 
 								<ng-template #assignMenu>
-
 									<hlm-dropdown-menu class="w-72">
-
 										<div class="p-2">
 											<input hlmInput class="w-full" placeholder="Buscar miembro..."
 												(input)="memberSearch.set($any($event.target).value)">
 										</div>
-
 										<hlm-dropdown-menu-separator />
-
 										@for(member of filteredMembers(); track member.id){
-
 										<button hlmDropdownMenuItem (click)="assignMember(member)">
 											<div class="flex items-center gap-3">
 												<div class="size-8 rounded-full bg-secondary flex items-center justify-center">
 													{{ getInitials(member) }}
 												</div>
-
 												<span> {{ member.name }} </span>
 											</div>
 										</button>
-
 										}
-
 									</hlm-dropdown-menu>
 								</ng-template>
 							</div>
@@ -217,19 +242,15 @@
 
 						<hlm-field>
 							<label hlmFieldLabel>Columnas</label>
-
 							<hlm-select [value]="selectedColumnId()" (valueChange)="changeColumn($event)"
 								[itemToString]="columnToString">
 								<hlm-select-trigger class="w-full">
 									<hlm-select-value placeholder="Seleccionar columna" />
 								</hlm-select-trigger>
-
 								<hlm-select-content *hlmSelectPortal>
 									<hlm-select-group>
 										@for (column of columns(); track column.id) {
-										<hlm-select-item [value]="column.id">
-											{{ column.title }}
-										</hlm-select-item>
+										<hlm-select-item [value]="column.id">{{ column.title }}</hlm-select-item>
 										}
 									</hlm-select-group>
 								</hlm-select-content>
@@ -237,43 +258,24 @@
 						</hlm-field>
 
 						<hlm-field>
-
 							<label hlmFieldLabel>Tipo de fecha</label>
-
 							<hlm-radio-group class="grid grid-cols-3 gap-3 mt-2" [value]="dateType()"
 								(valueChange)="changeDateType($any($event))">
-
 								<label hlmLabel [class]="radioCardClass">
-									<hlm-radio value="none">
-										<ng-icon name="lucideCalendarX" class="mb-3 mr-2" />
-									</hlm-radio>
-									Sin fecha
+									<hlm-radio value="none"><ng-icon name="lucideCalendarX" class="mb-3 mr-2" /></hlm-radio>Sin fecha
 								</label>
-
 								<label hlmLabel [class]="radioCardClass">
-									<hlm-radio value="manual">
-										<ng-icon name="lucideCalendar" class="mb-3 mr-2" />
-									</hlm-radio>
-									Fecha manual
+									<hlm-radio value="manual"><ng-icon name="lucideCalendar" class="mb-3 mr-2" /></hlm-radio>Fecha manual
 								</label>
-
 								<label hlmLabel [class]="radioCardClass">
-									<hlm-radio value="milestone">
-										<ng-icon name="lucideFlag" class="mb-3 mr-2" />
-									</hlm-radio>
-									Por hito
+									<hlm-radio value="milestone"><ng-icon name="lucideFlag" class="mb-3 mr-2" /></hlm-radio>Por hito
 								</label>
-
 							</hlm-radio-group>
-
 						</hlm-field>
 
 						@if(dateType() === 'manual') {
 						<hlm-field class="w-full mt-4">
-							<label hlmFieldLabel for="date">
-								Fecha límite
-							</label>
-
+							<label hlmFieldLabel for="date">Fecha límite</label>
 							<div class="relative w-full">
 								<input hlmInput type="date" id="date" class="w-full justify-between" [value]="deadline() ?? ''"
 									(change)="changeManualDeadline($any($event.target).value)" />
@@ -282,49 +284,34 @@
 						}
 
 						@if(dateType() === 'milestone') {
-
 						<hlm-field class="mt-4">
-							<label hlmFieldLabel>
-								Hito
-							</label>
-
+							<label hlmFieldLabel>Hito</label>
 							<hlm-select [value]="selectedMilestoneId()" (valueChange)="changeMilestone($event)"
 								[itemToString]="milestoneToString">
 								<hlm-select-trigger class="w-full">
 									<hlm-select-value placeholder="Selecciona un hito" />
 								</hlm-select-trigger>
-
 								<hlm-select-content *hlmSelectPortal>
-
 									<hlm-select-group>
 										@for(milestone of milestones(); track milestone.id){
-
-										<hlm-select-item [value]="milestone.id">
-											{{ milestone.title }}
-										</hlm-select-item>
-
+										<hlm-select-item [value]="milestone.id">{{ milestone.title }}</hlm-select-item>
 										}
 									</hlm-select-group>
 								</hlm-select-content>
 							</hlm-select>
 						</hlm-field>
-
 						}
 
 						<hlm-field>
 							<label hlmFieldLabel>Prioridad</label>
-
 							<hlm-select [value]="priority()" (valueChange)="changePriority($event)" [itemToString]="priorityToString">
 								<hlm-select-trigger class="w-full">
 									<hlm-select-value placeholder="Pendiente" />
 								</hlm-select-trigger>
-
 								<hlm-select-content *hlmSelectPortal>
 									<hlm-select-group>
 										@for (priority of priorities; track priority.value) {
-										<hlm-select-item [value]="priority.value">
-											{{ priority.label }}
-										</hlm-select-item>
+										<hlm-select-item [value]="priority.value">{{ priority.label }}</hlm-select-item>
 										}
 									</hlm-select-group>
 								</hlm-select-content>
@@ -336,7 +323,14 @@
 			</div>
 		</div>
 
-
 	</hlm-dialog-content>
-
 </hlm-dialog>
+
+<app-checklist-modal [kanbanId]="kanbanId()" [projectId]="projectId()" [teamId]="teamId()"></app-checklist-modal>
+
+<app-delete-modal [state]="checklistDeleteCtrl.state()"
+	[title]="'¿Eliminar la checklist ' + (checklistDeleteCtrl.item()?.title || '') + '?'"
+	(stateChanged)="$event === 'closed' ? checklistDeleteCtrl.close() : null" (confirm)="confirmDeleteChecklist()" />
+
+<app-checklist-item-modal [kanbanId]="kanbanId()" [projectId]="projectId()" [teamId]="teamId()">
+</app-checklist-item-modal>
