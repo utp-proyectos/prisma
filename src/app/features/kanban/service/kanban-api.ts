@@ -7,19 +7,6 @@ import { CreateKanbanRequest, UpdateKanbanRequest } from '../models/kanban-reque
 import { map, Observable } from 'rxjs'
 import { WsResponse } from '@/core/models/ws-response'
 import { KanbanDetailResponse } from '../models/kanban-detail-response.model'
-import {
-	CreateColumnKanbanRequest,
-	DeleteColumnKanbanRequest,
-	UpdateColumnKanbanRequest,
-} from '../models/column-kanban/column-kanban-request.model'
-import { ColumnKanbanDetailResponse } from '../models/column-kanban/column-kanban-detail-response.model'
-import {
-	CreateTaskRequest,
-	DeleteTaskRequest,
-	UpdateTaskRequest,
-} from '../models/task/task-request.model'
-import { TaskDetailResponse } from '../models/task/task-detail-response.model'
-import { ReorderColumnsRequest, ReorderTasksRequest } from '../models/reorder.model'
 
 @Injectable()
 export class KanbanApi {
@@ -54,80 +41,5 @@ export class KanbanApi {
 		return this.ws
 			.watch(`/topic/${teamId}/${projectId}/kanbans`)
 			.pipe(map((res) => JSON.parse(res.body) as WsResponse<KanbanResponse>))
-	}
-
-	// COLUMNS
-	createColumn(columnKanban: CreateColumnKanbanRequest) {
-		this.ws.publish(`/app/columnKanban.create`, columnKanban)
-	}
-
-	updateColumn(columnKanban: UpdateColumnKanbanRequest) {
-		this.ws.publish(`/app/columnKanban.update`, columnKanban)
-	}
-
-	deleteColumn(columnKanban: DeleteColumnKanbanRequest) {
-		this.ws.publish(`/app/columnKanban.delete`, columnKanban)
-	}
-
-	getColumnsKanban(
-		teamId: string,
-		projectId: string,
-		kanbanId: string,
-	): Observable<WsResponse<ColumnKanbanDetailResponse>> {
-		return this.ws
-			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/columns`)
-			.pipe(map((res) => JSON.parse(res.body) as WsResponse<ColumnKanbanDetailResponse>))
-	}
-
-	// TASKS
-	createTask(task: CreateTaskRequest) {
-		this.ws.publish(`/app/task.create`, task)
-	}
-
-	updateTask(task: UpdateTaskRequest) {
-		this.ws.publish(`/app/task.update`, task)
-	}
-
-	deleteTask(task: DeleteTaskRequest) {
-		this.ws.publish(`/app/task.delete`, task)
-	}
-
-	getTasks(
-		teamId: string,
-		projectId: string,
-		kanbanId: string,
-	): Observable<WsResponse<TaskDetailResponse>> {
-		return this.ws
-			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/tasks`)
-			.pipe(map((res) => JSON.parse(res.body) as WsResponse<TaskDetailResponse>))
-	}
-
-	// Metodos para reordenar columnas y tareas
-	getColumnsReorder(
-		teamId: string,
-		projectId: string,
-		kanbanId: string,
-	): Observable<WsResponse<ColumnKanbanDetailResponse[]>> {
-		return this.ws
-			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/columns/reorder`)
-			.pipe(map((res) => JSON.parse(res.body) as WsResponse<ColumnKanbanDetailResponse[]>))
-	}
-
-	getTasksReorder(
-		teamId: string,
-		projectId: string,
-		kanbanId: string,
-	): Observable<WsResponse<ColumnKanbanDetailResponse[]>> {
-		return this.ws
-			.watch(`/topic/${teamId}/${projectId}/${kanbanId}/tasks/reorder`)
-			.pipe(map((res) => JSON.parse(res.body) as WsResponse<ColumnKanbanDetailResponse[]>))
-	}
-
-	reorderColumns(payload: ReorderColumnsRequest) {
-		this.ws.publish('/app/columnKanban.reorder', payload)
-	}
-
-	reorderTasks(payload: ReorderTasksRequest) {
-		this.ws.publish('/app/task.reorder', payload)
 	}
 }

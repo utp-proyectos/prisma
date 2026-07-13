@@ -1,14 +1,18 @@
 import { inject, Injectable } from '@angular/core'
 import { ColumnTaskState } from './column-task-state'
-import { KanbanApi } from '../kanban-api'
+import { KanbanApi } from '../../service/kanban-api'
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
 import { TaskDetailResponse } from '../../models/task/task-detail-response.model'
 import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
+import { TaskApi } from '../task/task.api'
+import { ColumnApi } from '../column/column.api'
 
 @Injectable()
 export class ColumnTaskFacade {
 	private columnTaskState = inject(ColumnTaskState)
 	private kanbanApi = inject(KanbanApi)
+	private columnApi = inject(ColumnApi)
+	private taskApi = inject(TaskApi)
 
 	dropTask(
 		event: CdkDragDrop<TaskDetailResponse[]>,
@@ -43,7 +47,7 @@ export class ColumnTaskFacade {
 		const movedTask = targetCol.tasks[event.currentIndex]
 		if (!movedTask) return
 
-		this.kanbanApi.reorderTasks({
+		this.taskApi.reorderTasks({
 			taskId: movedTask.id,
 			targetColumnId: targetCol.id,
 			targetTasks: targetTasksPayload,
@@ -73,7 +77,7 @@ export class ColumnTaskFacade {
 			position: index,
 		}))
 
-		this.kanbanApi.reorderColumns({
+		this.columnApi.reorderColumns({
 			columns: payload,
 			kanbanId: ctx.kanbanId,
 			projectId: ctx.projectId,
@@ -85,7 +89,7 @@ export class ColumnTaskFacade {
 		column: ColumnKanbanDetailResponse,
 		params: { teamId: string; projectId: string; kanbanId: string },
 	) {
-		this.kanbanApi.createTask({
+		this.taskApi.createTask({
 			title: 'Nueva tarea',
 			description: '',
 			deadline: '',

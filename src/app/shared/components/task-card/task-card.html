@@ -16,7 +16,7 @@
 
 		<ng-template #menu>
 			<hlm-dropdown-menu>
-				<button hlmDropdownMenuItem (click)="taskModalState.openForEdit(task())">
+				<button hlmDropdownMenuItem (click)="taskFacade.open(task())">
 					<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
 					<span>Editar</span>
 				</button>

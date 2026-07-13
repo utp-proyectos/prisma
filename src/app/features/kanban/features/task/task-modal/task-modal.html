@@ -1,4 +1,4 @@
-<hlm-dialog [state]="taskModalState.dialogState()" (closed)="taskModalState.close()">
+<hlm-dialog [state]="taskFacade.dialogState()" (closed)="taskFacade.close()">
 	<hlm-dialog-content *hlmDialogPortal="let ctx" class="w-[95vw] max-w-[95vw] sm:max-w-5xl!">
 
 		<div class="no-scrollbar -mx-4 max-h-[75vh] overflow-y-auto px-4 mt-4">

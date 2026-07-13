@@ -23,27 +23,27 @@ import { HlmSeparatorImports } from '@spartan-ng/helm/separator'
 import { HlmSwitch } from '@spartan-ng/helm/switch'
 import { hlm } from '@spartan-ng/helm/utils'
 import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker'
-import { KanbanApi } from '../../service/kanban-api'
-import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
-import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
+import { KanbanApi } from '../../../service/kanban-api'
+import { ColumnKanbanDetailResponse } from '../../../models/column-kanban/column-kanban-detail-response.model'
+import { MilestoneSummaryResponse } from '../../../models/milestone/milestone-summary-response.model'
 import { TeamMemberResponse } from '@/features/home/models/team-member-response'
-import { UpdateTaskRequest } from '../../models/task/task-request.model'
-import { TaskModalState } from '../../service/column-task/task-modal-state'
-import { getAssignmentInitials } from '../../utils/string.utils'
-import { ChecklistModalState } from '../../features/checklist/checklist-modal/checklist-modal.state'
-import { ChecklistModalComponent } from '../../features/checklist/checklist-modal/checklist-modal'
+import { UpdateTaskRequest } from '../../../models/task/task-request.model'
+import { getAssignmentInitials } from '../../../utils/string.utils'
+import { ChecklistModalComponent } from '../../checklist/checklist-modal/checklist-modal'
 import { HlmBadge } from '@spartan-ng/helm/badge'
-import { ChecklistState } from '../../features/checklist/checklist.state'
-import { ChecklistDetailResponse } from '../../models/checklist/checklist-detail-response.model'
+import { ChecklistDetailResponse } from '../../../models/checklist/checklist-detail-response.model'
 import { DeleteDialogState } from '@/shared/components/delete/DeleteDialogState'
 import { toast } from '@spartan-ng/brain/sonner'
 import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComponent'
-import { ChecklistItemModalComponent } from '../../features/checklist-item/checklist-item-modal/checklist-item-modal'
+import { ChecklistItemModalComponent } from '../../checklist-item/checklist-item-modal/checklist-item-modal'
 import { HlmProgress, HlmProgressIndicator } from '@spartan-ng/helm/progress'
 import { HlmCheckbox } from '@spartan-ng/helm/checkbox'
-import { ChecklistItemResponse } from '../../models/checklist-item/checklist-item-response.model'
-import { ChecklistItemFacade } from '../../features/checklist-item/checklist-item.facade'
-import { ChecklistFacade } from '../../features/checklist/checklist.facade'
+import { ChecklistItemResponse } from '../../../models/checklist-item/checklist-item-response.model'
+import { ChecklistItemFacade } from '../../checklist-item/checklist-item.facade'
+import { ChecklistFacade } from '../../checklist/checklist.facade'
+import { TaskModalState } from './task-modal-state'
+import { TaskApi } from '../task.api'
+import { TaskFacade } from '../task.facade'
 
 type DateType = 'none' | 'manual' | 'milestone'
 
@@ -97,13 +97,14 @@ export class TaskModal {
 	kanbanId = input.required<string>()
 
 	// Conexion bd
-	kanbanApi = inject(KanbanApi)
-	taskModalState = inject(TaskModalState)
-	readonly task = this.taskModalState.task
+	taskApi = inject(TaskApi)
 
 	// FACADES
+	readonly taskFacade = inject(TaskFacade)
 	readonly checklistFacade = inject(ChecklistFacade)
 	readonly checklistItemFacade = inject(ChecklistItemFacade)
+
+	readonly task = this.taskFacade.task
 
 	readonly checklists = computed(() => {
 		const task = this.task()
@@ -151,7 +152,7 @@ export class TaskModal {
 
 		const assignedUserIds = this.assignedMembers().map((m) => m.id)
 
-		this.kanbanApi.updateTask({
+		this.taskApi.updateTask({
 			id: task.id,
 			title: this.title(),
 			description: this.description(),

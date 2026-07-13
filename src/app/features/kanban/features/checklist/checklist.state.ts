@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core'
+import { computed, Injectable, signal } from '@angular/core'
 import { ChecklistDetailResponse } from '../../models/checklist/checklist-detail-response.model'
 
 @Injectable()

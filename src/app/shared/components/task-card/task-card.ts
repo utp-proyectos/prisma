@@ -6,7 +6,7 @@ import { TaskDetailResponse } from '@/features/kanban/models/task/task-detail-re
 import { getAssignmentInitials } from '@/features/kanban/utils/string.utils'
 import { HlmAvatarGroup, HlmAvatar, HlmAvatarGroupCount } from '@spartan-ng/helm/avatar'
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu'
-import { TaskModalState } from '@/features/kanban/service/column-task/task-modal-state'
+import { TaskFacade } from '@/features/kanban/features/task/task.facade'
 
 @Component({
 	selector: 'app-task-card',
@@ -36,7 +36,7 @@ export class TaskCardComponent {
 	task = input.required<TaskDetailResponse>()
 	opened = output<TaskDetailResponse>()
 
-	taskModalState = inject(TaskModalState)
+	taskFacade = inject(TaskFacade)
 
 	protected onCardClick(event: MouseEvent) {
 		const target = event.target as HTMLElement

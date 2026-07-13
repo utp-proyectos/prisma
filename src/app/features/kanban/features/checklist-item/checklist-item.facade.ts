@@ -91,6 +91,4 @@ export class ChecklistItemFacade {
 	initialize(items: ChecklistItemResponse[]) {
 		this.state.setItems(items)
 	}
-
-	constructor() {}
 }

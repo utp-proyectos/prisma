@@ -1,8 +1,8 @@
+import { ColumnKanbanDetailResponse } from '@/features/kanban/models/column-kanban/column-kanban-detail-response.model'
+import { MilestoneSummaryResponse } from '@/features/kanban/models/milestone/milestone-summary-response.model'
+import { TaskDetailResponse } from '@/features/kanban/models/task/task-detail-response.model'
 import { computed, Injectable, signal } from '@angular/core'
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
-import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
-import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
-import { TaskDetailResponse } from '../../models/task/task-detail-response.model'
 
 export interface TaskModalStateStructure {
 	opened: BrnDialogState

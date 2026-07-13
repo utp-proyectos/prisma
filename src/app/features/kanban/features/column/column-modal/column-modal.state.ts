@@ -1,6 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core'
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
-import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
+import { ColumnKanbanDetailResponse } from '../../../models/column-kanban/column-kanban-detail-response.model'
 
 export type ColumnModalMode = 'CREATE' | 'EDIT'
 

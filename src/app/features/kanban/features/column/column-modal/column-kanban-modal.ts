@@ -1,14 +1,15 @@
 import { Component, effect, inject, input, output, signal } from '@angular/core'
-import { KanbanApi } from '../../service/kanban-api'
+import { KanbanApi } from '../../../service/kanban-api'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmInputImports } from '@spartan-ng/helm/input'
 import { HlmFieldImports } from '@spartan-ng/helm/field'
 import { HlmDialogImports } from '@spartan-ng/helm/dialog'
 import { disabled, form, FormField, FormRoot, minLength, required } from '@angular/forms/signals'
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
-import { CreateColumnKanbanRequest } from '../../models/column-kanban/column-kanban-request.model'
+import { CreateColumnKanbanRequest } from '../../../models/column-kanban/column-kanban-request.model'
 import { toast } from '@spartan-ng/brain/sonner'
-import { ColumnModalState } from '../../service/column-task/column-modal-state'
+import { ColumnModalState } from './column-modal.state'
+import { ColumnFacade } from '../column.facade'
 
 @Component({
 	selector: 'app-column-kanban-modal',
@@ -21,7 +22,6 @@ import { ColumnModalState } from '../../service/column-task/column-modal-state'
 		FormField,
 		FormRoot,
 	],
-	providers: [KanbanApi],
 	templateUrl: './column-kanban-modal.html',
 })
 export class ColumnKanbanModalComponent {
@@ -32,8 +32,8 @@ export class ColumnKanbanModalComponent {
 
 	kanbanApi = inject(KanbanApi)
 
-	// Estado del modal columna
-	readonly columnKanbanModalState = inject(ColumnModalState)
+	// FACADE
+	readonly columnFacade = inject(ColumnFacade)
 
 	columnKanbanModel = signal<Omit<CreateColumnKanbanRequest, 'kanbanId'>>({
 		title: '',
@@ -49,23 +49,7 @@ export class ColumnKanbanModalComponent {
 		{
 			submission: {
 				action: async (data) => {
-					const values = data().value()
-					const currentColumn = this.columnKanbanModalState.column()
-
-					if (this.columnKanbanModalState.isEditMode()) {
-						this.kanbanApi.updateColumn({
-							columnId: currentColumn!.id,
-							...values,
-						})
-						toast.success('Columna modificada')
-					} else {
-						this.kanbanApi.createColumn({
-							kanbanId: this.kanbanId(),
-							...values,
-						})
-						toast.success('Columna creada')
-					}
-					this.columnKanbanModalState.close()
+					this.columnFacade.save(data().value(), this.kanbanId())
 				},
 			},
 		},
@@ -73,10 +57,10 @@ export class ColumnKanbanModalComponent {
 
 	constructor() {
 		effect(() => {
-			if (!this.columnKanbanModalState.dialogState()) return
+			if (!this.columnFacade.columnDialogState()) return
 
-			if (this.columnKanbanModalState.isEditMode()) {
-				const column = this.columnKanbanModalState.column()
+			if (this.columnFacade.isEditMode()) {
+				const column = this.columnFacade.column()
 
 				if (!column) return
 

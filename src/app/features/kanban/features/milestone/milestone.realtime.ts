@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core'
 import { MilestoneApi } from './milestone.api'
 import { MilestoneState } from './milestone.state'
-import { ColumnTaskState } from '../../service/column-task/column-task-state'
+import { ColumnTaskState } from '../column-task/column-task-state'
 import { Subscription } from 'rxjs'
 
 @Injectable()

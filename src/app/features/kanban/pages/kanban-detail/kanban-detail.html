@@ -246,7 +246,7 @@
 
 										<ng-template #menuDetail>
 											<hlm-dropdown-menu>
-												<button hlmDropdownMenuItem (click)="openEditTask(task)">
+												<button hlmDropdownMenuItem (click)="taskFacade.open(task)">
 													<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
 													<span>Editar</span>
 												</button>
@@ -325,7 +325,7 @@
 								</button>
 
 								<ng-template #columnMenu> <hlm-dropdown-menu> <button hlmDropdownMenuItem
-											(click)="columnModalState.openForEdit(column)"> <ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
+											(click)="columnFacade.openEdit(column)"> <ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
 											<span>Editar</span> </button> <hlm-dropdown-menu-separator /> <button hlmDropdownMenuItem
 											variant="destructive" (click)="columnDeleteCtrl.open(column)"> <ng-icon name="lucideTrash"
 												class="mr-2 h-4 w-4 text-danger" /> <span>Eliminar</span> </button> </hlm-dropdown-menu>
@@ -353,7 +353,7 @@
 
 									@if(filterService.matches(task)) {
 									<div cdkDrag [cdkDragData]="task" class="w-65">
-										<app-task-card [task]="task" (opened)="openEditTask($event)"
+										<app-task-card [task]="task" (opened)="taskFacade.open($event)"
 											(delete)="taskDeleteCtrl.open(task)"></app-task-card>
 									</div>
 									}
@@ -376,7 +376,7 @@
 						}
 
 						<div class="w-72 shrink-0">
-							<button hlmBtn class="w-full" (click)="columnModalState.openForCreate()">
+							<button hlmBtn class="w-full" (click)="columnFacade.openCreate()">
 								<ng-icon name="lucidePlus" />
 								Nueva columna
 							</button>
