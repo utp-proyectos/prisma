@@ -1,5 +1,4 @@
 import { Component, effect, inject, input, signal } from '@angular/core'
-import { KanbanApi } from '../../service/kanban-api'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmInputImports } from '@spartan-ng/helm/input'
 import { HlmFieldImports } from '@spartan-ng/helm/field'
@@ -7,9 +6,8 @@ import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker'
 import { HlmDialogImports } from '@spartan-ng/helm/dialog'
 import { disabled, form, FormField, FormRoot, required } from '@angular/forms/signals'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
-import { CreateChecklistItemRequest } from '../../models/checklist-item/checklist-item-request.model'
-import { ChecklistItemModalState } from '../../service/checklist-item/checklist-item-modal-state'
-import { toast } from '@spartan-ng/brain/sonner'
+import { CreateChecklistItemRequest } from '../../../models/checklist-item/checklist-item-request.model'
+import { ChecklistItemFacade } from '../checklist-item.facade'
 
 @Component({
 	selector: 'app-checklist-item-modal',
@@ -24,7 +22,6 @@ import { toast } from '@spartan-ng/brain/sonner'
 		FormField,
 		FormRoot,
 	],
-	providers: [KanbanApi],
 	templateUrl: './checklist-item-modal.html',
 })
 export class ChecklistItemModalComponent {
@@ -33,8 +30,7 @@ export class ChecklistItemModalComponent {
 	readonly projectId = input.required<string>()
 	readonly teamId = input.required<string>()
 
-	private readonly kanbanApi = inject(KanbanApi)
-	readonly checklistItemModalState = inject(ChecklistItemModalState)
+	readonly checklistItemFacade = inject(ChecklistItemFacade)
 
 	// Modelo inicial reactivo para el formulario
 	readonly checklistItemModel = signal<Omit<CreateChecklistItemRequest, 'checklistId'>>({
@@ -51,25 +47,7 @@ export class ChecklistItemModalComponent {
 		{
 			submission: {
 				action: async (data) => {
-					const values = data().value()
-					const currentItem = this.checklistItemModalState.checklistItem()
-
-					if (this.checklistItemModalState.isEditMode()) {
-						this.kanbanApi.updateChecklistItem({
-							checklistItemId: currentItem!.id,
-							content: values.content,
-							completedItem: currentItem!.completedItem ?? false,
-						})
-						toast.success('Elemento modificado')
-					} else {
-						this.kanbanApi.createChecklistItem({
-							checklistId: this.checklistItemModalState.checklistId()!,
-							content: values.content,
-						})
-						toast.success('Elemento creado')
-					}
-
-					this.checklistItemModalState.close()
+					this.checklistItemFacade.save(data().value())
 				},
 			},
 		},
@@ -77,10 +55,10 @@ export class ChecklistItemModalComponent {
 
 	constructor() {
 		effect(() => {
-			if (this.checklistItemModalState.dialogState() !== 'open') return
+			if (!this.checklistItemFacade.checklistItemDialogState()) return
 
-			if (this.checklistItemModalState.isEditMode()) {
-				const item = this.checklistItemModalState.checklistItem()
+			if (this.checklistItemFacade.isEditMode()) {
+				const item = this.checklistItemFacade.checklistItem()
 				if (!item) return
 
 				this.checklistItemForm().reset({

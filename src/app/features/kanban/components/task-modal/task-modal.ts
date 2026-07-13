@@ -30,20 +30,20 @@ import { TeamMemberResponse } from '@/features/home/models/team-member-response'
 import { UpdateTaskRequest } from '../../models/task/task-request.model'
 import { TaskModalState } from '../../service/column-task/task-modal-state'
 import { getAssignmentInitials } from '../../utils/string.utils'
-import { ChecklistModalState } from '../../service/checklist/checklist-modal-state'
-import { ChecklistModalComponent } from '../checklist-modal/checklist-modal'
+import { ChecklistModalState } from '../../features/checklist/checklist-modal/checklist-modal.state'
+import { ChecklistModalComponent } from '../../features/checklist/checklist-modal/checklist-modal'
 import { HlmBadge } from '@spartan-ng/helm/badge'
-import { ChecklistState } from '../../service/checklist/checklist-state'
+import { ChecklistState } from '../../features/checklist/checklist.state'
 import { ChecklistDetailResponse } from '../../models/checklist/checklist-detail-response.model'
 import { DeleteDialogState } from '@/shared/components/delete/DeleteDialogState'
 import { toast } from '@spartan-ng/brain/sonner'
 import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComponent'
-import { ChecklistItemModalComponent } from '../checklist-item-modal/checklist-item-modal'
-import { ChecklistItemModalState } from '../../service/checklist-item/checklist-item-modal-state'
-import { ChecklistItemState } from '../../service/checklist-item/checklist-item-state'
+import { ChecklistItemModalComponent } from '../../features/checklist-item/checklist-item-modal/checklist-item-modal'
 import { HlmProgress, HlmProgressIndicator } from '@spartan-ng/helm/progress'
 import { HlmCheckbox } from '@spartan-ng/helm/checkbox'
 import { ChecklistItemResponse } from '../../models/checklist-item/checklist-item-response.model'
+import { ChecklistItemFacade } from '../../features/checklist-item/checklist-item.facade'
+import { ChecklistFacade } from '../../features/checklist/checklist.facade'
 
 type DateType = 'none' | 'manual' | 'milestone'
 
@@ -100,35 +100,18 @@ export class TaskModal {
 	kanbanApi = inject(KanbanApi)
 	taskModalState = inject(TaskModalState)
 	readonly task = this.taskModalState.task
-	checklistModalState = inject(ChecklistModalState)
-	readonly checklistModal = this.checklistModalState.dialogState
 
-	checklistItemModalState = inject(ChecklistItemModalState)
-	readonly checklistItemModal = this.checklistItemModalState.dialogState
+	// FACADES
+	readonly checklistFacade = inject(ChecklistFacade)
+	readonly checklistItemFacade = inject(ChecklistItemFacade)
 
-	private readonly checklistState = inject(ChecklistState)
 	readonly checklists = computed(() => {
 		const task = this.task()
 
 		if (!task) return []
 
-		return this.checklistState.getByTask(task.id)
+		return this.checklistFacade.getByTask(task.id)
 	})
-
-	private readonly checklistItemState = inject(ChecklistItemState)
-
-	readonly getChecklistItems = (checklistId: string) =>
-		this.checklistItemState.getByChecklist(checklistId)
-
-	readonly checklistProgress = (id: string) => this.checklistItemState.progress(id)
-
-	toggleChecklistItem(item: ChecklistItemResponse) {
-		this.kanbanApi.updateChecklistItem({
-			checklistItemId: item.id,
-			content: item.content,
-			completedItem: !item.completedItem,
-		})
-	}
 
 	readonly priorityConfig = {
 		ALTA: {
@@ -379,7 +362,7 @@ export class TaskModal {
 	openAddChecklist() {
 		const currentTask = this.task()
 		if (!currentTask) return
-		this.checklistModalState.openForCreate(currentTask.id)
+		this.checklistFacade.openCreate(currentTask.id)
 	}
 
 	// MODAL DE ELIMINACIÓN CHECKLIST
@@ -388,7 +371,7 @@ export class TaskModal {
 	protected confirmDeleteChecklist() {
 		const c = this.checklistDeleteCtrl.item()
 		if (c) {
-			this.kanbanApi.deleteChecklist({ checklistId: c.id })
+			this.checklistFacade.delete(c.id)
 			toast.success('Checklist eliminada')
 			this.checklistDeleteCtrl.close()
 		}
@@ -400,8 +383,7 @@ export class TaskModal {
 	protected confirmDeleteChecklistItem() {
 		const c = this.checklistItemDeleteCtrl.item()
 		if (c) {
-			this.kanbanApi.deleteChecklistItem({ checklistItemId: c.id })
-			toast.success('Checklist item eliminada')
+			this.checklistItemFacade.delete(c.id)
 			this.checklistItemDeleteCtrl.close()
 		}
 	}

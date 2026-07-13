@@ -1,9 +1,9 @@
-<hlm-dialog [state]="checklistItemModalState.dialogState()" (closed)="checklistItemModalState.close()">
+<hlm-dialog [state]="checklistItemFacade.checklistItemDialogState()" (closed)="checklistItemFacade.closeModal()">
 	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
 		<hlm-dialog-header>
-			<h3 hlmDialogTitle> {{ checklistItemModalState.isEditMode() ? 'Editar Checklist item' : 'Crear Checklist item' }}
+			<h3 hlmDialogTitle> {{ checklistItemFacade.isEditMode() ? 'Editar Checklist item' : 'Crear Checklist item' }}
 			</h3>
-			<p hlmDialogDescription> {{ checklistItemModalState.isEditMode() ? 'Modifica los detalles del checklist item'
+			<p hlmDialogDescription> {{ checklistItemFacade.isEditMode() ? 'Modifica los detalles del checklist item'
 				: 'Crea tus checklist items para organizar tus tareas' }}</p>
 		</hlm-dialog-header>
 
@@ -28,7 +28,7 @@
 		<hlm-dialog-footer>
 			<button hlmBtn variant="outline" hlmDialogClose>Cancelar</button>
 			<button hlmBtn form="checklist-item-form" type="submit" [disabled]="checklistItemForm().submitting()">
-				{{ checklistItemModalState.isEditMode() ? 'Guardar' : 'Crear' }}
+				{{ checklistItemFacade.isEditMode() ? 'Guardar' : 'Crear' }}
 			</button>
 		</hlm-dialog-footer>
 	</hlm-dialog-content>

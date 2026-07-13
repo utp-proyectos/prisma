@@ -1,6 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core'
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
-import { ChecklistDetailResponse } from '../../models/checklist/checklist-detail-response.model'
+import { ChecklistDetailResponse } from '../../../models/checklist/checklist-detail-response.model'
 
 export type ChecklistModalMode = 'CREATE' | 'EDIT'
 

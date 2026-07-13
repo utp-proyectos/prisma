@@ -1,6 +1,6 @@
+import { MilestoneSummaryResponse } from '@/features/kanban/models/milestone/milestone-summary-response.model'
 import { computed, Injectable, signal } from '@angular/core'
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
-import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
 
 export type MilestoneModalMode = 'CREATE' | 'EDIT'
 

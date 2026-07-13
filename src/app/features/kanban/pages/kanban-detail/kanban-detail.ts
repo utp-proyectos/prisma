@@ -40,17 +40,14 @@ import { CdkDrag, CdkDropList, CdkDragDrop } from '@angular/cdk/drag-drop'
 import { TaskCardComponent } from '@/shared/components/task-card/task-card'
 import { TaskModal } from '../../components/task-modal/task-modal'
 import { TaskModalState } from '../../service/column-task/task-modal-state'
-import { MilestoneModalComponent } from '../../components/milestone-modal/milestone-modal'
 import { KanbanApi } from '../../service/kanban-api'
 import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
 import { ColumnKanbanModalComponent } from '../../components/column-kanban-modal/column-kanban-modal'
 import { TaskDetailResponse } from '../../models/task/task-detail-response.model'
 import { TeamApi } from '@/features/home/services/team-api'
-import { MilestoneState } from '../../service/milestone/milestone-state'
 import { KanbanRealtime } from '../../service/kanban-realtime'
 import { ColumnTaskState } from '../../service/column-task/column-task-state'
 import { ColumnTaskFacade } from '../../service/column-task/column-task-facade'
-import { MilestoneModalState } from '../../service/milestone/milestone-modal-state'
 import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
 import { toast } from '@spartan-ng/brain/sonner'
 import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComponent'
@@ -60,9 +57,23 @@ import { getAssignmentInitials } from '../../utils/string.utils'
 import { ColumnModalState } from '../../service/column-task/column-modal-state'
 import { TaskFilterService } from '../../service/column-task/task-filter-service'
 import { DeleteDialogState } from '@/shared/components/delete/DeleteDialogState'
-import { ChecklistState } from '../../service/checklist/checklist-state'
+import { ChecklistState } from '../../features/checklist/checklist.state'
 import { KanbanDetailResponse } from '../../models/kanban-detail-response.model'
-import { ChecklistItemState } from '../../service/checklist-item/checklist-item-state'
+import { ChecklistItemState } from '../../features/checklist-item/checklist-item.state'
+import { MilestoneModalComponent } from '../../features/milestone/milestone-modal/milestone-modal'
+import { MilestoneFacade } from '../../features/milestone/milestone.facade'
+import { MilestoneRealtime } from '../../features/milestone/milestone.realtime'
+import { MilestoneApi } from '../../features/milestone/milestone.api'
+import { MilestoneState } from '../../features/milestone/milestone.state'
+import { MilestoneModalState } from '../../features/milestone/milestone-modal/milestone-modal-state'
+import { ChecklistItemFacade } from '../../features/checklist-item/checklist-item.facade'
+import { ChecklistItemApi } from '../../features/checklist-item/checklist-item.api'
+import { ChecklistItemModalState } from '../../features/checklist-item/checklist-item-modal/checklist-item-modal.state'
+import { ChecklistItemRealtime } from '../../features/checklist-item/checklist-item.realtime'
+import { ChecklistApi } from '../../features/checklist/checklist.api'
+import { ChecklistFacade } from '../../features/checklist/checklist.facade'
+import { ChecklistModalState } from '../../features/checklist/checklist-modal/checklist-modal.state'
+import { ChecklistRealtime } from '../../features/checklist/checklist.realtime'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -98,14 +109,30 @@ import { ChecklistItemState } from '../../service/checklist-item/checklist-item-
 		HlmAvatarGroupCount,
 	],
 	providers: [
+		MilestoneApi,
+		MilestoneState,
+		MilestoneFacade,
+		MilestoneModalState,
+		MilestoneRealtime,
+
+		ChecklistItemApi,
+		ChecklistItemState,
+		ChecklistItemFacade,
+		ChecklistItemModalState,
+		ChecklistItemRealtime,
+
+		ChecklistApi,
+		ChecklistState,
+		ChecklistFacade,
+		ChecklistModalState,
+		ChecklistRealtime,
+
 		TaskModalState,
 		KanbanApi,
 		TeamApi,
-		MilestoneState,
 		KanbanRealtime,
 		ColumnTaskState,
 		ColumnTaskFacade,
-		MilestoneModalState,
 		ColumnModalState,
 		TaskFilterService,
 		ChecklistState,
@@ -152,7 +179,7 @@ import { ChecklistItemState } from '../../service/checklist-item/checklist-item-
 	`,
 })
 export class KanbanDetail implements OnDestroy {
-	// Input obligatorios
+	// Inputs obligatorios
 	teamId = input.required<string>()
 	projectId = input.required<string>()
 	kanbanId = input.required<string>()
@@ -161,12 +188,19 @@ export class KanbanDetail implements OnDestroy {
 	readonly filterService = inject(TaskFilterService)
 	readonly columnTaskState = inject(ColumnTaskState)
 	readonly columnTaskFacade = inject(ColumnTaskFacade)
-	readonly milestoneState = inject(MilestoneState)
-	readonly checklistState = inject(ChecklistState)
-	readonly checklistItemState = inject(ChecklistItemState)
-	readonly realtime = inject(KanbanRealtime)
 	readonly kanbanApi = inject(KanbanApi)
 	readonly teamApi = inject(TeamApi)
+	readonly realtime = inject(KanbanRealtime)
+
+	// FACHADAS ORQUESTADORAS
+	readonly milestoneFacade = inject(MilestoneFacade)
+	private readonly milestoneRealtime = inject(MilestoneRealtime)
+
+	readonly checklistItemFacade = inject(ChecklistItemFacade)
+	private readonly checklistItemRealtime = inject(ChecklistItemRealtime)
+
+	readonly checklistFacade = inject(ChecklistFacade)
+	private readonly checklistRealtime = inject(ChecklistRealtime)
 
 	// Tabs de navegación
 	protected readonly activeTab = signal<string>('hitos')
@@ -178,13 +212,14 @@ export class KanbanDetail implements OnDestroy {
 		}
 	}
 
-	// Formato de avatar
 	protected readonly getInitials = getAssignmentInitials
 
-	// Modales de creacion / edicion
-	protected readonly milestoneModalState = inject(MilestoneModalState)
-	milestoneModal = this.milestoneModalState.dialogState
+	// MILESTONES (Bindeados directamente desde el Facade)
+	readonly milestones = this.milestoneFacade.milestones
+	readonly selectedMilestoneId = this.milestoneFacade.selectedMilestoneId
+	readonly milestoneDetail = this.milestoneFacade.milestoneDetail
 
+	// Modales de creacion / edicion
 	protected readonly taskModalState = inject(TaskModalState)
 	taskModal = this.taskModalState.dialogState
 
@@ -199,18 +234,14 @@ export class KanbanDetail implements OnDestroy {
 	// Recursos Api y computados
 	private readonly kanbanDetailResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
 	private readonly teamDetailResource = this.teamApi.teamDetailResource(this.teamId)
-	protected readonly milestoneDetailRes = this.kanbanApi.milestoneDetailResource(
-		this.milestoneState.selectedMilestoneId,
-	)
 
-	// Nombre del tablero
+	protected readonly milestoneDetailRes = this.milestoneFacade.milestoneDetailResource
+
 	readonly kanbanName = computed(() => {
 		const resource = this.kanbanDetailResource.value()
-
 		return resource?.data?.name || 'Cargando tablero...'
 	})
 
-	// Metodo para cargar los miembros del team
 	workspaceMembers = computed(() => {
 		if (!this.teamDetailResource.hasValue()) return []
 		return this.teamDetailResource.value()!.data.members || []
@@ -227,19 +258,13 @@ export class KanbanDetail implements OnDestroy {
 		return this.milestones().filter((milestone) => milestone.title.toLowerCase().includes(search))
 	})
 
-	// Shortcuts directos a los states primarios
-	milestones = this.milestoneState.milestones
-	selectedMilestoneId = this.milestoneState.selectedMilestoneId
 	columns = this.columnTaskState.columns
 	connectedLists = this.columnTaskState.connectedLists
 
-	// Arbol de renderizado
 	readonly displayColumns = computed(() => {
 		const columns = this.columnTaskState.columns()
-
 		const fixed = columns.find((c) => c.fixed)
 		const movable = columns.filter((c) => !c.fixed)
-
 		return fixed ? [...movable, fixed] : [...movable]
 	})
 
@@ -259,9 +284,6 @@ export class KanbanDetail implements OnDestroy {
 		})
 	}
 
-	// --- MODAL DE LA TAREA
-
-	// Método para abrir el modal con la información cargada
 	openCreateTask(column: ColumnKanbanDetailResponse) {
 		this.columnTaskFacade.createTask(column, {
 			teamId: this.teamId(),
@@ -271,7 +293,7 @@ export class KanbanDetail implements OnDestroy {
 	}
 
 	protected openCreateTaskFromMilestone() {
-		const milestone = this.milestoneState.milestoneDetail()
+		const milestone = this.milestoneFacade.milestoneDetail()
 		if (!milestone) return
 
 		const firstColumn = this.displayColumns().find((c) => !c.fixed)
@@ -295,17 +317,14 @@ export class KanbanDetail implements OnDestroy {
 		this.taskModalState.openForEdit(task)
 	}
 
-	// MODAL DE ELIMINACIÓN HITOS
 	protected confirmDeleteMilestone() {
 		const m = this.milestoneDeleteCtrl.item()
 		if (m) {
-			this.kanbanApi.deleteMilestone({ milestoneId: m.id })
-			toast.success('Hito eliminado')
+			this.milestoneFacade.delete(m.id)
 			this.milestoneDeleteCtrl.close()
 		}
 	}
 
-	// MODAL DE ELIMINACIÓN COLUMNA
 	protected confirmDeleteColumn() {
 		const c = this.columnDeleteCtrl.item()
 		if (c) {
@@ -315,7 +334,6 @@ export class KanbanDetail implements OnDestroy {
 		}
 	}
 
-	// MODAL DE ELIMINACIÓN TAREAS
 	protected confirmDeleteTask() {
 		const t = this.taskDeleteCtrl.item()
 		if (t) {
@@ -353,34 +371,30 @@ export class KanbanDetail implements OnDestroy {
 		}))
 
 		this.columnTaskState.setColumns(columns)
-		this.checklistState.setChecklists(checklists)
-		this.checklistItemState.setItems(checklistItems)
-		this.milestoneState.setMilestones(data.milestones)
+		this.checklistFacade.setChecklists(checklists)
+		this.checklistItemFacade.setItems(checklistItems)
+		this.milestoneFacade.setMilestones(data.milestones)
 	}
 
 	constructor() {
 		effect(() => {
 			if (!this.kanbanResource.hasValue()) return
-
 			this.normalizeKanban(this.kanbanResource.value()!.data)
 		})
 
 		effect(() => {
-			if (!this.milestoneDetailRes.hasValue()) return
-
-			this.milestoneState.setDetail(this.milestoneDetailRes.value()!.data)
-		})
-
-		effect(() => {
-			if (!this.teamId() || !this.projectId() || !this.kanbanId()) {
-				return
-			}
-
+			if (!this.teamId() || !this.projectId() || !this.kanbanId()) return
 			this.realtime.connect(this.teamId(), this.projectId(), this.kanbanId())
+			this.milestoneRealtime.connect(this.teamId(), this.projectId(), this.kanbanId())
+			this.checklistRealtime.connect(this.teamId(), this.projectId(), this.kanbanId())
+			this.checklistItemRealtime.connect(this.teamId(), this.projectId(), this.kanbanId())
 		})
 	}
 
 	ngOnDestroy() {
 		this.realtime.disconnect()
+		this.milestoneRealtime.disconnect()
+		this.checklistRealtime.disconnect()
+		this.checklistItemRealtime.disconnect()
 	}
 }

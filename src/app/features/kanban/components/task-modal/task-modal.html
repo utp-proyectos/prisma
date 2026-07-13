@@ -67,8 +67,8 @@
 						} @else {
 						@for(checklist of checklists(); track checklist.id){
 
-						@let items = getChecklistItems(checklist.id);
-						@let progress = checklistProgress(checklist.id);
+						@let items = checklistItemFacade.getChecklistItems(checklist.id);
+						@let progress = checklistItemFacade.progress(checklist.id);
 
 						<div class="rounded-xl border bg-card p-5 flex flex-col gap-5"
 							[class]="priorityConfig[checklist.priority].border">
@@ -96,7 +96,7 @@
 
 							<ng-template #checklistMenu>
 								<hlm-dropdown-menu>
-									<button hlmDropdownMenuItem (click)="checklistModalState.openForEdit(checklist)">
+									<button hlmDropdownMenuItem (click)="checklistFacade.openEdit(checklist)">
 										<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
 										<span>Editar</span>
 									</button>
@@ -124,7 +124,7 @@
 							@if(items.length === 0){
 
 							<button hlmBtn variant="outline" class="self-start gap-2"
-								(click)="checklistItemModalState.openForCreate(checklist.id)">
+								(click)="checklistItemFacade.openCreate(checklist.id)">
 								<ng-icon name="lucidePlus" />
 								Agregar elemento
 							</button>
@@ -138,7 +138,7 @@
 
 									<div class="flex flex-1 min-w-0 items-start gap-3">
 										<hlm-checkbox class="mt-0.5" [checked]="item.completedItem"
-											(checkedChange)="toggleChecklistItem(item)" />
+											(checkedChange)="checklistItemFacade.toggleChecklistItem(item)" />
 
 										<span class="flex-1 min-w-0 wrap-break-word text-sm select-none w-30"
 											[class.line-through]="item.completedItem" [class.text-muted-foreground]="item.completedItem">
@@ -155,7 +155,7 @@
 
 								<ng-template #checklistItemMenu>
 									<hlm-dropdown-menu>
-										<button hlmDropdownMenuItem (click)="checklistItemModalState.openForEdit(item)">
+										<button hlmDropdownMenuItem (click)="checklistItemFacade.openEdit(item)">
 											<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
 											<span>Editar</span>
 										</button>
@@ -171,7 +171,7 @@
 							</div>
 
 							<button hlmBtn variant="outline" class="self-start gap-2"
-								(click)="checklistItemModalState.openForCreate(checklist.id)">
+								(click)="checklistItemFacade.openCreate(checklist.id)">
 								<ng-icon name="lucidePlus" />
 								Agregar elemento
 							</button>
