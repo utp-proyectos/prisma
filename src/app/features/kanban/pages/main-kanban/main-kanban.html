@@ -1,11 +1,56 @@
-<div class="flex flex-col items-center justify-center gap-4 h-full">
-	<ng-icon name="lucideSearch" class="text-xl"></ng-icon>
-	<div class="flex flex-col items-center gap-1">
-		<h3 class="text-xl font-medium">Aun no hay tableros</h3>
-		<p class="text-muted-foreground">Crea un Tablero para empezar</p>
+@if (myTasks().length > 0) {
+
+<ng-scrollbar hlm appearance="compact" class="w-full min-w-0 h-[calc(100vh-2px)]">
+	<div scrollViewport class="flex items-start gap-4 pb-4 min-w-max h-full">
+
+		@for(board of myTasks(); track board.id) {
+
+		<div
+			class="flex flex-col gap-3 bg-primary-foreground border border-border rounded-xl p-3 w-72 shrink-0 max-h-screen h-full">
+
+			<div class="flex items-center justify-between px-1 shrink-0">
+				<span class="font-semibold select-none truncate max-w-[80%]">
+					{{ board.name }}
+				</span>
+				<span class="text-xs text-muted-foreground bg-background px-2 py-0.5 rounded-full border">
+					{{ board.tasks.length }}
+				</span>
+			</div>
+
+			<ng-scrollbar hlm appearance="compact" class="flex-1 min-h-0">
+				<div scrollViewport class="flex flex-col gap-3 pr-1">
+					@if(board.tasks.length === 0) {
+					<div class="border border-dashed border-border rounded-lg p-4 text-center text-muted-foreground text-sm">
+						Sin tareas asignadas
+					</div>
+					}
+
+					@for(task of board.tasks; track task.id) {
+					<div class="w-full">
+						<app-task-card [task]="task" [showActions]="false"></app-task-card>
+					</div>
+					}
+				</div>
+			</ng-scrollbar>
+
+		</div>
+		}
+
 	</div>
-	<button hlmBtn (click)="kanbanModalState.openForCreate()" class="w-full mt-2 mb-4">
-		<ng-icon name="lucidePlus"></ng-icon>
+</ng-scrollbar>
+
+} @else {
+<hlm-empty>
+	<ng-icon hlmEmptyIcon name="lucideSearch" />
+	<h3 hlmEmptyTitle>Aún no hay tableros</h3>
+
+	<p hlmEmptyDescription>
+		Crea un tablero para comenzar a organizar tus tareas.
+	</p>
+
+	<button hlmBtn hlmEmptyAction (click)="kanbanFacade.openCreate()">
+		<ng-icon name="lucidePlus" />
 		Crear tablero
 	</button>
-</div>
+</hlm-empty>
+}

@@ -1,12 +1,13 @@
 import { Websocket } from '@/core/servies/websocket'
 import { HttpClient, httpResource } from '@angular/common/http'
 import { inject, Injectable, Signal } from '@angular/core'
-import { KanbanResponse } from '../models/kanban-response.model'
+import { KanbanResponse } from '../../models/kanban-response.model'
 import { ApiResponse } from '@/core/models/api-response.model'
-import { CreateKanbanRequest, UpdateKanbanRequest } from '../models/kanban-request.model'
+import { CreateKanbanRequest, UpdateKanbanRequest } from '../../models/kanban-request.model'
 import { map, Observable } from 'rxjs'
 import { WsResponse } from '@/core/models/ws-response'
-import { KanbanDetailResponse } from '../models/kanban-detail-response.model'
+import { KanbanDetailResponse } from '../../models/kanban-detail-response.model'
+import { KanbanMyTasksResponse } from '../../models/kanban-my-tasks-response.model'
 
 @Injectable()
 export class KanbanApi {
@@ -22,6 +23,8 @@ export class KanbanApi {
 		httpResource<ApiResponse<KanbanDetailResponse>>(() =>
 			kanbanId() ? `/kanbans/${kanbanId()}` : undefined,
 		)
+
+	myTasksResource = () => httpResource<ApiResponse<KanbanMyTasksResponse[]>>(() => '/kanbans/tasks')
 
 	createKanban(kanban: CreateKanbanRequest) {
 		this.ws.publish('/app/kanban.create', kanban)

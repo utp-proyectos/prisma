@@ -36,6 +36,8 @@ export class TaskCardComponent {
 	task = input.required<TaskDetailResponse>()
 	opened = output<TaskDetailResponse>()
 
+	showActions = input<boolean>(true)
+
 	taskFacade = inject(TaskFacade)
 
 	protected onCardClick(event: MouseEvent) {

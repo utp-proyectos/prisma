@@ -5,10 +5,10 @@
 			<nav-header icon="lucideTriangle" [title]="projectName()"></nav-header>
 		</sidebar-header>
 
-		<sidebar-content [items]="kanbanItems()" (editRequested)="kanbanModalState.openForEdit($event)"
+		<sidebar-content [items]="kanbanItems()" (editRequested)="kanbanFacade.openEdit($event)"
 			(deleteRequested)="onDeleteKanbanClick($event)">
 			<ng-container append>
-				<button hlmBtn class="w-full mt-2 mb-4" (click)="kanbanModalState.openForCreate()">
+				<button hlmBtn class="w-full mt-2 mb-4" (click)="kanbanFacade.openCreate()">
 					<ng-icon name="lucidePlus"></ng-icon>
 					Crear tablero
 				</button>
@@ -27,13 +27,13 @@
 	</div>
 </div>
 
-<hlm-dialog [state]="kanbanModal()" (closed)="kanbanModalState.close()">
+<hlm-dialog [state]="kanbanModal()" (closed)="kanbanFacade.closeModal()">
 	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
 		<hlm-dialog-header>
 			<h3 hlmDialogTitle>
-				{{ kanbanModalState.isEditMode() ? 'Editar Tablero' : 'Crear Tablero' }} </h3>
+				{{ kanbanFacade.isEditMode() ? 'Editar Tablero' : 'Crear Tablero' }} </h3>
 			<p hlmDialogDescription>
-				{{ kanbanModalState.isEditMode() ? 'Modifica las opciones de tu tablero' :
+				{{ kanbanFacade.isEditMode() ? 'Modifica las opciones de tu tablero' :
 				'Crea un tablero kanban y empieza a organizar tus tareas' }}
 		</hlm-dialog-header>
 
@@ -63,7 +63,7 @@
 		<hlm-dialog-footer>
 			<button hlmBtn variant="outline" hlmDialogClose>Cancelar</button>
 			<button hlmBtn form="kanban-form" type="submit" [disabled]="kanbanForm().submitting()">
-				{{ kanbanModalState.isEditMode() ? 'Guardar' : 'Crear' }}
+				{{ kanbanFacade.isEditMode() ? 'Guardar' : 'Crear' }}
 			</button>
 		</hlm-dialog-footer>
 	</hlm-dialog-content>

@@ -10,7 +10,9 @@
 			</h4>
 		</div>
 
-		<button hlmBtn variant="ghost" size="icon-sm" class="h-8 w-8 text-muted-foreground" [hlmDropdownMenuTrigger]="menu">
+		@if (showActions()) {
+		<button hlmBtn variant="ghost" size="icon-sm" class="h-8 w-8 text-muted-foreground shrink-0"
+			[hlmDropdownMenuTrigger]="menu">
 			<ng-icon name="lucideMoreHorizontal" />
 		</button>
 
@@ -27,6 +29,7 @@
 				</button>
 			</hlm-dropdown-menu>
 		</ng-template>
+		}
 
 	</div>
 

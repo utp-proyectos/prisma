@@ -38,7 +38,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select'
 
 import { CdkDrag, CdkDropList, CdkDragDrop } from '@angular/cdk/drag-drop'
 import { TaskCardComponent } from '@/shared/components/task-card/task-card'
-import { KanbanApi } from '../../service/kanban-api'
+import { KanbanApi } from '../../features/kanban/kanban.api'
 import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
 import { TaskDetailResponse } from '../../models/task/task-detail-response.model'
 import { TeamApi } from '@/features/home/services/team-api'
@@ -50,33 +50,15 @@ import { HlmAvatar, HlmAvatarGroup, HlmAvatarGroupCount } from '@spartan-ng/helm
 import { HlmBadge } from '@spartan-ng/helm/badge'
 import { getAssignmentInitials } from '../../utils/string.utils'
 import { DeleteDialogState } from '@/shared/components/delete/DeleteDialogState'
-import { ChecklistState } from '../../features/checklist/checklist.state'
 import { KanbanDetailResponse } from '../../models/kanban-detail-response.model'
-import { ChecklistItemState } from '../../features/checklist-item/checklist-item.state'
 import { MilestoneModalComponent } from '../../features/milestone/milestone-modal/milestone-modal'
 import { MilestoneFacade } from '../../features/milestone/milestone.facade'
-import { MilestoneRealtime } from '../../features/milestone/milestone.realtime'
-import { MilestoneApi } from '../../features/milestone/milestone.api'
-import { MilestoneState } from '../../features/milestone/milestone.state'
-import { MilestoneModalState } from '../../features/milestone/milestone-modal/milestone-modal-state'
 import { ChecklistItemFacade } from '../../features/checklist-item/checklist-item.facade'
-import { ChecklistItemApi } from '../../features/checklist-item/checklist-item.api'
-import { ChecklistItemModalState } from '../../features/checklist-item/checklist-item-modal/checklist-item-modal.state'
-import { ChecklistItemRealtime } from '../../features/checklist-item/checklist-item.realtime'
-import { ChecklistApi } from '../../features/checklist/checklist.api'
 import { ChecklistFacade } from '../../features/checklist/checklist.facade'
-import { ChecklistModalState } from '../../features/checklist/checklist-modal/checklist-modal.state'
-import { ChecklistRealtime } from '../../features/checklist/checklist.realtime'
 import { ColumnKanbanModalComponent } from '../../features/column/column-modal/column-kanban-modal'
 import { TaskModal } from '../../features/task/task-modal/task-modal'
-import { ColumnApi } from '../../features/column/column.api'
 import { ColumnFacade } from '../../features/column/column.facade'
-import { ColumnModalState } from '../../features/column/column-modal/column-modal.state'
-import { ColumnRealtime } from '../../features/column/column.realtime'
-import { TaskApi } from '../../features/task/task.api'
 import { TaskFacade } from '../../features/task/task.facade'
-import { TaskModalState } from '../../features/task/task-modal/task-modal-state'
-import { TaskRealtime } from '../../features/task/task.realtime'
 import { ColumnTaskState } from '../../features/column-task/column-task-state'
 import { ColumnTaskFacade } from '../../features/column-task/column-task-facade'
 import { TaskFilterService } from '../../features/column-task/task-filter-service'
@@ -115,42 +97,6 @@ import { TaskFilterService } from '../../features/column-task/task-filter-servic
 		HlmAvatarGroupCount,
 	],
 	providers: [
-		MilestoneApi,
-		MilestoneState,
-		MilestoneFacade,
-		MilestoneModalState,
-		MilestoneRealtime,
-
-		ColumnApi,
-		ColumnFacade,
-		ColumnModalState,
-		ColumnRealtime,
-
-		TaskApi,
-		TaskFacade,
-		TaskModalState,
-		TaskRealtime,
-
-		ColumnTaskState,
-		ColumnTaskFacade,
-		TaskFilterService,
-
-		ChecklistItemApi,
-		ChecklistItemState,
-		ChecklistItemFacade,
-		ChecklistItemModalState,
-		ChecklistItemRealtime,
-
-		ChecklistApi,
-		ChecklistState,
-		ChecklistFacade,
-		ChecklistModalState,
-		ChecklistRealtime,
-
-		KanbanApi,
-		TeamApi,
-
-		KanbanRealtime,
 		provideIcons({
 			lucidePlus,
 			lucideSearch,
@@ -209,19 +155,10 @@ export class KanbanDetail implements OnDestroy {
 
 	// FACHADAS ORQUESTADORAS
 	readonly milestoneFacade = inject(MilestoneFacade)
-	private readonly milestoneRealtime = inject(MilestoneRealtime)
-
 	readonly checklistItemFacade = inject(ChecklistItemFacade)
-	private readonly checklistItemRealtime = inject(ChecklistItemRealtime)
-
 	readonly checklistFacade = inject(ChecklistFacade)
-	private readonly checklistRealtime = inject(ChecklistRealtime)
-
 	readonly taskFacade = inject(TaskFacade)
-	private readonly taskRealtime = inject(TaskRealtime)
-
 	readonly columnFacade = inject(ColumnFacade)
-	private readonly columnRealtime = inject(ColumnRealtime)
 
 	// Tabs de navegación
 	protected readonly activeTab = signal<string>('hitos')
@@ -387,20 +324,10 @@ export class KanbanDetail implements OnDestroy {
 		effect(() => {
 			if (!this.teamId() || !this.projectId() || !this.kanbanId()) return
 			this.realtime.connect(this.teamId(), this.projectId(), this.kanbanId())
-			this.milestoneRealtime.connect(this.teamId(), this.projectId(), this.kanbanId())
-			this.columnRealtime.connect(this.teamId(), this.projectId(), this.kanbanId())
-			this.taskRealtime.connect(this.teamId(), this.projectId(), this.kanbanId())
-			this.checklistRealtime.connect(this.teamId(), this.projectId(), this.kanbanId())
-			this.checklistItemRealtime.connect(this.teamId(), this.projectId(), this.kanbanId())
 		})
 	}
 
 	ngOnDestroy() {
 		this.realtime.disconnect()
-		this.milestoneRealtime.disconnect()
-		this.columnRealtime.disconnect()
-		this.taskRealtime.disconnect()
-		this.checklistRealtime.disconnect()
-		this.checklistItemRealtime.disconnect()
 	}
 }
