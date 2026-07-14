@@ -64,6 +64,7 @@ import { MilestoneApi } from '../features/milestone/milestone.api'
 import { kanbanRoutes } from '../kanban.routes'
 import { toSignal } from '@angular/core/rxjs-interop'
 import { filter, map } from 'rxjs'
+import { DeleteDialogState } from '@/shared/components/delete/DeleteDialogState'
 
 @Component({
 	selector: 'app-kanban-layout',
@@ -216,32 +217,20 @@ export class KanbanLayout implements OnDestroy {
 		},
 	)
 
-	//---------- Eliminar tablero (Control local del diálogo)
-	readonly deleteModalState = signal<'open' | 'closed'>('closed')
-	readonly kanbanToDelete = signal<KanbanResponse | null>(null)
+	//---------- Eliminar tablero
+	readonly kanbanDeleteCtrl = new DeleteDialogState<KanbanResponse>()
 
-	onDeleteKanbanClick(kanban: KanbanResponse) {
-		this.kanbanToDelete.set(kanban)
-		this.deleteModalState.set('open')
-	}
-
-	confirmDeleteKanban() {
-		const kanban = this.kanbanToDelete()
+	protected confirmDeleteKanban() {
+		const kanban = this.kanbanDeleteCtrl.item()
 		if (!kanban) return
 
 		this.kanbanFacade.delete(kanban.id)
 		toast.success('Tablero eliminado')
-
-		this.closeDeleteModal()
+		this.kanbanDeleteCtrl.close()
 	}
 
-	closeDeleteModal() {
-		this.deleteModalState.set('closed')
-		this.kanbanToDelete.set(null)
-	}
-
+	// Redirecciona al tablero general
 	private readonly router = inject(Router)
-	private readonly route = inject(ActivatedRoute)
 
 	readonly currentKanbanId = toSignal(
 		this.router.events.pipe(

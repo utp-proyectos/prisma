@@ -6,7 +6,7 @@
 		</sidebar-header>
 
 		<sidebar-content [items]="kanbanItems()" (editRequested)="kanbanFacade.openEdit($event)"
-			(deleteRequested)="onDeleteKanbanClick($event)">
+			(deleteRequested)="kanbanDeleteCtrl.open($event)">
 			<ng-container append>
 				<button hlmBtn class="w-full mt-2 mb-4" (click)="kanbanFacade.openCreate()">
 					<ng-icon name="lucidePlus"></ng-icon>
@@ -69,6 +69,7 @@
 	</hlm-dialog-content>
 </hlm-dialog>
 
-<app-delete-modal [state]="deleteModalState()" [title]="'¿Eliminar el tablero ' + (kanbanToDelete()?.name || '') + '?'"
+<app-delete-modal [state]="kanbanDeleteCtrl.state()"
+	[title]="'¿Eliminar el tablero ' + (kanbanDeleteCtrl.item()?.name || '') + '?' "
 	description="Esta acción eliminará de forma permanente el tablero y todas sus columnas de tareas asociadas."
-	(stateChanged)="deleteModalState.set($event)" (confirm)="confirmDeleteKanban()" />
+	(stateChanged)="$event === 'closed' ? kanbanDeleteCtrl.close() : null" (confirm)="confirmDeleteKanban()" />
