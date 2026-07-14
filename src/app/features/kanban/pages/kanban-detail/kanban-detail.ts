@@ -14,6 +14,10 @@ import {
 	lucideArrowLeft,
 	lucideUsers,
 	lucideCalendar,
+	lucideEdit,
+	lucideTrash,
+	lucideWrench,
+	lucideUser,
 } from '@ng-icons/lucide'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmInputImports } from '@spartan-ng/helm/input'
@@ -32,26 +36,32 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog'
 import { HlmDatePickerImports } from '@spartan-ng/helm/date-picker'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
 
-import {
-	CdkDrag,
-	CdkDropList,
-	CdkDragDrop,
-	moveItemInArray,
-	transferArrayItem,
-} from '@angular/cdk/drag-drop'
-import { TaskCardComponent } from '@/shared/components/sidebar/components/task-card/task-card'
-import { BrnDialogState } from '@spartan-ng/brain/dialog'
-import { TaskModal } from '../../components/task-modal/task-modal'
-import { CreateTaskModalState } from '../../service/create-task-modal-state'
-import { MilestoneModalComponent } from '../../components/milestone-modal/milestone-modal'
-import { KanbanApi } from '../../service/kanban-api'
-import { MilestoneDetailResponse } from '../../models/milestone/milestone-detail-response.model'
-import { Subscription } from 'rxjs'
-import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
+import { CdkDrag, CdkDropList, CdkDragDrop } from '@angular/cdk/drag-drop'
+import { TaskCardComponent } from '@/shared/components/task-card/task-card'
+import { KanbanApi } from '../../features/kanban/kanban.api'
 import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
-import { ColumnKanbanModalComponent } from '../../components/column-kanban-modal/column-kanban-modal'
 import { TaskDetailResponse } from '../../models/task/task-detail-response.model'
 import { TeamApi } from '@/features/home/services/team-api'
+import { KanbanRealtime } from '../../service/kanban-realtime'
+import { MilestoneSummaryResponse } from '../../models/milestone/milestone-summary-response.model'
+import { toast } from '@spartan-ng/brain/sonner'
+import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComponent'
+import { HlmAvatar, HlmAvatarGroup, HlmAvatarGroupCount } from '@spartan-ng/helm/avatar'
+import { HlmBadge } from '@spartan-ng/helm/badge'
+import { getAssignmentInitials } from '../../utils/string.utils'
+import { DeleteDialogState } from '@/shared/components/delete/DeleteDialogState'
+import { KanbanDetailResponse } from '../../models/kanban-detail-response.model'
+import { MilestoneModalComponent } from '../../features/milestone/milestone-modal/milestone-modal'
+import { MilestoneFacade } from '../../features/milestone/milestone.facade'
+import { ChecklistItemFacade } from '../../features/checklist-item/checklist-item.facade'
+import { ChecklistFacade } from '../../features/checklist/checklist.facade'
+import { ColumnKanbanModalComponent } from '../../features/column/column-modal/column-kanban-modal'
+import { TaskModal } from '../../features/task/task-modal/task-modal'
+import { ColumnFacade } from '../../features/column/column.facade'
+import { TaskFacade } from '../../features/task/task.facade'
+import { ColumnTaskState } from '../../features/column-task/column-task-state'
+import { ColumnTaskFacade } from '../../features/column-task/column-task-facade'
+import { TaskFilterService } from '../../features/column-task/task-filter-service'
 
 @Component({
 	selector: 'app-kanban-detail',
@@ -80,11 +90,13 @@ import { TeamApi } from '@/features/home/services/team-api'
 		TaskModal,
 		MilestoneModalComponent,
 		ColumnKanbanModalComponent,
+		DeleteModalComponent,
+		HlmAvatar,
+		HlmAvatarGroup,
+		HlmBadge,
+		HlmAvatarGroupCount,
 	],
 	providers: [
-		CreateTaskModalState,
-		KanbanApi,
-		TeamApi,
 		provideIcons({
 			lucidePlus,
 			lucideSearch,
@@ -97,8 +109,12 @@ import { TeamApi } from '@/features/home/services/team-api'
 			lucideFlag,
 			lucideInfo,
 			lucideArrowLeft,
+			lucideUser,
 			lucideUsers,
 			lucideCalendar,
+			lucideEdit,
+			lucideTrash,
+			lucideWrench,
 		}),
 	],
 	templateUrl: './kanban-detail.html',
@@ -123,36 +139,29 @@ import { TeamApi } from '@/features/home/services/team-api'
 	`,
 })
 export class KanbanDetail implements OnDestroy {
-	// Input para el ws
+	// Inputs obligatorios
 	teamId = input.required<string>()
 	projectId = input.required<string>()
 	kanbanId = input.required<string>()
 
-	// Tabs
+	// Inyecciones de control y estado
+	readonly filterService = inject(TaskFilterService)
+	readonly kanbanApi = inject(KanbanApi)
+	readonly teamApi = inject(TeamApi)
+	readonly realtime = inject(KanbanRealtime)
+
+	readonly columnTaskState = inject(ColumnTaskState)
+	readonly columnTaskFacade = inject(ColumnTaskFacade)
+
+	// FACHADAS ORQUESTADORAS
+	readonly milestoneFacade = inject(MilestoneFacade)
+	readonly checklistItemFacade = inject(ChecklistItemFacade)
+	readonly checklistFacade = inject(ChecklistFacade)
+	readonly taskFacade = inject(TaskFacade)
+	readonly columnFacade = inject(ColumnFacade)
+
+	// Tabs de navegación
 	protected readonly activeTab = signal<string>('hitos')
-	protected readonly onlyMyTasks = signal(false)
-
-	// Modales
-	createMilestoneModal = signal<BrnDialogState>('closed')
-	createColumnKanbanModal = signal<BrnDialogState>('closed')
-
-	// conexion bd
-	kanbanApi = inject(KanbanApi)
-	teamApi = inject(TeamApi)
-	milestones = signal<MilestoneSummaryResponse[]>([])
-	columns = signal<ColumnKanbanDetailResponse[]>([])
-
-	protected readonly selectedMilestoneId = signal<string | null>(null)
-
-	protected readonly milestoneDetailRes = this.kanbanApi.milestoneDetailResource(
-		this.selectedMilestoneId,
-	)
-
-	protected readonly selectedMilestone = computed(() => {
-		if (!this.milestoneDetailRes.hasValue()) return null
-
-		return this.milestoneDetailRes.value()?.data ?? null
-	})
 
 	protected changeTab(tabName: string): void {
 		this.activeTab.set(tabName)
@@ -161,261 +170,164 @@ export class KanbanDetail implements OnDestroy {
 		}
 	}
 
-	protected viewMilestoneDetail(milestone: MilestoneSummaryResponse): void {
-		this.selectedMilestoneId.set(milestone.id)
-	}
+	protected readonly getInitials = getAssignmentInitials
 
-	protected closeDetail(): void {
-		this.selectedMilestoneId.set(null)
-	}
+	// MILESTONES (Bindeados directamente desde el Facade)
+	readonly milestones = this.milestoneFacade.milestones
+	readonly selectedMilestoneId = this.milestoneFacade.selectedMilestoneId
+	readonly milestoneDetail = this.milestoneFacade.milestoneDetail
 
-	protected dropColumn(event: CdkDragDrop<ColumnKanbanDetailResponse[]>) {
-		const movable = [...this.movableColumns()]
-		moveItemInArray(movable, event.previousIndex, event.currentIndex)
+	// Modales de eliminación
+	protected readonly milestoneDeleteCtrl = new DeleteDialogState<MilestoneSummaryResponse>()
+	protected readonly columnDeleteCtrl = new DeleteDialogState<ColumnKanbanDetailResponse>()
+	protected readonly taskDeleteCtrl = new DeleteDialogState<TaskDetailResponse>()
 
-		const completed = this.completedColumn()
-		this.columns.set([...movable, completed])
+	// Recursos Api y computados
+	private readonly kanbanDetailResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
+	private readonly teamDetailResource = this.teamApi.teamDetailResource(this.teamId)
 
-		const reorderedColumns = movable.map((col, index) => ({
-			id: col.id,
-			position: index,
-		}))
+	protected readonly milestoneDetailRes = this.milestoneFacade.milestoneDetailResource
 
-		this.kanbanApi.reorderColumns({
-			teamId: this.teamId(),
-			projectId: this.projectId(),
-			kanbanId: this.kanbanId(),
-			columns: reorderedColumns,
-		})
-	}
-
-	protected readonly movableColumns = computed(() =>
-		this.columns().filter((column) => !column.fixed),
-	)
-
-	protected readonly completedColumn = computed(
-		() => this.columns().find((column) => column.fixed)!,
-	)
-
-	protected readonly connectedLists = computed(() => this.columns().map((column) => column.id))
-
-	protected dropTask(event: CdkDragDrop<TaskDetailResponse[]>) {
-		const targetColumnId = event.container.id
-
-		if (event.previousContainer === event.container) {
-			moveItemInArray(event.container.data, event.previousIndex, event.currentIndex)
-		} else {
-			transferArrayItem(
-				event.previousContainer.data,
-				event.container.data,
-				event.previousIndex,
-				event.currentIndex,
-			)
-		}
-
-		const targetTasks = event.container.data.map((task, index) => ({
-			id: task.id,
-			position: index,
-		}))
-
-		this.kanbanApi.reorderTasks({
-			teamId: this.teamId(),
-			projectId: this.projectId(),
-			kanbanId: this.kanbanId(),
-			taskId: event.item.data.id,
-			targetColumnId: targetColumnId,
-			targetTasks: targetTasks,
-		})
-	}
-
-	// Renderizar hitos, columnas y tareas
-	private milestoneSub?: Subscription
-	private columnSub?: Subscription
-	private taskSub?: Subscription
-	private columnReorderSub?: Subscription
-	private taskReorderSub?: Subscription
-
-	teamDetailResource = this.teamApi.teamDetailResource(this.teamId)
+	readonly kanbanName = computed(() => {
+		const resource = this.kanbanDetailResource.value()
+		return resource?.data?.name || 'Cargando tablero...'
+	})
 
 	workspaceMembers = computed(() => {
 		if (!this.teamDetailResource.hasValue()) return []
 		return this.teamDetailResource.value()!.data.members || []
 	})
+
 	kanbanResource = this.kanbanApi.kanbanDetailResource(this.kanbanId)
 
-	openCreateTask(column: ColumnKanbanDetailResponse) {
-		this.kanbanApi.createTask({
-			title: 'Nueva tarea',
-			description: '',
-			deadline: '',
-			priority: 'BAJA',
-			groupTask: false,
-			milestoneId: '',
-			columnId: column.id,
+	// Buscador de hitos
+	readonly milestoneSearch = signal('')
+
+	readonly filteredMilestones = computed(() => {
+		const search = this.milestoneSearch().trim().toLowerCase()
+		if (!search) return this.milestones()
+		return this.milestones().filter((milestone) => milestone.title.toLowerCase().includes(search))
+	})
+
+	columns = this.columnTaskState.columns
+	connectedLists = this.columnTaskState.connectedLists
+
+	readonly displayColumns = computed(() => {
+		const columns = this.columnTaskState.columns()
+		const fixed = columns.find((c) => c.fixed)
+		const movable = columns.filter((c) => !c.fixed)
+		return fixed ? [...movable, fixed] : [...movable]
+	})
+
+	protected dropTask(event: CdkDragDrop<TaskDetailResponse[]>) {
+		this.columnTaskFacade.dropTask(event, {
 			teamId: this.teamId(),
 			projectId: this.projectId(),
 			kanbanId: this.kanbanId(),
 		})
 	}
 
-	// Señal para guardar la tarea que se va a editar
-	protected readonly selectedTask = signal<TaskDetailResponse | null>(null)
+	protected dropColumn(event: CdkDragDrop<ColumnKanbanDetailResponse[]>) {
+		this.columnTaskFacade.dropColumn(event, {
+			teamId: this.teamId(),
+			projectId: this.projectId(),
+			kanbanId: this.kanbanId(),
+		})
+	}
 
-	// Estado del modal de la tarea
-	createTaskModalState = inject(CreateTaskModalState)
-	protected readonly createTaskModal = computed(() => this.createTaskModalState.createTaskModal())
+	openCreateTask(column: ColumnKanbanDetailResponse) {
+		this.columnTaskFacade.createTask(column, {
+			teamId: this.teamId(),
+			projectId: this.projectId(),
+			kanbanId: this.kanbanId(),
+		})
+	}
 
-	// Método para abrir el modal con la información cargada
-	protected openEditTask(task: TaskDetailResponse): void {
-		this.selectedTask.set(task)
-		this.createTaskModalState.open()
+	protected openCreateTaskFromMilestone() {
+		const milestone = this.milestoneFacade.milestoneDetail()
+		if (!milestone) return
+
+		const firstColumn = this.displayColumns().find((c) => !c.fixed)
+		if (!firstColumn) return
+
+		this.taskFacade.create(firstColumn, {
+			teamId: this.teamId(),
+			projectId: this.projectId(),
+			kanbanId: this.kanbanId(),
+		})
+	}
+
+	protected confirmDeleteMilestone() {
+		const m = this.milestoneDeleteCtrl.item()
+		if (m) {
+			this.milestoneFacade.delete(m.id)
+			this.milestoneDeleteCtrl.close()
+		}
+	}
+
+	protected confirmDeleteColumn() {
+		const c = this.columnDeleteCtrl.item()
+		if (c) {
+			this.columnFacade.delete(c.id)
+			toast.success('Columna eliminada')
+			this.columnDeleteCtrl.close()
+		}
+	}
+
+	protected confirmDeleteTask() {
+		const t = this.taskDeleteCtrl.item()
+		if (t) {
+			this.taskFacade.delete(t.id, {
+				teamId: this.teamId(),
+				projectId: this.projectId(),
+				kanbanId: this.kanbanId(),
+			})
+			toast.success('Tarea eliminada')
+			this.taskDeleteCtrl.close()
+		}
+	}
+
+	normalizeKanban(data: KanbanDetailResponse) {
+		const checklistItems = data.columns.flatMap((column) =>
+			column.tasks.flatMap((task) => task.checklists.flatMap((checklist) => checklist.items)),
+		)
+
+		const checklists = data.columns.flatMap((column) =>
+			column.tasks.flatMap((task) =>
+				task.checklists.map((checklist) => ({
+					...checklist,
+					items: [],
+				})),
+			),
+		)
+
+		const columns = data.columns.map((column) => ({
+			...column,
+			tasks: column.tasks.map((task) => ({
+				...task,
+				checklists: [],
+			})),
+		}))
+
+		this.columnTaskState.setColumns(columns)
+		this.checklistFacade.setChecklists(checklists)
+		this.checklistItemFacade.setItems(checklistItems)
+		this.milestoneFacade.setMilestones(data.milestones)
 	}
 
 	constructor() {
 		effect(() => {
 			if (!this.kanbanResource.hasValue()) return
-
-			const data = this.kanbanResource.value()!.data
-
-			this.milestones.set(data.milestones)
-			this.columns.set(data.columns)
+			this.normalizeKanban(this.kanbanResource.value()!.data)
 		})
 
 		effect(() => {
-			if (!this.kanbanId() || !this.projectId() || !this.teamId()) return
-
-			this.milestoneSub?.unsubscribe()
-
-			this.milestoneSub = this.kanbanApi
-				.getMilestones(this.teamId(), this.projectId(), this.kanbanId())
-				.subscribe((event) => {
-					switch (event.action) {
-						case 'CREATE':
-							this.milestones.update((list) => [event.payload, ...list])
-							break
-					}
-				})
-		})
-
-		effect(() => {
-			if (!this.kanbanId() || !this.projectId() || !this.teamId()) return
-
-			this.columnSub?.unsubscribe()
-
-			this.columnSub = this.kanbanApi
-				.getColumnsKanban(this.teamId(), this.projectId(), this.kanbanId())
-				.subscribe((event) => {
-					switch (event.action) {
-						case 'CREATE':
-							this.columns.update((list) => [...list, event.payload])
-							break
-					}
-				})
-		})
-
-		effect(() => {
-			if (!this.kanbanId() || !this.projectId() || !this.teamId()) return
-
-			this.taskSub?.unsubscribe()
-
-			this.taskSub = this.kanbanApi
-				.getTasks(this.teamId(), this.projectId(), this.kanbanId())
-				.subscribe((event) => {
-					switch (event.action) {
-						case 'CREATE':
-							this.columns.update((columns) =>
-								columns.map((column) =>
-									column.id === event.payload.columnId
-										? {
-												...column,
-												tasks: [...column.tasks, event.payload],
-											}
-										: column,
-								),
-							)
-							break
-
-						case 'UPDATE':
-							this.columns.update((columns) => {
-								const previousColumn = columns.find((column) =>
-									column.tasks.some((task) => task.id === event.payload.id),
-								)
-
-								if (previousColumn?.id === event.payload.columnId) {
-									return columns.map((column) => {
-										if (column.id !== event.payload.columnId) return column
-
-										return {
-											...column,
-											tasks: column.tasks.map((task) =>
-												task.id === event.payload.id ? event.payload : task,
-											),
-										}
-									})
-								}
-
-								return columns.map((column) => {
-									const tasksWithout = column.tasks.filter((task) => task.id !== event.payload.id)
-
-									if (column.id === event.payload.columnId) {
-										return {
-											...column,
-											tasks: [...tasksWithout, event.payload],
-										}
-									}
-
-									return {
-										...column,
-										tasks: tasksWithout,
-									}
-								})
-							})
-
-							if (this.selectedMilestoneId()) {
-								this.milestoneDetailRes.reload()
-							}
-
-							this.kanbanResource.reload()
-
-							break
-					}
-				})
-		})
-
-		effect(() => {
-			if (!this.kanbanId() || !this.projectId() || !this.teamId()) return
-
-			this.columnReorderSub?.unsubscribe()
-
-			this.columnReorderSub = this.kanbanApi
-				.getColumnsReorder(this.teamId(), this.projectId(), this.kanbanId())
-				.subscribe((event) => {
-					if (event.action === 'REORDER') {
-						this.columns.set(event.payload)
-					}
-				})
-		})
-
-		effect(() => {
-			if (!this.kanbanId() || !this.projectId() || !this.teamId()) return
-
-			this.taskReorderSub?.unsubscribe()
-
-			this.taskReorderSub = this.kanbanApi
-				.getTasksReorder(this.teamId(), this.projectId(), this.kanbanId())
-				.subscribe((event) => {
-					if (event.action === 'REORDER') {
-						this.columns.set(event.payload)
-					}
-				})
+			if (!this.teamId() || !this.projectId() || !this.kanbanId()) return
+			this.realtime.connect(this.teamId(), this.projectId(), this.kanbanId())
 		})
 	}
 
 	ngOnDestroy() {
-		this.milestoneSub?.unsubscribe()
-		this.columnSub?.unsubscribe()
-		this.taskSub?.unsubscribe()
-		this.columnReorderSub?.unsubscribe()
-		this.taskReorderSub?.unsubscribe()
+		this.realtime.disconnect()
 	}
 }

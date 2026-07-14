@@ -2,6 +2,14 @@ export interface CreateMilestoneRequest {
 	title: string
 	deadline: string
 	kanbanId: string
-	projectId: string
-	teamId: string
+}
+
+export interface UpdateMilestoneRequest {
+	milestoneId: string
+	title: string
+	deadline: string
+}
+
+export interface DeleteMilestoneRequest {
+	milestoneId: string
 }

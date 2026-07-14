@@ -11,7 +11,7 @@ import { HlmButtonImports } from '@spartan-ng/helm/button'
 	providers: [provideIcons({ lucideTrash2 })],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	template: `
-		<hlm-alert-dialog [state]="state()" (stateChanged)="stateChanged.emit($event)">
+		<hlm-alert-dialog [state]="state()" (closed)="stateChanged.emit('closed')">
 			<hlm-alert-dialog-content *brnAlertDialogContent="let ctx">
 				<hlm-alert-dialog-header>
 					<hlm-alert-dialog-media
@@ -19,7 +19,14 @@ import { HlmButtonImports } from '@spartan-ng/helm/button'
 					>
 						<ng-icon name="lucideTrash2" />
 					</hlm-alert-dialog-media>
-					<h2 hlmAlertDialogTitle>{{ title() }}</h2>
+
+					<h2
+						hlmAlertDialogTitle
+						class="max-w-xs sm:max-w-md wrap-break-word whitespace-normal w-70"
+					>
+						{{ title() }}
+					</h2>
+
 					<p hlmAlertDialogDescription>{{ description() }}</p>
 				</hlm-alert-dialog-header>
 				<hlm-alert-dialog-footer>

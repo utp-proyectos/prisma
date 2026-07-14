@@ -1,9 +1,9 @@
 export interface CreateTaskRequest {
 	title: string
 	description: string
-	deadline: string
-	columnId: string
-	milestoneId: string
+	deadline: string | null
+	columnId: string | null
+	milestoneId: string | null
 	priority: 'ALTA' | 'MEDIA' | 'BAJA'
 	groupTask: boolean
 	kanbanId: string
@@ -25,4 +25,11 @@ export interface UpdateTaskRequest {
 	projectId: string
 	teamId: string
 	assignedUserIds: string[]
+}
+
+export interface DeleteTaskRequest {
+	id: string
+	kanbanId: string
+	projectId: string
+	teamId: string
 }

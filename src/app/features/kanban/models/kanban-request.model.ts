@@ -7,7 +7,7 @@ export interface CreateKanbanRequest {
 export interface UpdateKanbanRequest {
 	kanbanId: string
 	name: string
-	isPrivate: boolean
+	privateSwitch: boolean
 }
 
 export interface DeleteKanbanRequest {

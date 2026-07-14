@@ -1,0 +1,63 @@
+<hlm-dialog [state]="checklistFacade.checklistDialogState()" (closed)="checklistFacade.closeModal()">
+	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
+		<hlm-dialog-header>
+			<h3 hlmDialogTitle> {{ checklistFacade.isEditMode() ? 'Editar Checklist' : 'Crear Checklist' }} </h3>
+			<p hlmDialogDescription> {{ checklistFacade.isEditMode() ? 'Modifica los detalles del checklist'
+				: 'Crea tus checklists para organizar tus tareas' }}</p>
+		</hlm-dialog-header>
+
+		<form [formRoot]="checklistForm" id="checklist-form">
+			<hlm-field-group>
+
+				<hlm-field>
+					<label hlmFieldLabel for="name">Nombre</label>
+
+					<input hlmInput id="name" placeholder="Ejem. Sprint 1" [formField]="checklistForm.title" />
+
+					@for (error of checklistForm.title().errors(); track error.kind) {
+					<hlm-field-error [validator]="error.kind">
+						{{ error.message }}
+					</hlm-field-error>
+					}
+				</hlm-field>
+
+				<hlm-field>
+					<label hlmFieldLabel>Prioridad</label>
+
+					<hlm-select buttonId="priority" [formField]="checklistForm.priority" [itemToString]="priorityToString">
+
+						<hlm-select-trigger class="w-full">
+							<hlm-select-value placeholder="Selecciona una prioridad" />
+						</hlm-select-trigger>
+
+						<hlm-select-content *hlmSelectPortal>
+							<hlm-select-group>
+								@for (priority of priorities; track priority.value) {
+								<hlm-select-item [value]="priority.value">
+									{{ priority.label }}
+								</hlm-select-item>
+								}
+
+							</hlm-select-group>
+						</hlm-select-content>
+					</hlm-select>
+
+					@for (error of checklistForm.priority().errors(); track error.kind) {
+					<hlm-field-error [validator]="error.kind">
+						{{ error.message }}
+					</hlm-field-error>
+					}
+
+				</hlm-field>
+
+			</hlm-field-group>
+		</form>
+
+		<hlm-dialog-footer>
+			<button hlmBtn variant="outline" hlmDialogClose>Cancelar</button>
+			<button hlmBtn form="checklist-form" type="submit" [disabled]="checklistForm().submitting()">
+				{{ checklistFacade.isEditMode() ? 'Guardar' : 'Crear' }}
+			</button>
+		</hlm-dialog-footer>
+	</hlm-dialog-content>
+</hlm-dialog>

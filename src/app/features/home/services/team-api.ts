@@ -23,6 +23,11 @@ export class TeamApi {
 			teamId() ? `/teams/${teamId()}` : undefined,
 		)
 
+	projectsResource = (teamId: Signal<string | undefined>) =>
+		httpResource<ApiResponse<ProjectResponse[]>>(() =>
+			teamId() ? `/teams/${teamId()}/projects` : undefined,
+		)
+
 	createTeam = (team: TeamRequest) =>
 		firstValueFrom(
 			this.http.post<ApiResponse<TeamResponse>>('/teams', team).pipe(

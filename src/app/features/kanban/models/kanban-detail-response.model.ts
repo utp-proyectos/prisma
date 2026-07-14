@@ -4,7 +4,7 @@ import { MilestoneDetailResponse } from './milestone/milestone-detail-response.m
 export interface KanbanDetailResponse {
 	id: string
 	name: string
-	isPrivate: boolean
+	privateSwitch: boolean
 	projectId: string
 	creatorId: string
 

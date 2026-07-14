@@ -1,0 +1,48 @@
+<hlm-dialog [state]="milestoneFacade.milestoneDialogState()" (closed)="milestoneFacade.closeModal()">
+	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
+		<hlm-dialog-header>
+			<h3 hlmDialogTitle>
+				{{ milestoneFacade.isEditMode() ? 'Editar Hito' : 'Crear Hito' }}
+			</h3>
+			<p hlmDialogDescription>
+				{{ milestoneFacade.isEditMode() ? 'Modifica los detalles del hito' : 'Crea tus hitos para englobar tus tareas'
+				}}
+			</p>
+		</hlm-dialog-header>
+
+		<form [formRoot]="milestoneForm" id="milestone-form">
+			<hlm-field-group>
+
+				<hlm-field>
+					<label hlmFieldLabel for="name">Nombre</label>
+					<input hlmInput id="name" placeholder="Ejem. Sprint 1" [formField]="milestoneForm.title" />
+
+					@for (error of milestoneForm.title().errors(); track error.kind) {
+					<hlm-field-error [validator]="error.kind">
+						{{ error.message }}
+					</hlm-field-error>
+					}
+				</hlm-field>
+
+				<hlm-field>
+					<label hlmFieldLabel for="deadline">Fecha límite</label>
+					<input type="date" hlmInput id="deadline" [formField]="milestoneForm.deadline" />
+
+					@for (error of milestoneForm.deadline().errors(); track error.kind) {
+					<hlm-field-error [validator]="error.kind">
+						{{ error.message }}
+					</hlm-field-error>
+					}
+				</hlm-field>
+
+			</hlm-field-group>
+		</form>
+
+		<hlm-dialog-footer>
+			<button hlmBtn variant="outline" hlmDialogClose>Cancelar</button>
+			<button hlmBtn form="milestone-form" type="submit" [disabled]="milestoneForm().submitting()">
+				{{ milestoneFacade.isEditMode() ? 'Guardar' : 'Crear' }}
+			</button>
+		</hlm-dialog-footer>
+	</hlm-dialog-content>
+</hlm-dialog>

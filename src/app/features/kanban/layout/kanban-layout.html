@@ -2,12 +2,13 @@
 
 	<app-sidebar>
 		<sidebar-header>
-			<nav-header icon="lucideTriangle" title="Proyecto 1"></nav-header>
+			<nav-header icon="lucideTriangle" [title]="projectName()"></nav-header>
 		</sidebar-header>
 
-		<sidebar-content [items]="kanbanItems()">
+		<sidebar-content [items]="kanbanItems()" (editRequested)="kanbanFacade.openEdit($event)"
+			(deleteRequested)="kanbanDeleteCtrl.open($event)">
 			<ng-container append>
-				<button hlmBtn class="w-full mt-2 mb-4" (click)="createKanbanModalState.open()">
+				<button hlmBtn class="w-full mt-2 mb-4" (click)="kanbanFacade.openCreate()">
 					<ng-icon name="lucidePlus"></ng-icon>
 					Crear tablero
 				</button>
@@ -26,14 +27,17 @@
 	</div>
 </div>
 
-<hlm-dialog [state]="createKanbanModal()" (closed)="closeCreateKanbanModal()">
+<hlm-dialog [state]="kanbanModal()" (closed)="kanbanFacade.closeModal()">
 	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
 		<hlm-dialog-header>
-			<h3 hlmDialogTitle>Crear Tablero</h3>
-			<p hlmDialogDescription>Crea un tablero kanban y empieza a organizar tus tareas</p>
+			<h3 hlmDialogTitle>
+				{{ kanbanFacade.isEditMode() ? 'Editar Tablero' : 'Crear Tablero' }} </h3>
+			<p hlmDialogDescription>
+				{{ kanbanFacade.isEditMode() ? 'Modifica las opciones de tu tablero' :
+				'Crea un tablero kanban y empieza a organizar tus tareas' }}
 		</hlm-dialog-header>
 
-		<form [formRoot]="kanbanForm" id="create-kanban-form">
+		<form [formRoot]="kanbanForm" id="kanban-form">
 			<hlm-field-group>
 				<hlm-field>
 					<label hlmFieldLabel for="name">Nombre</label>
@@ -58,7 +62,14 @@
 		</form>
 		<hlm-dialog-footer>
 			<button hlmBtn variant="outline" hlmDialogClose>Cancelar</button>
-			<button hlmBtn form="create-kanban-form" type="submit" [disabled]="kanbanForm().submitting()">Crear</button>
+			<button hlmBtn form="kanban-form" type="submit" [disabled]="kanbanForm().submitting()">
+				{{ kanbanFacade.isEditMode() ? 'Guardar' : 'Crear' }}
+			</button>
 		</hlm-dialog-footer>
 	</hlm-dialog-content>
 </hlm-dialog>
+
+<app-delete-modal [state]="kanbanDeleteCtrl.state()"
+	[title]="'¿Eliminar el tablero ' + (kanbanDeleteCtrl.item()?.name || '') + '?' "
+	description="Esta acción eliminará de forma permanente el tablero y todas sus columnas de tareas asociadas."
+	(stateChanged)="$event === 'closed' ? kanbanDeleteCtrl.close() : null" (confirm)="confirmDeleteKanban()" />

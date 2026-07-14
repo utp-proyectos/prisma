@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core'
+import { Component, input, output } from '@angular/core'
 import { SidebarItem, SidebarItemProps } from '../sidebar-item/sidebar-item'
 
 @Component({
@@ -10,4 +10,7 @@ import { SidebarItem, SidebarItemProps } from '../sidebar-item/sidebar-item'
 })
 export class SidebarContent {
 	readonly items = input<SidebarItemProps[]>([])
+
+	editRequested = output<any>()
+	deleteRequested = output<any>()
 }

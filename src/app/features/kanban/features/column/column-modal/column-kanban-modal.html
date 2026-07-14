@@ -1,0 +1,34 @@
+<hlm-dialog [state]="columnFacade.columnDialogState()" (closed)="columnFacade.closeModal()">
+	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
+		<hlm-dialog-header>
+			<h3 hlmDialogTitle> {{ columnFacade.isEditMode() ? 'Editar Columna' : 'Crear Columna' }} </h3>
+			<p hlmDialogDescription> {{ columnFacade.isEditMode() ? 'Modifica el nombre de la columna' :
+				'Crea una nueva columna para organizar tus tareas' }}</p>
+		</hlm-dialog-header>
+
+		<form [formRoot]="columnKanbanForm" id="column-form">
+			<hlm-field-group>
+
+				<hlm-field>
+					<label hlmFieldLabel for="name">Nombre de la columna</label>
+
+					<input hlmInput id="name" placeholder="Ejem. Sprint 1" [formField]="columnKanbanForm.title" />
+
+					@for (error of columnKanbanForm.title().errors(); track error.kind) {
+					<hlm-field-error [validator]="error.kind">
+						{{ error.message }}
+					</hlm-field-error>
+					}
+				</hlm-field>
+
+			</hlm-field-group>
+		</form>
+
+		<hlm-dialog-footer>
+			<button hlmBtn variant="outline" hlmDialogClose>Cancelar</button>
+			<button hlmBtn form="column-form" type="submit" [disabled]="columnKanbanForm().submitting()">
+				{{ columnFacade.isEditMode() ? 'Guardar' : 'Crear' }}
+			</button>
+		</hlm-dialog-footer>
+	</hlm-dialog-content>
+</hlm-dialog>

@@ -2,7 +2,7 @@
 	<div>
 		<h3 class="flex items-center gap-2 text-xl font-medium">
 			<ng-icon name="lucidePanelLeft"></ng-icon>
-			<span>Tablero 1</span>
+			<span> {{ kanbanName() }} </span>
 		</h3>
 
 		<hlm-separator />
@@ -17,17 +17,18 @@
 
 			<div hlmTabsContent="hitos" class="animate-in fade-in duration-200 mt-5">
 
-				@if (!selectedMilestone()) {
+				@if (!milestoneDetail()) {
 				<div class="flex flex-col gap-4">
 					<div class="flex items-center justify-between mt-4">
 						<hlm-input-group class="w-70">
-							<input hlmInputGroupInput placeholder="Buscar..." />
+							<input hlmInputGroupInput placeholder="Buscar..." value="buscar" [value]="milestoneSearch()"
+								(input)="milestoneSearch.set($any($event.target).value)" />
 							<hlm-input-group-addon>
 								<ng-icon name="lucideSearch" />
 							</hlm-input-group-addon>
 						</hlm-input-group>
 
-						<button hlmBtn (click)="createMilestoneModal.set('open')">
+						<button hlmBtn (click)="milestoneFacade.openCreate()">
 							<ng-icon name="lucidePlus"></ng-icon>
 							Crear hito
 						</button>
@@ -37,7 +38,7 @@
 						<table hlmTable>
 							<thead hlmTableHeader>
 								<tr hlmTableRow>
-									<th hlmTableHead>Nombre</th>
+									<th hlmTableHead class="w-70">Nombre</th>
 									<th hlmTableHead>
 										<div class="flex items-center gap-1.5"><ng-icon name="lucideCalendarDays" /><span>Fecha
 												límite</span></div>
@@ -56,9 +57,13 @@
 								</tr>
 							</thead>
 							<tbody hlmTableBody>
-								@for (milestone of milestones(); track milestone.id) {
+								@for (milestone of filteredMilestones(); track milestone.id) {
 								<tr hlmTableRow>
-									<td hlmTableCell class="font-medium">{{ milestone.title }}</td>
+									<td hlmTableCell class="font-medium max-w-0 w-64">
+										<span class="block w-full truncate text-zinc-200" [title]="milestone.title">
+											{{ milestone.title }}
+										</span>
+									</td>
 									<td hlmTableCell>{{ milestone.deadline }}</td>
 									<td hlmTableCell>{{ milestone.progress }}%</td>
 									<td hlmTableCell>{{ milestone.totalTasks }} tareas - {{ milestone.completedTasks }} completadas</td>
@@ -70,10 +75,19 @@
 
 										<ng-template #menu>
 											<hlm-dropdown-menu>
-												<button hlmDropdownMenuItem (click)="viewMilestoneDetail(milestone)">Ver detalle</button>
-												<button hlmDropdownMenuItem>Editar</button>
+												<button hlmDropdownMenuItem (click)="milestoneFacade.select(milestone.id)">
+													<ng-icon name="lucideInfo" class="mr-2 h-4 w-4" />
+													<span>Ver detalle</span>
+												</button>
+												<button hlmDropdownMenuItem (click)="milestoneFacade.openEdit(milestone)">
+													<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
+													<span>Editar</span>
+												</button>
 												<hlm-dropdown-menu-separator />
-												<button hlmDropdownMenuItem variant="destructive">Eliminar</button>
+												<button hlmDropdownMenuItem variant="destructive" (click)="milestoneDeleteCtrl.open(milestone)">
+													<ng-icon name="lucideTrash" class="mr-2 h-4 w-4 text-danger" />
+													<span>Eliminar</span>
+												</button>
 											</hlm-dropdown-menu>
 										</ng-template>
 									</td>
@@ -94,12 +108,12 @@
 				<div class="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
 
 					<button hlmBtn variant="link" size="sm" class="w-fit p-0 flex items-center gap-2 mt-3"
-						(click)="closeDetail()">
+						(click)="milestoneFacade.select( null )">
 						<ng-icon name="lucideArrowLeft" />
 						Regresar a hitos
 					</button>
 
-					@if (milestoneDetailRes.isLoading()) {
+					@if (milestoneFacade.milestoneDetailResource.isLoading()) {
 					<div class="flex items-center justify-center py-12 text-zinc-400 gap-2">
 						<span class="animate-spin rounded-full h-4 w-4 border border-zinc-500 border-t-transparent"></span>
 						Cargando tareas del hito...
@@ -107,17 +121,18 @@
 					} @else {
 					<div class="flex items-center justify-between gap-4 mt-2">
 						<div class="flex items-center gap-3">
-							<h4 class="text-2xl font-bold text-white">{{ selectedMilestone()?.title }}</h4>
+							<h4 class="text-2xl font-bold text-white">{{ milestoneDetail()?.title }}</h4>
 							<span
 								class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-								{{ selectedMilestone()?.state }}
+								{{ milestoneDetail()?.state }}
 							</span>
 							<span class="text-zinc-400">
-								Finaliza en {{ selectedMilestone()?.deadline }} - {{ selectedMilestone()?.progress }}% completado
+								Finaliza en {{ milestoneDetail()?.deadline }} - {{
+								milestoneDetail()?.progress }}% completado
 							</span>
 						</div>
 
-						<button hlmBtn (click)="createTaskModalState.open()">
+						<button hlmBtn (click)="openCreateTaskFromMilestone()">
 							<ng-icon name="lucidePlus" class="mr-2" />
 							Crear tarea
 						</button>
@@ -127,37 +142,121 @@
 						<table hlmTable>
 							<thead hlmTableHeader>
 								<tr hlmTableRow>
-									<th hlmTableHead>Nombre</th>
+									<th hlmTableHead class="w-70"><span>Nombre</span></th>
+									<th hlmTableHead>
+										<div class="flex items-center gap-1.5"><ng-icon name="lucideWrench" /><span>Modalidad</span></div>
+									</th>
 									<th hlmTableHead>
 										<div class="flex items-center gap-1.5"><ng-icon name="lucideUser" /><span>Asignados</span></div>
 									</th>
 									<th hlmTableHead>
 										<div class="flex items-center gap-1.5"><ng-icon name="lucideFlag" /><span>Prioridad</span></div>
 									</th>
-									<!-- <th hlmTableHead>
+									<th hlmTableHead>
 										<div class="flex items-center gap-1.5"><ng-icon name="lucideClock" /><span>Estado</span></div>
-									</th> -->
+									</th>
 									<th hlmTableHead class="text-right">Acción</th>
 								</tr>
 							</thead>
 							<tbody hlmTableBody>
-								@for (task of selectedMilestone()?.tasks; track task.id) {
+								@for (task of milestoneDetail()?.tasks; track task.id) {
 								<tr hlmTableRow>
-									<td hlmTableCell class="font-medium text-zinc-200">{{ task.title }}</td>
-									<td hlmTableCell>
-										<div
-											class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700">
-											<ng-icon name="lucideUser" class="text-xs text-zinc-400" />
+									<td hlmTableCell class="py-2.5 max-w-0 w-50 md:w-100">
+										<div class="flex flex-col w-full min-w-0 gap-0.5">
+
+											<span class="font-medium text-zinc-200 text-sm block w-full truncate">
+												{{ task.title }}
+											</span>
+
+											@if (task.description) {
+											<span class="text-xs text-zinc-500 block w-full truncate">
+												{{ task.description }}
+											</span>
+											} @else {
+											<span class="text-xs text-zinc-600 italic select-none block w-full truncate">
+												Sin descripción
+											</span>
+											}
 										</div>
 									</td>
-									<td hlmTableCell><span class="text-zinc-400">{{ task.priority }}</span></td>
 
-									<!-- <td hlmTableCell><span class="text-emerald-400">{{ task. || 'Pendiente' }}</span></td> -->
+									<td hlmTableCell class="text-zinc-400">
+										@if (task.groupTask) {
+										<div class="flex items-center gap-1.5">
+											<ng-icon name="lucideUsers" />
+											<span>Grupal</span>
+										</div>
+										} @else {
+										<div class="flex items-center gap-1.5">
+											<ng-icon name="lucideUser" />
+											<span>Individual</span>
+										</div>
+										}
+									</td>
+
+									<td hlmTableCell>
+										<div class="flex items-center -space-x-2 isolate">
+
+											@for (assignment of task.assignments.slice(0, 3); track assignment.id) {
+											<hlm-avatar-group class="grayscale">
+												<hlm-avatar>
+													<span hlmAvatarFallback>
+														{{ getInitials(assignment) }}
+													</span>
+												</hlm-avatar>
+												@if (task.assignments.length > 3) {
+												<hlm-avatar-group-count> + {{ task.assignments.length - 3 }} </hlm-avatar-group-count>
+												}
+											</hlm-avatar-group>
+											}
+
+											@if (task.assignments.length === 0) {
+											<span class="text-xs text-zinc-500 italic pl-2">Sin asignar</span>
+											}
+
+										</div>
+									</td>
+									<td hlmTableCell>
+										@if(task.priority === 'ALTA') {
+										<span hlmBadge class="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300">Alta</span>
+										}
+										@if(task.priority === 'MEDIA') {
+										<span hlmBadge
+											class="bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300">Media</span>
+										}
+										@if(task.priority === 'BAJA') {
+										<span hlmBadge class="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">Baja</span>
+										}
+									</td>
+
+									<td hlmTableCell>
+										@if (task.completed){
+										<span hlmBadge
+											class="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">Completado</span>
+										} @else {
+										<span hlmBadge
+											class="bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300">Pendiente</span>
+										}
+									</td>
 
 									<td hlmTableCell class="text-right">
-										<button hlmBtn variant="ghost" size="icon-sm">
+										<button hlmBtn variant="ghost" size="icon-sm" [hlmDropdownMenuTrigger]="menuDetail" align="end">
 											<ng-icon name="lucideMoreHorizontal" />
 										</button>
+
+										<ng-template #menuDetail>
+											<hlm-dropdown-menu>
+												<button hlmDropdownMenuItem (click)="taskFacade.open(task)">
+													<ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
+													<span>Editar</span>
+												</button>
+												<hlm-dropdown-menu-separator />
+												<button hlmDropdownMenuItem variant="destructive" (click)="taskDeleteCtrl.open(task)">
+													<ng-icon name="lucideTrash" class="mr-2 h-4 w-4 text-danger" />
+													<span>Eliminar</span>
+												</button>
+											</hlm-dropdown-menu>
+										</ng-template>
 									</td>
 								</tr>
 								} @empty {
@@ -178,7 +277,15 @@
 
 			<div hlmTabsContent="kanban" class="animate-in fade-in duration-200 flex flex-col gap-4 w-full min-w-0">
 
-				<div class="flex justify-center w-full mt-2 mb-2">
+				<div class="flex items-center justify-between mt-4">
+					<hlm-input-group class="w-100">
+						<input hlmInputGroupInput placeholder="Buscar por título, descripción, prioridad o miembro..."
+							[value]="filterService.taskSearch()" (input)="filterService.taskSearch.set($any($event.target).value)" />
+						<hlm-input-group-addon>
+							<ng-icon name="lucideSearch" />
+						</hlm-input-group-addon>
+					</hlm-input-group>
+
 					<hlm-field orientation="horizontal" class="flex items-center gap-3 border px-3 py-1.5 rounded-lg w-fit">
 						<hlm-field-content>
 							<label hlmFieldLabel for="two-factor">Ver mis tareas</label>
@@ -186,7 +293,8 @@
 								Solo podrás ver tus tareas
 							</hlm-field-description>
 						</hlm-field-content>
-						<hlm-switch class="ml-2" [checked]="onlyMyTasks()" (checkedChange)="onlyMyTasks.set($event)" />
+						<hlm-switch class="ml-2" [checked]="filterService.onlyMyTasks()"
+							(checkedChange)="filterService.onlyMyTasks.set($event)" />
 					</hlm-field>
 				</div>
 
@@ -194,17 +302,42 @@
 					<div scrollViewport cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="dropColumn($event)"
 						class="flex items-start gap-4 pb-4 min-w-max">
 
-						@for(column of movableColumns(); track column.id) {
+						@for(column of displayColumns(); track column.id) {
 
-						<div cdkDrag
-							class="flex flex-col gap-3 bg-primary-foreground border border-border rounded-xl p-3 w-72 shrink-0 max-h-[70vh]"
-							[cdkDragData]="column">
+						<div cdkDrag [cdkDragDisabled]="column.fixed"
+							class="flex flex-col gap-3 bg-primary-foreground border rounded-xl p-3 w-72 shrink-0 max-h-[70vh]"
+							[class.border-green-500/30]="column.fixed" [class.border-border]="!column.fixed">
 
-							<span class="font-semibold text-muted-foreground px-1">
-								{{ column.title }}
-							</span>
+							<!-- HEADER -->
+							<div class="flex items-center justify-between w-full px-1" cdkDragHandle>
 
+								<span class="font-semibold select-none truncate max-w-[80%]" [class.text-green-500]="column.fixed"
+									[class.text-muted-foreground]="!column.fixed">
+
+									{{ column.title }}
+
+								</span>
+
+								@if(!column.fixed){
+
+								<button hlmBtn variant="ghost" size="icon-sm" [hlmDropdownMenuTrigger]="columnMenu">
+									<ng-icon name="lucideMoreHorizontal" />
+								</button>
+
+								<ng-template #columnMenu> <hlm-dropdown-menu> <button hlmDropdownMenuItem
+											(click)="columnFacade.openEdit(column)"> <ng-icon name="lucideEdit" class="mr-2 h-4 w-4" />
+											<span>Editar</span> </button> <hlm-dropdown-menu-separator /> <button hlmDropdownMenuItem
+											variant="destructive" (click)="columnDeleteCtrl.open(column)"> <ng-icon name="lucideTrash"
+												class="mr-2 h-4 w-4 text-danger" /> <span>Eliminar</span> </button> </hlm-dropdown-menu>
+								</ng-template>
+
+								}
+
+							</div>
+
+							<!-- SCROLL -->
 							<ng-scrollbar hlm appearance="compact" class="flex-1">
+
 								<div scrollViewport cdkDropList [id]="column.id" [cdkDropListData]="column.tasks"
 									[cdkDropListConnectedTo]="connectedLists()" (cdkDropListDropped)="dropTask($event)"
 									class="flex flex-col gap-3">
@@ -218,64 +351,37 @@
 
 									@for(task of column.tasks; track task.id) {
 
-									<div cdkDrag [cdkDragData]="task">
-										<app-task-card [task]="task" (opened)="openEditTask($event)" />
+									@if(filterService.matches(task)) {
+									<div cdkDrag [cdkDragData]="task" class="w-65">
+										<app-task-card [task]="task" (opened)="taskFacade.open($event)"
+											(delete)="taskDeleteCtrl.open(task)"></app-task-card>
 									</div>
+									}
+
 									}
 
 								</div>
 							</ng-scrollbar>
 
+							<!-- BOTÓN -->
+							@if(!column.fixed){
 
 							<button hlmBtn class="w-full mt-auto" (click)="openCreateTask(column)">
 								<ng-icon name="lucidePlus" />
 								Crear tarea
 							</button>
+							}
 
 						</div>
-
 						}
 
 						<div class="w-72 shrink-0">
-
-							<button hlmBtn class="w-full" (click)="createColumnKanbanModal.set('open')">
+							<button hlmBtn class="w-full" (click)="columnFacade.openCreate()">
 								<ng-icon name="lucidePlus" />
 								Nueva columna
 							</button>
-
 						</div>
 
-						@if(completedColumn(); as completed) {
-
-						<div
-							class="flex flex-col gap-3 bg-primary-foreground border border-green-500/30 rounded-xl p-3 w-72 shrink-0 max-h-[70vh]">
-
-							<span class="font-semibold text-green-500 px-1">
-								{{ completed.title }}
-							</span>
-
-							<ng-scrollbar hlm appearance="compact" class="flex-1">
-								<div scrollViewport cdkDropList [id]="completed.id" [cdkDropListData]="completed.tasks"
-									[cdkDropListConnectedTo]="connectedLists()" (cdkDropListDropped)="dropTask($event)"
-									class="flex flex-col gap-3">
-
-									@if(completed.tasks.length === 0) {
-									<div
-										class="border border-dashed border-border rounded-lg p-4 text-center text-muted-foreground text-sm">
-										Arrastra una tarea aquí
-									</div>
-									}
-
-									@for(task of completed.tasks; track task.id) {
-
-									<div cdkDrag>
-										<app-task-card [task]="task" (opened)="openEditTask($event)" />
-									</div>
-									}
-								</div>
-							</ng-scrollbar>
-						</div>
-						}
 					</div>
 				</ng-scrollbar>
 			</div>
@@ -283,14 +389,23 @@
 
 	</div>
 
-	<app-milestone-modal [state]="createMilestoneModal() " [kanbanId]="kanbanId()" [projectId]="projectId()"
-		[teamId]="teamId()" (closed)="createMilestoneModal.set('closed')"></app-milestone-modal>
+	<app-milestone-modal [kanbanId]="kanbanId()" [projectId]="projectId()" [teamId]="teamId()"></app-milestone-modal>
 
+	<app-delete-modal [state]="milestoneDeleteCtrl.state()"
+		[title]="'¿Eliminar el hito ' + (milestoneDeleteCtrl.item()?.title || '') + '?'"
+		(stateChanged)="$event === 'closed' ? milestoneDeleteCtrl.close() : null" (confirm)="confirmDeleteMilestone()" />
 
-	<app-column-kanban-modal [state]="createColumnKanbanModal()" [kanbanId]="kanbanId()" [projectId]="projectId()"
-		[teamId]="teamId()" (closed)="createColumnKanbanModal.set('closed')"></app-column-kanban-modal>
-
-	<app-task-modal [state]="createTaskModal()" [columns]="columns()" [milestones]="milestones()"
-		[workspaceMembers]="workspaceMembers()" [task]="selectedTask()" [kanbanId]="kanbanId()" [projectId]="projectId()"
-		[teamId]="teamId()" (closed)="createTaskModalState.close(); selectedTask.set(null)">
+	<app-task-modal [columns]="columns()" [milestones]="milestones()" [workspaceMembers]="workspaceMembers()"
+		[kanbanId]="kanbanId()" [projectId]="projectId()" [teamId]="teamId()">
 	</app-task-modal>
+
+	<app-delete-modal [state]="taskDeleteCtrl.state()"
+		[title]="'¿Eliminar la tarea ' + (taskDeleteCtrl.item()?.title || '') + '?'"
+		(stateChanged)="$event === 'closed' ? taskDeleteCtrl.close() : null" (confirm)="confirmDeleteTask()" />
+
+	<app-column-kanban-modal [kanbanId]="kanbanId()" [projectId]="projectId()"
+		[teamId]="teamId()"></app-column-kanban-modal>
+
+	<app-delete-modal [state]="columnDeleteCtrl.state()"
+		[title]="'¿Eliminar la columna ' + (columnDeleteCtrl.item()?.title || '') + '?'"
+		(stateChanged)="$event === 'closed' ? columnDeleteCtrl.close() : null" (confirm)="confirmDeleteColumn()" />
