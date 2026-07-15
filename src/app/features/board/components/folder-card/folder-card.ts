@@ -11,7 +11,7 @@ import {
 } from '@ng-icons/lucide'
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu'
 import { HlmCardImports } from '@spartan-ng/helm/card'
-import { Folder } from '../../models/folder.model'
+import { Folder } from '../../models/folder/folder.model'
 import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComponent'
 
 @Component({
@@ -34,6 +34,7 @@ export class FolderCardComponent {
 	@Input() isReceiving = false
 	@Output() folderClick = new EventEmitter<string>()
 	@Output() deleteFolder = new EventEmitter<string>()
+	@Output() editFolder = new EventEmitter<Folder>()
 	deleteModalState = signal<'open' | 'closed'>('closed')
 
 	// grid

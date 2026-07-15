@@ -12,10 +12,12 @@ import { CreateBoardModalState } from '../../service/create-board-modal-state'
 import { FolderCreateDialog } from '../../components/folder-create-dialog/folder-create-dialog'
 import { CdkDrag, CdkDropList, CdkDragDrop } from '@angular/cdk/drag-drop'
 import { BoardApiService } from '../../service/board-api.service'
-import { Board } from '../../models/board-response'
-import { Folder } from '../../models/folder.model'
+import { Board } from '../../models/board/board-response'
+import { Folder } from '../../models/folder/folder.model'
 import { Subscription } from 'rxjs'
 import { toast } from '@spartan-ng/brain/sonner'
+import { FolderModalState } from '../../service/create-folder-modal-state'
+import { AuthService } from '@/core/servies/auth.serive'
 
 @Component({
 	selector: 'app-my-boards-page',
@@ -40,8 +42,10 @@ import { toast } from '@spartan-ng/brain/sonner'
 })
 export class MyBoardsPage {
 	private boardApiService = inject(BoardApiService)
+	private folderModalState = inject(FolderModalState)
 	private router = inject(Router)
 	private route = inject(ActivatedRoute)
+	private authService = inject(AuthService)
 	createBoardModalState = inject(CreateBoardModalState)
 
 	projectId = input<string>()
@@ -64,9 +68,18 @@ export class MyBoardsPage {
 			this.loadBoards()
 			this.loadFolders()
 
+			// Obtener el ID del usuario actualmente logueado
+			const currentUserId = this.authService.currentUser()?.id
+
 			this.subs.push(
 				this.boardApiService.watchBoards(this.teamId()!, this.projectId()!).subscribe((board) => {
-					if (board.isPrivate !== true) return
+					// --- VALIDACIÓN DE PRIVACIDAD ---
+					// Si es privado y no soy el creador, lo ignoramos por completo
+					if (board.isPrivate && board.creatorId !== currentUserId) {
+						console.log('Ignorando tablero privado ajeno')
+						return
+					}
+
 					if (board.folderId) {
 						this.boards.update((boards) => boards.filter((b) => b.id !== board.id))
 						this.folders.update((folders) =>
@@ -83,12 +96,29 @@ export class MyBoardsPage {
 								boards: folder.boards.filter((b) => b.id !== board.id),
 							})),
 						)
-						this.boards.update((boards) => [board, ...boards])
+						// reemplaza si existe, agrega si es nuevo
+						this.boards.update((boards) => {
+							const exists = boards.some((b) => b.id === board.id)
+							return exists
+								? boards.map((b) => (b.id === board.id ? board : b))
+								: [board, ...boards]
+						})
 					}
 				}),
 				this.boardApiService.watchFolders(this.teamId()!, this.projectId()!).subscribe((folder) => {
-					if (folder.isPrivate !== true) return
-					this.folders.update((folders) => [{ ...folder, boards: folder.boards ?? [] }, ...folders])
+					// --- VALIDACIÓN DE PRIVACIDAD PARA FOLDERS ---
+					// (Si tus carpetas también tienen creador e 'isPrivate', aplica el mismo filtro)
+					if (folder.isPrivate && folder.creatorId !== currentUserId) {
+						console.log('Ignorando folder privado ')
+						return
+					}
+
+					this.folders.update((folders) => {
+						const exists = folders.some((f) => f.id === folder.id)
+						return exists
+							? folders.map((f) => (f.id === folder.id ? { ...folder, boards: f.boards } : f))
+							: [{ ...folder, boards: folder.boards ?? [] }, ...folders]
+					})
 				}),
 				this.boardApiService
 					.watchBoardDeletes(this.teamId()!, this.projectId()!)
@@ -102,6 +132,13 @@ export class MyBoardsPage {
 					}),
 			)
 		})
+	}
+	onEditBoard(board: Board) {
+		this.createBoardModalState.openForEdit(board)
+	}
+
+	onEditFolder(folder: Folder) {
+		this.folderModalState.openForEdit(folder)
 	}
 
 	onDeleteBoard(boardId: string) {
@@ -150,4 +187,57 @@ export class MyBoardsPage {
 	}
 
 	folderDropLists = computed(() => this.folders().map((f) => f.id))
+
+	// --- SEÑALES PARA LOS FILTROS ---
+	searchQuery = signal<string>('')
+	sortBy = signal<string>('Todos') // 'Todos' | 'Nombre' | 'Abierto recientemente'
+
+	// --- LISTAS FILTRADAS Y ORDENADAS REACTIVAMENTE ---
+	filteredBoards = computed(() => {
+		let list = [...this.boards()]
+		const query = this.searchQuery().toLowerCase().trim()
+
+		// 1. Aplicar filtro de búsqueda
+		if (query) {
+			list = list.filter((b) => b.name.toLowerCase().includes(query))
+		}
+
+		// 2. Aplicar ordenamiento
+		if (this.sortBy() === 'Nombre') {
+			list.sort((a, b) => a.name.localeCompare(b.name))
+		} else if (this.sortBy() === 'Abierto recientemente') {
+			// Ajusta el campo de orden según tus fechas (ej. updatedAt o createdAt)
+			list.sort(
+				(a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime(),
+			)
+		}
+
+		return list
+	})
+
+	filteredFolders = computed(() => {
+		let list = [...this.folders()]
+		const query = this.searchQuery().toLowerCase().trim()
+
+		// Filtrar carpetas por nombre
+		if (query) {
+			list = list.filter((f) => f.name.toLowerCase().includes(query))
+		}
+
+		// Ordenar carpetas
+		if (this.sortBy() === 'Nombre') {
+			list.sort((a, b) => a.name.localeCompare(b.name))
+		}
+
+		return list
+	})
+
+	// --- MANEJADORES DE EVENTOS EMITIDOS POR BOARDS-ACTION ---
+	onSearchChanged(query: string) {
+		this.searchQuery.set(query)
+	}
+
+	onSortChanged(criteria: string) {
+		this.sortBy.set(criteria)
+	}
 }

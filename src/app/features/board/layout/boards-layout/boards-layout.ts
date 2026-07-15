@@ -59,7 +59,7 @@ export class BoardsLayout {
 	)
 
 	//estaods de la vista y modales
-	createBoardModal = computed(() => this.createBoardModalState.createBoardModal())
+	createBoardModal = computed(() => this.createBoardModalState.dialogState())
 
 	protected readonly SidebarBoardOptions = computed<SidebarItemProps[]>(() => [
 		{
@@ -72,15 +72,15 @@ export class BoardsLayout {
 			title: 'Pizarras grupales',
 			to: `/team/${this.teamId()}/project/${this.projectId()}/board/group`,
 		},
-		{
-			icon: 'lucideTrash2',
-			title: 'Papelera',
-			to: `/team/${this.teamId()}/project/${this.projectId()}/board/trash`,
-		},
+		// {
+		// 	icon: 'lucideTrash2',
+		// 	title: 'Papelera',
+		// 	to: `/team/${this.teamId()}/project/${this.projectId()}/board/trash`,
+		// },
 	])
 
 	//acciones
 	openCreateBoard() {
-		this.createBoardModalState.open(this.isPrivate())
+		this.createBoardModalState.openForCreate(this.isPrivate())
 	}
 }

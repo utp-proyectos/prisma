@@ -12,10 +12,11 @@ import { ActivatedRoute, Router } from '@angular/router'
 import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop'
 import { FolderCardComponent } from '../../components/folder-card/folder-card'
 import { BoardApiService } from '../../service/board-api.service'
-import { Board } from '../../models/board-response'
-import { Folder } from '../../models/folder.model'
+import { Board } from '../../models/board/board-response'
+import { Folder } from '../../models/folder/folder.model'
 import { Subscription } from 'rxjs'
 import { toast } from '@spartan-ng/brain/sonner'
+import { FolderModalState } from '../../service/create-folder-modal-state'
 
 @Component({
 	selector: 'app-group-boards-page',
@@ -45,6 +46,7 @@ import { toast } from '@spartan-ng/brain/sonner'
 })
 export class GroupBoardsPage implements OnDestroy {
 	private boardApiService = inject(BoardApiService)
+	private folderModalState = inject(FolderModalState)
 	private router = inject(Router)
 	private route = inject(ActivatedRoute)
 	createBoardModalState = inject(CreateBoardModalState)
@@ -95,7 +97,12 @@ export class GroupBoardsPage implements OnDestroy {
 				//escucha folders creados
 				this.boardApiService.watchFolders(this.teamId()!, this.projectId()!).subscribe((folder) => {
 					if (folder.isPrivate !== false) return
-					this.folders.update((folders) => [{ ...folder, boards: folder.boards ?? [] }, ...folders])
+					this.folders.update((folders) => {
+						const exists = folders.some((f) => f.id === folder.id)
+						return exists
+							? folders.map((f) => (f.id === folder.id ? { ...folder, boards: f.boards } : f))
+							: [{ ...folder, boards: folder.boards ?? [] }, ...folders]
+					})
 				}),
 				//escucha boards eliminados
 				this.boardApiService
@@ -122,7 +129,9 @@ export class GroupBoardsPage implements OnDestroy {
 	ngOnDestroy() {
 		this.subs.forEach((s) => s.unsubscribe())
 	}
-
+	onEditFolder(folder: Folder) {
+		this.folderModalState.openForEdit(folder)
+	}
 	onDeleteBoard(boardId: string) {
 		this.boardApiService.deleteBoard(boardId, this.teamId()!, this.projectId()!)
 		this.boards.update((boards) => boards.filter((b) => b.id !== boardId))
@@ -158,4 +167,53 @@ export class GroupBoardsPage implements OnDestroy {
 	}
 
 	folderDropLists = computed(() => this.folders().map((f) => f.id))
+	searchQuery = signal<string>('')
+	sortBy = signal<string>('Todos') // 'Todos' | 'Nombre' | 'Abierto recientemente'
+
+	// --- LISTAS FILTRADAS Y ORDENADAS REACTIVAMENTE ---
+	filteredBoards = computed(() => {
+		let list = [...this.boards()]
+		const query = this.searchQuery().toLowerCase().trim()
+
+		// 1. Aplicar filtro de búsqueda
+		if (query) {
+			list = list.filter((b) => b.name.toLowerCase().includes(query))
+		}
+
+		// 2. Aplicar ordenamiento
+		if (this.sortBy() === 'Nombre') {
+			list.sort((a, b) => a.name.localeCompare(b.name))
+		} else if (this.sortBy() === 'Abierto recientemente') {
+			// Ajusta el campo de orden según tus fechas (ej. updatedAt o createdAt)
+			list.sort(
+				(a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime(),
+			)
+		}
+
+		return list
+	})
+
+	filteredFolders = computed(() => {
+		let list = [...this.folders()]
+		const query = this.searchQuery().toLowerCase().trim()
+
+		// Filtrar carpetas por nombre
+		if (query) {
+			list = list.filter((f) => f.name.toLowerCase().includes(query))
+		}
+
+		// Ordenar carpetas
+		if (this.sortBy() === 'Nombre') {
+			list.sort((a, b) => a.name.localeCompare(b.name))
+		}
+
+		return list
+	})
+	onSearchChanged(query: string) {
+		this.searchQuery.set(query)
+	}
+
+	onSortChanged(criteria: string) {
+		this.sortBy.set(criteria)
+	}
 }

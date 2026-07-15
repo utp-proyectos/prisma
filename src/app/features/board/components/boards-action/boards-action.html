@@ -1,13 +1,13 @@
 <div class="flex items-center justify-between mt-4">
 	<hlm-input-group class="w-70">
-		<input hlmInputGroupInput placeholder="Buscar pizarras" />
+		<input hlmInputGroupInput placeholder="Buscar pizarras" (input)="onSearch($event)" />
 		<hlm-input-group-addon>
 			<ng-icon name="lucideSearch" />
 		</hlm-input-group-addon>
 	</hlm-input-group>
 
 	<div class="flex items-center gap-2">
-		<hlm-select>
+		<hlm-select (valueChange)="onSort($event)">
 			<hlm-select-trigger class="w-57">
 				<hlm-select-value placeholder="Ordenar por" />
 			</hlm-select-trigger>
@@ -20,10 +20,9 @@
 				</hlm-select-group>
 			</hlm-select-content>
 		</hlm-select>
-		<button hlmBtn (click)="createFolderModal.emit()">
+		<button hlmBtn (click)="folderModalState.openForCreate(isPrivate())">
 			<ng-icon name="lucidePlus"></ng-icon>
 			Nueva carpeta
 		</button>
 	</div>
 </div>
-

@@ -1,10 +1,9 @@
-<hlm-dialog
-	[state]="createBoardModalState.createBoardModal()"
-	(closed)="createBoardModalState.close()"
->
+<hlm-dialog [state]="createBoardModalState.dialogState()" (closed)="createBoardModalState.close()">
 	<hlm-dialog-content *hlmDialogPortal="let ctx" class="sm:w-sm">
 		<hlm-dialog-header>
-			<h3 hlmDialogTitle>Crear pizarra</h3>
+			<h3 hlmDialogTitle>
+				{{ createBoardModalState.isEditMode() ? 'Editar pizarra' : 'Crear pizarra' }}
+			</h3>
 			<p hlmDialogDescription>Crea una pizarra para empezar a diseñar.</p>
 		</hlm-dialog-header>
 
@@ -49,7 +48,7 @@
 					type="submit"
 					[disabled]="boardForm().submitting() || (boardForm().touched() && boardForm().invalid())"
 				>
-					Guardar pizarra
+					{{ createBoardModalState.isEditMode() ? 'Guardar' : 'Crear pizarra' }}
 				</button>
 			</hlm-dialog-footer>
 		</form>

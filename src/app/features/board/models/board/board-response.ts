@@ -7,4 +7,5 @@ export interface Board {
 	thumbnailUrl: string | null
 	createdAt: string
 	updatedAt: string
+	creatorId: string
 }

@@ -33,15 +33,15 @@
 			</button>
 		</div>
 
-		<h3 hlmCardTitle class="text-sm font-medium">{{ board.name }}</h3>
-		<p hlmCardDescription>{{ board.description }}</p>
+		<h3 hlmCardTitle class="text-sm font-medium truncate">{{ board.name }}</h3>
+		<p hlmCardDescription class="line-clamp-2">{{ board.description }}</p>
 	</hlm-card-header>
 </hlm-card>
 
 <ng-template #menu>
 	<hlm-dropdown-menu>
 		<hlm-dropdown-menu-group>
-			<button hlmDropdownMenuItem>
+			<button hlmDropdownMenuItem (click)="editBoard.emit(board)">
 				<ng-icon name="lucidePencil" />
 				Editar
 			</button>

@@ -1,4 +1,4 @@
-import { Board } from './board-response'
+import { Board } from '../board/board-response'
 
 export interface Folder {
 	id: string
@@ -7,4 +7,5 @@ export interface Folder {
 	boards: Board[]
 	createdAt: string
 	updatedAt: string
+	creatorId: string
 }

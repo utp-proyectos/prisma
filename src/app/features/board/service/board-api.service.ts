@@ -1,11 +1,11 @@
 // board.service.ts
 import { Injectable, Signal, inject } from '@angular/core'
 import { HttpClient, httpResource } from '@angular/common/http'
-import { Board } from '../models/board-response'
-import { BoardRequest } from '../models/board-request'
-import { Folder } from '../models/folder.model'
-import { BoardDetail } from '../models/board-detail'
-import { FolderRequest } from '../models/folder-request'
+import { Board } from '../models/board/board-response'
+import { BoardRequest } from '../models/board/board-request'
+import { Folder } from '../models/folder/folder.model'
+import { BoardDetail } from '../models/board/board-detail'
+import { FolderRequest } from '../models/folder/folder-request'
 import { Websocket } from '@/core/servies/websocket'
 import { map, Observable, tap } from 'rxjs'
 import { ApiResponse } from '../../../core/models/api-response.model'
@@ -101,6 +101,14 @@ export class BoardApiService {
 		this.ws.publish('/app/board.create', { ...dto, teamId, projectId })
 	}
 
+	updateBoard(
+		boardId: string,
+		teamId: string,
+		projectId: string,
+		dto: { name: string; description: string },
+	) {
+		this.ws.publish('/app/board.update', { ...dto, boardId, teamId, projectId })
+	}
 	deleteBoard(boardId: string, teamId: string, projectId: string) {
 		this.ws.publish('/app/board.delete', { boardId, teamId, projectId })
 	}
@@ -119,5 +127,8 @@ export class BoardApiService {
 
 	deleteFolder(folderId: string, teamId: string, projectId: string) {
 		this.ws.publish('/app/folder.delete', { folderId, teamId, projectId })
+	}
+	updateFolder(folderId: string, teamId: string, projectId: string, name: string) {
+		this.ws.publish('/app/folder.update', { folderId, teamId, projectId: projectId, name })
 	}
 }

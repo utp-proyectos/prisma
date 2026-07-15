@@ -2,20 +2,22 @@
 	<div>
 		<h3 class="flex items-center gap-2 text-xl font-medium">
 			<ng-icon name="lucideFolder"></ng-icon>
-			<span>Folder</span>
+			<span>{{ folder()?.name || 'Folder' }}</span>
 		</h3>
 		<hlm-separator />
 
 		<div class="flex items-center justify-between mt-4">
 			<hlm-input-group class="w-70">
-				<input hlmInputGroupInput placeholder="Buscar pizarras" />
+				<!-- Enlazamos el input de búsqueda -->
+				<input hlmInputGroupInput placeholder="Buscar pizarras" (input)="onSearch($event)" />
 				<hlm-input-group-addon>
 					<ng-icon name="lucideSearch" />
 				</hlm-input-group-addon>
 			</hlm-input-group>
 
 			<div class="flex items-center gap-2">
-				<hlm-select>
+				<!-- Enlazamos el cambio de valor del select -->
+				<hlm-select (valueChange)="onSort($event)">
 					<hlm-select-trigger class="w-57">
 						<hlm-select-value placeholder="Ordenar por " />
 					</hlm-select-trigger>
@@ -29,18 +31,22 @@
 				</hlm-select>
 				<button
 					hlmBtn
-					(click)="createBoardModalState.open(folder()?.isPrivate ?? false, folderId())"
-				></button>
+					(click)="createBoardModalState.openForCreate(folder()?.isPrivate ?? false, folderId())"
+				>
+					Crear pizarra
+				</button>
 			</div>
 		</div>
 	</div>
 	<div class="flex-1 overflow-auto custom-scroll pe-2">
 		<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
-			@for (board of boards(); track board.id) {
+			<!-- Iteramos sobre la señal computada filtrada -->
+			@for (board of filteredBoards(); track board.id) {
 				<app-board-card
 					[board]="board"
 					(deleteBoard)="onDeleteBoard($event)"
 					[insideFolder]="true"
+					(editBoard)="onEditBoard($event)"
 					(removeFromFolder)="onRemoveFromFolder($event)"
 				/>
 			}

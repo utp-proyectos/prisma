@@ -7,7 +7,7 @@ import { HlmInputGroupImports } from '@spartan-ng/helm/input-group'
 import { HlmSelectImports } from '@spartan-ng/helm/select'
 import { HlmSeparatorImports } from '@spartan-ng/helm/separator'
 import { BoardCard } from '../../components/board-card/board-card'
-import { Board } from '../../models/board-response'
+import { Board } from '../../models/board/board-response'
 interface BoardsProps {
 	id: number
 	name: string

@@ -5,11 +5,12 @@ import { HlmAvatarImports } from '@spartan-ng/helm/avatar'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmSheetImports } from '@spartan-ng/helm/sheet'
 import { CanvasBoardComponent } from '../../components/board/canvas-board-component'
-import { BoardDetail } from '../../models/board-detail'
+import { BoardDetail } from '../../models/board/board-detail'
 import { BoardApiService } from '../../service/board-api.service'
 import { ActivatedRoute } from '@angular/router'
 import { BoardStateService } from '../../service/board-canvas.service'
 import { CanvasWsService } from '../../service/canvas-ws-service'
+import { Location } from '@angular/common'
 
 @Component({
 	selector: 'app-board-editor-page',
@@ -29,12 +30,17 @@ export class BoardEditorPage implements OnDestroy {
 	private boardApiService = inject(BoardApiService)
 	private boardStateService = inject(BoardStateService)
 	private canvasWsService = inject(CanvasWsService)
+	private location = inject(Location)
 	//parametros de ruta
 	boardId = this.route.snapshot.params['boardId']
 	//estados
 	board = signal<BoardDetail | null>(null)
 	private canvasBoard = viewChild(CanvasBoardComponent)
 	private saveInterval: any
+	//regresar
+	regresar() {
+		this.location.back()
+	}
 
 	constructor() {
 		this.boardStateService.setBoardId(this.boardId)
