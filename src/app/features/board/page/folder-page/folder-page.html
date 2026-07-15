@@ -39,17 +39,24 @@
 		</div>
 	</div>
 	<div class="flex-1 overflow-auto custom-scroll pe-2">
-		<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
-			<!-- Iteramos sobre la señal computada filtrada -->
-			@for (board of filteredBoards(); track board.id) {
-				<app-board-card
-					[board]="board"
-					(deleteBoard)="onDeleteBoard($event)"
-					[insideFolder]="true"
-					(editBoard)="onEditBoard($event)"
-					(removeFromFolder)="onRemoveFromFolder($event)"
-				/>
-			}
-		</div>
+		@if (searchQuery() && filteredBoards().length === 0) {
+			<div class="flex flex-col items-center justify-center h-64 text-muted-foreground gap-2">
+				<ng-icon name="lucideSearch" class="text-4xl opacity-50" />
+				<p class="text-base font-medium">No se encontraron pizarras para "{{ searchQuery() }}"</p>
+				<p class="text-xs opacity-75">Intenta buscar con otros términos.</p>
+			</div>
+		} @else {
+			<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
+				@for (board of filteredBoards(); track board.id) {
+					<app-board-card
+						[board]="board"
+						(deleteBoard)="onDeleteBoard($event)"
+						[insideFolder]="true"
+						(editBoard)="onEditBoard($event)"
+						(removeFromFolder)="onRemoveFromFolder($event)"
+					/>
+				}
+			</div>
+		}
 	</div>
 </div>

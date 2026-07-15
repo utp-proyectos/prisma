@@ -11,6 +11,8 @@ import { ActivatedRoute } from '@angular/router'
 import { BoardStateService } from '../../service/board-canvas.service'
 import { CanvasWsService } from '../../service/canvas-ws-service'
 import { Location } from '@angular/common'
+import { AuthService } from '@/core/servies/auth.serive'
+import { Subscription } from 'rxjs'
 
 @Component({
 	selector: 'app-board-editor-page',
@@ -25,19 +27,22 @@ import { Location } from '@angular/common'
 	styles: ``,
 })
 export class BoardEditorPage implements OnDestroy {
-	//inyeccion de dependecias
 	private route = inject(ActivatedRoute)
 	private boardApiService = inject(BoardApiService)
 	private boardStateService = inject(BoardStateService)
 	private canvasWsService = inject(CanvasWsService)
 	private location = inject(Location)
-	//parametros de ruta
+	private authService = inject(AuthService) // Inyectado
+
 	boardId = this.route.snapshot.params['boardId']
-	//estados
 	board = signal<BoardDetail | null>(null)
 	private canvasBoard = viewChild(CanvasBoardComponent)
 	private saveInterval: any
-	//regresar
+
+	// --- SEÑAL DE USUARIOS CONECTADOS ---
+	activeUsers = signal<any[]>([])
+	private presenceSub?: Subscription
+
 	regresar() {
 		this.location.back()
 	}
@@ -46,6 +51,7 @@ export class BoardEditorPage implements OnDestroy {
 		this.boardStateService.setBoardId(this.boardId)
 		this.loadBoard()
 		this.subscribeToCanvas()
+		this.subscribeToPresence() // Conectar presencia al iniciar
 
 		// guarda cada 10 segundos
 		this.saveInterval = setInterval(() => {
@@ -53,12 +59,40 @@ export class BoardEditorPage implements OnDestroy {
 			this.boardApiService.saveCanvas(this.boardId, data).subscribe()
 		}, 10000)
 	}
+
+	getInitials(name: string): string {
+		if (!name) return 'U'
+		return name
+			.split(' ')
+			.map((n) => n[0])
+			.join('')
+			.substring(0, 2)
+			.toUpperCase()
+	}
+
+	subscribeToPresence() {
+		//  Escuchar la presencia usando el canal modificado de canvasWsService
+		this.presenceSub = this.canvasWsService.watchPresence(this.boardId).subscribe((users) => {
+			this.activeUsers.set(users)
+		})
+
+		//  Avisamos al backend quién entra
+		const currentUser = this.authService.currentUser()
+		if (currentUser) {
+			this.canvasWsService.publishPresence(this.boardId, {
+				id: currentUser.id,
+				name: currentUser.name,
+				avatar: currentUser.avatar,
+			})
+		}
+	}
+
 	subscribeToCanvas() {
 		this.canvasWsService.watchCanvas(this.boardId).subscribe((message) => {
 			if (message.type === 'CREATE') {
 				this.boardStateService.shapes.update((s) => [...s, message.shape])
 			} else if (message.type === 'UPDATE') {
-				this.boardStateService.updateShape(message.shape, true) // true = remoto
+				this.boardStateService.updateShape(message.shape, true)
 			} else if (message.type === 'DELETE') {
 				this.boardStateService.shapes.update((s) =>
 					s.filter((sh) => sh.name !== message.shape.name),
@@ -67,7 +101,6 @@ export class BoardEditorPage implements OnDestroy {
 		})
 	}
 
-	//api- carga de datos
 	loadBoard() {
 		this.boardStateService.loadBoard({
 			shapes: [],
@@ -75,18 +108,23 @@ export class BoardEditorPage implements OnDestroy {
 			strokeColor: '#121212',
 		})
 		this.boardApiService.getCanvas(this.boardId).subscribe((konvaData) => {
-			// si devuelve algo lo transforma de string a json
 			if (konvaData) {
 				this.boardStateService.loadBoard(JSON.parse(konvaData))
 			}
 		})
 	}
+
 	ngOnDestroy() {
 		clearInterval(this.saveInterval)
 
+		const currentUser = this.authService.currentUser()
+		if (currentUser) {
+			this.canvasWsService.publishLeave(this.boardId, currentUser.id)
+		}
+
+		this.presenceSub?.unsubscribe()
+
 		const data = this.boardStateService.saveBoard()
-		//hace la peticion cuando se salga del konba
-		console.log(data)
 		this.boardApiService.saveCanvas(this.boardId, data).subscribe()
 	}
 
