@@ -21,6 +21,7 @@ import { AuthApiService } from '../../services/auth-api.service'
 import { AuthService } from '@/core/servies/auth.serive'
 import { toast } from '@spartan-ng/brain/sonner'
 import { HttpErrorResponse } from '@angular/common/http'
+import { environment } from '../../../../../environments/environment'
 
 @Component({
 	selector: 'app-login',
@@ -41,6 +42,7 @@ export class Login {
 	private router = inject(Router)
 	private authApiService = inject(AuthApiService)
 	private authService = inject(AuthService)
+	apiUrl = environment.apiUrl
 
 	loginModel = signal<LoginRequest>({
 		email: '',

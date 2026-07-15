@@ -48,7 +48,7 @@
 		<div hlmField>
 			<a
 				hlmBtn
-				href="http://localhost:8080/oauth2/authorization/google"
+				[href]="`${apiUrl}/oauth2/authorization/google`"
 				variant="outline"
 				type="button"
 				[disabled]="loginForm().submitting()"
@@ -58,7 +58,7 @@
 			</a>
 			<a
 				hlmBtn
-				href="http://localhost:8080/oauth2/authorization/github"
+				[href]="`${apiUrl}/oauth2/authorization/github`"
 				variant="outline"
 				type="button"
 				[disabled]="loginForm().submitting()"
