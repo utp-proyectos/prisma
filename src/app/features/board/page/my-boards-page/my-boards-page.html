@@ -6,44 +6,69 @@
 				<span>Mis pizarras</span>
 			</h3>
 			<hlm-separator />
-			<app-boards-action (createFolderModal)="createFolderModal.set('open')" />
+			<app-boards-action
+				[isPrivate]="true"
+				(searchChange)="onSearchChanged($event)"
+				(sortChange)="onSortChanged($event)"
+			/>
 		</div>
-		<div class="flex flex-col overflow-auto custom-scroll pe-2 gap-5">
-			<!-- grid solo de boards -->
-			<div
-				class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5"
-				cdkDropList
-				cdkDropListSortingDisabled
-				[cdkDropListConnectedTo]="folderDropLists()"
-			>
-				@for (board of boards(); track board.id) {
-					<div cdkDrag [cdkDragData]="board">
-						<app-board-card [board]="board" (deleteBoard)="onDeleteBoard($event)" />
-					</div>
-				}
-			</div>
 
-			<!-- grid solo de folders -->
-			<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
-				@for (folder of folders(); track folder.id) {
+		<!-- SI EL BUSCADOR NO ENCONTRÓ NINGUNA COINCIDENCIA -->
+		@if (searchQuery() && filteredBoards().length === 0 && filteredFolders().length === 0) {
+			<div
+				class="flex flex-col items-center justify-center flex-1 h-80 text-muted-foreground gap-2"
+			>
+				<ng-icon name="lucideSearch" class="text-5xl opacity-40" />
+				<p class="text-base font-medium">No se encontraron resultados para "{{ searchQuery() }}"</p>
+				<p class="text-xs opacity-75">Prueba a escribir el nombre de otra carpeta o pizarra.</p>
+			</div>
+		} @else {
+			<div class="flex flex-col overflow-auto custom-scroll pe-2 gap-5">
+				<!-- grid solo de boards (solo se renderiza si hay boards filtrados) -->
+				@if (filteredBoards().length > 0) {
 					<div
+						class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5"
 						cdkDropList
-						[id]="folder.id"
-						[cdkDropListData]="folder.boards"
-						(cdkDropListDropped)="dropIntoFolder($event, folder.id)"
-						(cdkDropListEntered)="draggingOverFolder.set(folder.id)"
-						(cdkDropListExited)="draggingOverFolder.set(null)"
+						cdkDropListSortingDisabled
+						[cdkDropListConnectedTo]="folderDropLists()"
 					>
-						<app-folder-card
-							[folder]="folder"
-							[isReceiving]="draggingOverFolder() === folder.id"
-							(folderClick)="openFolder($event)"
-							(deleteFolder)="onDeleteFolder($event)"
-						/>
+						@for (board of filteredBoards(); track board.id) {
+							<div cdkDrag [cdkDragData]="board">
+								<app-board-card
+									[board]="board"
+									(deleteBoard)="onDeleteBoard($event)"
+									(editBoard)="onEditBoard($event)"
+								/>
+							</div>
+						}
+					</div>
+				}
+
+				<!-- grid solo de folders (solo se renderiza si hay folders filtrados) -->
+				@if (filteredFolders().length > 0) {
+					<div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
+						@for (folder of filteredFolders(); track folder.id) {
+							<div
+								cdkDropList
+								[id]="folder.id"
+								[cdkDropListData]="folder.boards"
+								(cdkDropListDropped)="dropIntoFolder($event, folder.id)"
+								(cdkDropListEntered)="draggingOverFolder.set(folder.id)"
+								(cdkDropListExited)="draggingOverFolder.set(null)"
+							>
+								<app-folder-card
+									[folder]="folder"
+									[isReceiving]="draggingOverFolder() === folder.id"
+									(folderClick)="openFolder($event)"
+									(deleteFolder)="onDeleteFolder($event)"
+									(editFolder)="onEditFolder($event)"
+								/>
+							</div>
+						}
 					</div>
 				}
 			</div>
-		</div>
+		}
 	</div>
 } @else {
 	<div class="flex flex-col items-center justify-center gap-4 h-full">
@@ -52,17 +77,15 @@
 			<h3 class="text-xl font-medium">Aun no hay pizarras</h3>
 			<p class="text-muted-foreground text-sm">Crea Tu primer Pizarra</p>
 		</div>
-		<button hlmBtn (click)="createBoardModalState.open(true)">
+		<button hlmBtn (click)="createBoardModalState.openForCreate(true)">
 			<ng-icon name="lucidePlus"></ng-icon>
 			Crear pizarra
 		</button>
 	</div>
 }
+
 <app-folder-create-dialog
-	[isPrivate]="true"
-	[state]="createFolderModal()"
-	(closed)="createFolderModal.set('closed')"
+	[teamId]="teamId()!"
+	[projectId]="projectId()!"
 	(folderCreated)="loadFolders()"
-	[projectId]="projectId() ?? ''"
-	[teamId]="teamId() ?? ''"
 />

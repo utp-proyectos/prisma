@@ -10,7 +10,7 @@ import {
 } from '@ng-icons/lucide'
 import { HlmCardImports } from '@spartan-ng/helm/card'
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu'
-import { Board } from '../../models/board-response'
+import { Board } from '../../models/board/board-response'
 import { Router } from '@angular/router'
 import { DeleteModalComponent } from '@/shared/components/delete/DeleteModalComponent'
 
@@ -38,6 +38,7 @@ export class BoardCard {
 	@Input() insideFolder = false
 	@Output() deleteBoard = new EventEmitter<string>()
 	@Output() removeFromFolder = new EventEmitter<string>()
+	@Output() editBoard = new EventEmitter<Board>()
 	deleteModalState = signal<'open' | 'closed'>('closed')
 
 	// navegacion

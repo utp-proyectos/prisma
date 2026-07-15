@@ -65,9 +65,9 @@
 <ng-template #folderMenu>
 	<hlm-dropdown-menu>
 		<hlm-dropdown-menu-group>
-			<button hlmDropdownMenuItem>
+			<button hlmDropdownMenuItem (click)="$event.stopPropagation(); editFolder.emit(folder)">
 				<ng-icon name="lucidePencil" class="mr-2" />
-				Renombrar
+				Editar
 			</button>
 		</hlm-dropdown-menu-group>
 		<hlm-dropdown-menu-separator />

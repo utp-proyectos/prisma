@@ -1,31 +1,26 @@
 <div class="flex flex-col h-screen w-full bg-black text-white p-3 select-none">
 	<header class="flex items-center justify-between w-full h-10 px-2 mb-2">
-		<button hlmBtn size="icon" variant="outline">
+		<button hlmBtn size="icon" variant="outline" (click)="regresar()">
 			<ng-icon name="lucideArrowLeft" />
 		</button>
 
-		<hlm-avatar-group
-			class="grayscale bg-zinc-900/50 px-3 py-1.5 rounded-full border border-zinc-800"
-		>
-			<hlm-avatar>
-				<img hlmAvatarImage src="/assets/avatar.png" alt="spartan logo" />
-				<span hlmAvatarFallback>RG</span>
-				<hlm-avatar-badge class="bg-primary" />
-			</hlm-avatar>
-			<hlm-avatar>
-				<img hlmAvatarImage src="/assets/avatar.png" alt="spartan logo" />
-				<span hlmAvatarFallback>RG</span>
-				<hlm-avatar-badge class="bg-primary" />
-			</hlm-avatar>
-			<hlm-avatar>
-				<img hlmAvatarImage src="/assets/avatar.png" alt="spartan logo" />
-				<span hlmAvatarFallback>RG</span>
-				<hlm-avatar-badge class="text-primary" />
-			</hlm-avatar>
+		<!-- Grupo de Avatares Dinámicos Conectados en Tiempo Real -->
+		<hlm-avatar-group class="bg-zinc-900/50 px-3 py-1.5 rounded-full border border-zinc-800">
+			@for (user of activeUsers(); track user.id) {
+				<hlm-avatar>
+					@if (user.avatar) {
+						<img hlmAvatarImage [src]="user.avatar" [alt]="user.name" />
+					}
+					<span hlmAvatarFallback class="bg-primary text-white rounded-full">
+						{{ getInitials(user.name) }}
+					</span>
+					<hlm-avatar-badge class="bg-primary border-black" />
+				</hlm-avatar>
+			}
 		</hlm-avatar-group>
 
 		<button hlmBtn size="icon" variant="outline" (click)="openSheet()">
-			<ng-icon name="lucidePanelRight " />
+			<ng-icon name="lucidePanelRight" />
 		</button>
 	</header>
 
