@@ -17,6 +17,7 @@ import { HlmSeparatorImports } from '@spartan-ng/helm/separator'
 import { CreateTeamModalState } from '../../services/create-team-modal-state'
 import {
 	lucideChevronDown,
+	lucideEllipsis,
 	lucidePen,
 	lucideSearch,
 	lucideTrash2,
@@ -77,7 +78,14 @@ interface ProjectProps {
 		RouterLink,
 	],
 	providers: [
-		provideIcons({ lucideSearch, lucideUsers, lucidePen, lucideTrash2, lucideChevronDown }),
+		provideIcons({
+			lucideSearch,
+			lucideUsers,
+			lucidePen,
+			lucideTrash2,
+			lucideChevronDown,
+			lucideEllipsis,
+		}),
 	],
 	templateUrl: './team.html',
 	styles: ``,

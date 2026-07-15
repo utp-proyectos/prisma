@@ -52,6 +52,7 @@ export class SidebarItem {
 		'opacity-50': this.disabled(),
 		'w-8': this.sidebarService.isCollapsed(),
 		'w-full': !this.sidebarService.isCollapsed(),
+		'pr-10': !this.sidebarService.isCollapsed(),
 	}))
 
 	isCollapsed = computed(() => this.sidebarService.isCollapsed())

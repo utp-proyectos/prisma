@@ -43,10 +43,12 @@
 								</hlm-select-group>
 							</hlm-select-content>
 						</hlm-select>
-						<button hlmBtn (click)="createProjectModal.set('open')">
-							<ng-icon name="lucidePlus"></ng-icon>
-							Nuevo Proyecto
-						</button>
+						@if (team.userRole === 'OWNER') {
+							<button hlmBtn (click)="createProjectModal.set('open')">
+								<ng-icon name="lucidePlus"></ng-icon>
+								Nuevo Proyecto
+							</button>
+						}
 					</div>
 				</div>
 			}
@@ -92,10 +94,12 @@
 	<ng-template #menu>
 		<hlm-dropdown-menu>
 			<hlm-dropdown-menu-group>
-				<button hlmDropdownMenuItem>
-					<ng-icon name="lucidePen" />
-					Cambiar nombre
-				</button>
+				@if (team.userRole === 'OWNER' || team.userRole === 'EDITOR') {
+					<button hlmDropdownMenuItem>
+						<ng-icon name="lucidePen" />
+						Cambiar nombre
+					</button>
+				}
 
 				<hlm-dialog>
 					<button hlmDialogTrigger hlmDropdownMenuItem>
@@ -125,36 +129,42 @@
 										<hlm-item-title>{{ member.name }}</hlm-item-title>
 										<p hlmItemDescription>{{ member.role }}</p>
 									</hlm-item-content>
-									<hlm-item-actions>
-										<button
-											hlmBtn
-											size="icon-sm"
-											variant="outline"
-											class="rounded-full"
-											aria-label="Invite"
-										>
-											<ng-icon name="lucidePlus" />
-										</button>
-									</hlm-item-actions>
+									@if (team.userRole === 'OWNER' || team.userRole === 'EDITOR') {
+										<hlm-item-actions>
+											<button
+												hlmBtn
+												size="icon-sm"
+												variant="outline"
+												class="rounded-full"
+												aria-label="Invite"
+											>
+												<ng-icon name="lucideEllipsis" />
+											</button>
+										</hlm-item-actions>
+									}
 								</hlm-item>
 							}
 						</div>
 
 						<hlm-dialog-footer>
 							<button hlmBtn variant="outline" hlmDialogClose>Cerrar</button>
-							<button hlmBtn type="submit" (click)="inviteMemberModal.set('open')">
-								<ng-icon name="lucidePlus"></ng-icon> Agregar Miembro
-							</button>
+							@if (team.userRole === 'OWNER' || team.userRole === 'EDITOR') {
+								<button hlmBtn type="submit" (click)="inviteMemberModal.set('open')">
+									<ng-icon name="lucidePlus"></ng-icon> Agregar Miembro
+								</button>
+							}
 						</hlm-dialog-footer>
 					</hlm-dialog-content>
 				</hlm-dialog>
 			</hlm-dropdown-menu-group>
 			<hlm-dropdown-menu-separator />
 			<hlm-dropdown-menu-group>
-				<button hlmDropdownMenuItem variant="destructive">
-					<ng-icon name="lucideTrash2" />
-					Eliminar Equipo
-				</button>
+				@if (team.userRole === 'OWNER') {
+					<button hlmDropdownMenuItem variant="destructive">
+						<ng-icon name="lucideTrash2" />
+						Eliminar Equipo
+					</button>
+				}
 			</hlm-dropdown-menu-group>
 		</hlm-dropdown-menu>
 	</ng-template>
