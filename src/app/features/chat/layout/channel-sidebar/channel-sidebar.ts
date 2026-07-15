@@ -60,6 +60,8 @@ export class ChannelSidebar implements OnDestroy {
 		name: '',
 	})
 
+	transaction = false
+
 	channelForm = form(
 		this.channelModel,
 		(schemaPath) => {
@@ -74,6 +76,8 @@ export class ChannelSidebar implements OnDestroy {
 					const projectId = this.projectId()
 
 					if (!teamId || !projectId) return
+
+					this.transaction = true
 
 					this.ChannelWs.sendChannel({
 						teamId,
@@ -104,8 +108,10 @@ export class ChannelSidebar implements OnDestroy {
 				({ action, payload }) => {
 					if (action === 'CREATE') {
 						this.channels.update((channels) => [...channels, payload])
-
-						this.router.navigate([`/team/${teamId}/project/${projectId}/chat/${payload.id}`])
+						if (this.transaction) {
+							this.transaction = false
+							this.router.navigate([`/team/${teamId}/project/${projectId}/chat/${payload.id}`])
+						}
 					}
 				},
 			)

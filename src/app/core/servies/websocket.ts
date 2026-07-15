@@ -2,8 +2,8 @@ import { effect, inject, Service } from '@angular/core'
 import { IMessage, RxStomp } from '@stomp/rx-stomp'
 import SockJS from 'sockjs-client'
 import { AuthService } from './auth.serive'
-import { Observable, tap } from 'rxjs'
-import { config } from '../config'
+import { Observable } from 'rxjs'
+import { environment } from '../../../environments/environment'
 
 @Service()
 export class Websocket {
@@ -26,7 +26,7 @@ export class Websocket {
 		this.disconnect()
 
 		this.stomp.configure({
-			webSocketFactory: () => new SockJS(`${config.apiUrl}/ws`),
+			webSocketFactory: () => new SockJS(`${environment.apiUrl}/ws`),
 			connectHeaders: {
 				Authorization: `Bearer ${token}`,
 			},

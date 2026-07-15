@@ -2,7 +2,10 @@
 	@let channel = channelResource.value().data;
 	<h3><ng-icon name="lucideHash"></ng-icon>{{ channel.name }}</h3>
 
-	<div class="flex-1 flex flex-col gap-5 overflow-auto custom-scroll" #chatContainer>
+	<div
+		class="flex-1 flex flex-col justify-end-safe gap-5 overflow-auto custom-scroll"
+		#chatContainer
+	>
 		@for (message of messages(); track message.id) {
 			<div class="flex gap-4">
 				<div>
@@ -19,7 +22,7 @@
 							message.createdAt | date: 'dd/MM/yyyy, HH:mm'
 						}}</span>
 					</div>
-					<p>{{ message.content }}</p>
+					<p class="text-gray-300">{{ message.content }}</p>
 				</div>
 			</div>
 		}
