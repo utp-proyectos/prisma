@@ -2,11 +2,14 @@ import { inject, Injectable } from '@angular/core'
 import { Subscription } from 'rxjs'
 import { TaskApi } from './task.api'
 import { ColumnTaskState } from '../column-task/column-task-state'
+import { DashboardRefresh } from './dashboard.refresh'
 
 @Injectable()
 export class TaskRealtime {
 	private readonly api = inject(TaskApi)
 	private readonly columnTaskState = inject(ColumnTaskState)
+
+	private readonly dashboardRefresh = inject(DashboardRefresh)
 
 	private taskSub?: Subscription
 	private taskReorderSub?: Subscription
@@ -23,6 +26,7 @@ export class TaskRealtime {
 			switch (event.action) {
 				case 'CREATE':
 					this.columnTaskState.addTask(event.payload)
+					this.dashboardRefresh.notify()
 					break
 
 				case 'UPDATE':
@@ -30,10 +34,12 @@ export class TaskRealtime {
 					if (!oldTask) return
 
 					this.columnTaskState.replaceTask(oldTask, event.payload)
+					this.dashboardRefresh.notify()
 					break
 
 				case 'DELETE':
 					this.columnTaskState.removeTask(event.payload)
+					this.dashboardRefresh.notify()
 					break
 			}
 		})
@@ -47,6 +53,7 @@ export class TaskRealtime {
 			.subscribe((event) => {
 				if (event.action === 'REORDER') {
 					this.columnTaskState.replaceColumns(event.payload)
+					this.dashboardRefresh.notify()
 				}
 			})
 	}

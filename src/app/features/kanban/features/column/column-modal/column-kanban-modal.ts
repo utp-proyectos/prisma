@@ -1,5 +1,5 @@
 import { Component, effect, inject, input, output, signal } from '@angular/core'
-import { KanbanApi } from '../../../service/kanban-api'
+import { KanbanApi } from '../../kanban/kanban.api'
 import { HlmButtonImports } from '@spartan-ng/helm/button'
 import { HlmInputImports } from '@spartan-ng/helm/input'
 import { HlmFieldImports } from '@spartan-ng/helm/field'

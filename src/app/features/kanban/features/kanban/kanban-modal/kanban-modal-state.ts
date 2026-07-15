@@ -1,6 +1,6 @@
+import { KanbanResponse } from '@/features/kanban/models/kanban-response.model'
 import { computed, Injectable, signal } from '@angular/core'
 import { BrnDialogState } from '@spartan-ng/brain/dialog'
-import { KanbanResponse } from '../models/kanban-response.model'
 
 export type KanbanModalMode = 'CREATE' | 'EDIT'
 

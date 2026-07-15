@@ -1,3 +1,215 @@
-<p>project-resume works!</p>
-{{ teamId() }}
-{{ projectId() }}
+@if(dashboard()) {
+
+<div class="flex flex-col gap-6 w-full h-full xl:h-[calc(100vh-2rem)] xl:max-h-[calc(100vh-2rem)] xl:overflow-hidden">
+	<!-- ========================================= -->
+	<!-- HEADER -->
+	<!-- ========================================= -->
+
+	<div class="relative w-full h-56 overflow-hidden rounded-xl">
+		<div class="bg-primary absolute inset-0 z-30 opacity-50 mix-blend-color pointer-events-none"></div>
+		<img
+			src="https://images.unsplash.com/photo-1604076850742-4c7221f3101b?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+			alt="Event cover" class="relative z-20 w-full h-56 object-cover grayscale brightness-60 dark:brightness-40" />
+	</div>
+
+	<hlm-card class="h-30">
+		<div class="w-full h-full flex flex-col items-center justify-center text-center px-4 gap-3">
+			<h1 class="text-3xl font-bold text-primary truncate">
+				{{ dashboard()!.projectName }}
+			</h1>
+
+			<p class="text-xs text-muted-foreground">
+				{{ dashboard()!.description || 'Sin descripción.' }}
+			</p>
+		</div>
+	</hlm-card>
+
+	<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 flex-1 min-h-0 pb-2">
+
+		<!-- ===================================== -->
+		<!-- ESTADISTICAS -->
+		<!-- ===================================== -->
+		<hlm-card class="p-6 h-full flex flex-col">
+			<div class="flex flex-col h-full">
+
+				<h2 class="font-semibold uppercase tracking-wide text-primary text-sm shrink-0">
+					Estado de tareas
+				</h2>
+
+				<div class="flex-1 flex flex-col justify-center gap-6">
+
+					<div class="flex justify-center">
+						<div class="relative h-44 w-44">
+							<svg class="-rotate-90" width="176" height="176">
+								<circle cx="88" cy="88" r="72" stroke="currentColor" class="text-muted" stroke-width="10"
+									fill="transparent" />
+
+								<circle cx="88" cy="88" r="72" stroke="currentColor" class="text-primary" stroke-width="10"
+									fill="transparent" stroke-linecap="round" [attr.stroke-dasharray]="452"
+									[attr.stroke-dashoffset]="452 - (452 * dashboard()!.taskStats.completedPercentage / 100)" />
+							</svg>
+
+							<div class="absolute inset-0 flex flex-col items-center justify-center">
+								<span class="text-4xl font-bold">
+									{{ dashboard()!.taskStats.totalTasks }}
+								</span>
+								<span class="text-muted-foreground">
+									Tareas
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="grid grid-cols-2 gap-6">
+						<div class="text-center">
+							<div class="text-xl font-semibold">
+								{{ dashboard()!.taskStats.completedTasks }}
+							</div>
+							<div class="text-sm text-muted-foreground">
+								Completadas
+							</div>
+							<div class="text-xs text-primary">
+								{{ dashboard()!.taskStats.completedPercentage }}%
+							</div>
+						</div>
+
+						<div class="text-center">
+							<div class="text-xl font-semibold">
+								{{ dashboard()!.taskStats.remainingTasks }}
+							</div>
+							<div class="text-sm text-muted-foreground">
+								Pendientes
+							</div>
+							<div class="text-xs text-destructive">
+								{{ dashboard()!.taskStats.remainingPercentage }}%
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</hlm-card>
+
+		<!-- ===================================== -->
+		<!-- TAREAS -->
+		<!-- ===================================== -->
+		<hlm-card class="p-6 flex flex-col min-h-0 xl:h-full">
+
+			<div class="flex flex-col gap-5 h-full">
+				<h2 class="font-semibold uppercase tracking-wide text-primary text-sm shrink-0">
+					Próximas tareas
+				</h2>
+				<ng-scrollbar hlm class="h-100 xl:h-full xl:flex-1 min-h-0">
+					<div scrollViewport class="flex flex-col gap-3">
+
+						@for(task of dashboard()!.upcomingTasks; track task.taskId){
+						<hlm-card
+							class="w-full bg-secondary border border-zinc-800 p-3 rounded-lg cursor-grab active:cursor-grabbing transition-colors duration-200 hover:border-primary/60 hover:bg-zinc-800/60">
+							<div class="flex justify-between items-start">
+								<div>
+									<div class="text-xs font-medium text-primary">
+										Tablero: {{ task.kanbanName }}
+									</div>
+
+									<div class="font-medium mt-1">
+										{{ task.taskTitle }}
+									</div>
+								</div>
+							</div>
+
+							<div class="flex items-center gap-2 text-muted-foreground text-sm mt-1">
+								<ng-icon name="lucideCalendar" />
+								{{ task.deadline }}
+							</div>
+
+							<hlm-badge class="mt-1">
+								{{ task.status }}
+							</hlm-badge>
+						</hlm-card>
+
+						} @empty {
+
+						<hlm-empty>
+							<ng-icon hlmEmptyIcon name="lucideClipboardList" />
+							<h4 hlmEmptyTitle>
+								Sin tareas
+							</h4>
+
+							<p hlmEmptyDescription>
+								No tienes tareas próximas.
+							</p>
+
+						</hlm-empty>
+						}
+					</div>
+				</ng-scrollbar>
+			</div>
+		</hlm-card>
+
+		<!-- ===================================== -->
+		<!-- EVENTOS -->
+		<!-- ===================================== -->
+		<hlm-card class="p-6 flex flex-col min-h-0 xl:h-full">
+			<div class="flex flex-col gap-5 h-full">
+				<h2 class="font-semibold uppercase tracking-wide text-primary text-sm shrink-0">
+					Eventos de hoy
+				</h2>
+
+				<ng-scrollbar hlm class="h-100 xl:h-full xl:flex-1 min-h-0">
+					<div scrollViewport class="flex flex-col gap-3 pr-1">
+
+						@for(event of dashboard()!.todaysEvents; track event.eventId){
+
+						<hlm-card
+							class="w-full bg-secondary border border-zinc-800 p-3 rounded-lg cursor-grab active:cursor-grabbing transition-colors duration-200 hover:border-primary/60 hover:bg-zinc-800/60">
+							<div class="flex justify-between">
+								<div class="font-medium">
+									{{ event.title }}
+								</div>
+							</div>
+
+							<div class="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
+								<ng-icon name="lucideCalendarDays" />
+								{{ event.startDate }}
+							</div>
+
+							<div class="flex items-center gap-2 text-sm text-muted-foreground">
+								<ng-icon name="lucideClock3" />
+								{{ event.startTime }} - {{ event.endTime }}
+							</div>
+						</hlm-card>
+
+						} @empty {
+
+						<hlm-empty>
+							<ng-icon hlmEmptyIcon name="lucideCalendarDays" />
+							<h4 hlmEmptyTitle>
+								No hay eventos
+							</h4>
+
+							<p hlmEmptyDescription>
+								Hoy no tienes eventos registrados.
+							</p>
+						</hlm-empty>
+						}
+					</div>
+				</ng-scrollbar>
+			</div>
+		</hlm-card>
+	</div>
+</div>
+
+} @else {
+
+<hlm-empty>
+	<ng-icon hlmEmptyIcon name="lucideLayoutDashboard" />
+	<h2 hlmEmptyTitle>
+		Cargando dashboard...
+	</h2>
+
+	<p hlmEmptyDescription>
+		Estamos obteniendo la información del proyecto.
+	</p>
+</hlm-empty>
+
+}

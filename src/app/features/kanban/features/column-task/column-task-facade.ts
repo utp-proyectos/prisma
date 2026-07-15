@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core'
 import { ColumnTaskState } from './column-task-state'
-import { KanbanApi } from '../../service/kanban-api'
+import { KanbanApi } from '../kanban/kanban.api'
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop'
 import { TaskDetailResponse } from '../../models/task/task-detail-response.model'
 import { ColumnKanbanDetailResponse } from '../../models/column-kanban/column-kanban-detail-response.model'
