@@ -10,6 +10,7 @@ import { Websocket } from '@/core/servies/websocket'
 import { ProjectResponse } from '../models/project-response'
 import { ProjectRequest } from '../models/project-request'
 import { InviteMemberRequest } from '../models/invite-member-request'
+import { ProjectDashboardResponse } from '../models/project-dashboard-response'
 
 @Injectable()
 export class TeamApi {
@@ -26,6 +27,11 @@ export class TeamApi {
 	projectsResource = (teamId: Signal<string | undefined>) =>
 		httpResource<ApiResponse<ProjectResponse[]>>(() =>
 			teamId() ? `/teams/${teamId()}/projects` : undefined,
+		)
+
+	dashboardResource = (teamId: Signal<string | undefined>, projectId: Signal<string | undefined>) =>
+		httpResource<ApiResponse<ProjectDashboardResponse>>(() =>
+			projectId() ? `/teams/${teamId()}/projects/${projectId()}/dashboard` : undefined,
 		)
 
 	createTeam = (team: TeamRequest) =>
