@@ -16,12 +16,10 @@ export const routes: Routes = [
 		children: [
 			{
 				path: '',
-				// loadComponent: () =>
-				// 	import('./features/resume/pages/project-resume/project-resume').then(
-				// 		(m) => m.ProjectResume,
-				// 	),
-				redirectTo: 'chat',
-				pathMatch: 'full',
+				loadComponent: () =>
+					import('./features/resume/pages/project-resume/project-resume').then(
+						(m) => m.ProjectResume,
+					),
 			},
 			{
 				path: 'chat',
@@ -38,7 +36,8 @@ export const routes: Routes = [
 			},
 			{
 				path: 'calendar',
-				loadChildren: () => import('./features/calendar/calendar.routes').then((m) => m.calendarRoutes),
+				loadChildren: () =>
+					import('./features/calendar/calendar.routes').then((m) => m.calendarRoutes),
 			},
 		],
 	},
