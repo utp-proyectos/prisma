@@ -24,6 +24,7 @@ import { firstValueFrom } from 'rxjs'
 import { HlmSpinnerImports } from '@spartan-ng/helm/spinner'
 import { HttpErrorResponse } from '@angular/common/http'
 import { toast } from '@spartan-ng/brain/sonner'
+import { environment } from '../../../../../environments/environment'
 
 @Component({
 	selector: 'app-register',
@@ -44,6 +45,7 @@ import { toast } from '@spartan-ng/brain/sonner'
 })
 export class Register {
 	authService = inject(AuthApiService)
+	apiUrl = environment.apiUrl
 
 	registerSuccessModalState = signal<BrnDialogState>('closed')
 
